@@ -1,0 +1,5 @@
+package com.example.signwriter_facil
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity()
