@@ -15,6 +15,30 @@ O SignWriter Fácil é um aplicativo desenvolvido para facilitar a comunicação
 - **Dicionário**: Banco de dados abrangente de sinais.
 - **Progresso**: Acompanhamento do aprendizado e uso.
 
+## Recursos de Acessibilidade
+
+O aplicativo deve incluir recursos avançados de acessibilidade para garantir uma experiência inclusiva: (ainda em implementação)
+
+- **Tamanho da Fonte Ajustável**:
+  - Controle deslizante para ajustar o tamanho do texto
+  - Escala de 80% a 200% do tamanho original
+  - Aplicação em tempo real em todo o aplicativo
+
+- **Contraste Configurável**:
+  - Ajuste do nível de contraste das cores
+  - Escala de 50% a 200% do contraste padrão
+  - Otimizado para diferentes condições de visão
+
+- **Espaçamento Personalizado**:
+  - Controle do espaçamento entre elementos
+  - Escala de 80% a 200% do espaçamento padrão
+  - Layout adaptativo para melhor legibilidade
+
+- **Persistência de Configurações**:
+  - Salva as preferências do usuário
+  - Mantém as configurações entre sessões
+  - Aplica automaticamente ao iniciar o app
+
 ## Arquitetura
 
 O aplicativo segue a arquitetura MVVM (Model-View-ViewModel):
@@ -27,6 +51,7 @@ O aplicativo segue a arquitetura MVVM (Model-View-ViewModel):
 
 - **Flutter**: Framework de desenvolvimento multiplataforma
 - **Provider**: Gerenciamento de estado para MVVM
+- **SharedPreferences**: Persistência de configurações de acessibilidade
 - **APIs externas**: Para funcionalidades como tradução e reconhecimento de sinais (implementação futura)
 
 ## Como Executar
@@ -47,6 +72,7 @@ lib/
   │    ├── widgets/   # Componentes reutilizáveis
   ├── services/       # Serviços e APIs
   ├── utils/          # Utilidades e helpers
+  ├── theme/          # Configurações de tema e acessibilidade
   └── main.dart       # Ponto de entrada do aplicativo
 ```
 
@@ -56,6 +82,10 @@ lib/
 - Integração com APIs para reconhecimento de sinais em tempo real
 - Melhorias na interface e experiência do usuário
 - Adicionar suporte para múltiplos idiomas
+- Expandir recursos de acessibilidade:
+  - Suporte a leitores de tela
+  - Mais opções de contraste
+  - Temas personalizados
 
 ## Contribuições
 

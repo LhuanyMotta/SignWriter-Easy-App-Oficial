@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/profile_viewmodel.dart';
+import '../../viewmodels/home_viewmodel.dart';
 
 /// Tela de Perfil do usuário
 class ProfileScreen extends StatefulWidget {
@@ -35,6 +36,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final HomeViewModel _homeViewModel = HomeViewModel();
+    
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Scaffold(
@@ -86,6 +89,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             );
           },
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: 2,
+          onTap: (index) {
+            _homeViewModel.onBottomNavTapped(index, context);
+          },
+          selectedItemColor: Theme.of(context).colorScheme.primary,
+          unselectedItemColor: Colors.grey,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Início',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite),
+              label: 'Favoritos',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Perfil',
+            ),
+          ],
         ),
       ),
     );
@@ -305,6 +330,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               value: viewModel.darkMode,
               onChanged: (value) => viewModel.toggleDarkMode(value),
+            ),
+            const Divider(),
+
+            // Acessibilidade
+            ExpansionTile(
+              leading: Icon(
+                Icons.accessibility_new,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: const Text('Acessibilidade'),
+              subtitle: const Text('Personalize a interface para suas necessidades'),
+              children: [
+                // Tamanho da fonte
+                ListTile(
+                  title: const Text('Tamanho da Fonte'),
+                  subtitle: Slider(
+                    value: viewModel.fontSize,
+                    min: 0.8,
+                    max: 1.5,
+                    divisions: 7,
+                    label: '${(viewModel.fontSize * 100).round()}%',
+                    onChanged: (value) => viewModel.updateFontSize(value),
+                  ),
+                ),
+                // Contraste
+                ListTile(
+                  title: const Text('Contraste'),
+                  subtitle: DropdownButton<double>(
+                    value: viewModel.contrastLevel,
+                    items: const [
+                      DropdownMenuItem(value: 1.0, child: Text('Normal')),
+                      DropdownMenuItem(value: 1.5, child: Text('Alto')),
+                      DropdownMenuItem(value: 2.0, child: Text('Muito Alto')),
+                    ],
+                    onChanged: (value) => viewModel.updateContrast(value ?? 1.0),
+                  ),
+                ),
+                // Espaçamento
+                ListTile(
+                  title: const Text('Espaçamento'),
+                  subtitle: Slider(
+                    value: viewModel.spacing,
+                    min: 1.0,
+                    max: 2.0,
+                    divisions: 4,
+                    label: '${(viewModel.spacing * 100).round()}%',
+                    onChanged: (value) => viewModel.updateSpacing(value),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

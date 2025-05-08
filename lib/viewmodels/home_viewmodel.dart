@@ -7,6 +7,7 @@ import '../views/screens/chat_screen.dart';
 import '../views/screens/progress_screen.dart';
 import '../views/screens/profile_screen.dart';
 import '../views/screens/favorites_screen.dart';
+import '../views/screens/home_screen.dart';
 
 /// ViewModel para a tela inicial
 /// Responsável pela lógica de navegação e interação da tela home
@@ -89,7 +90,12 @@ class HomeViewModel {
   void onBottomNavTapped(int index, BuildContext context) {
     switch (index) {
       case 0:
-        // Já estamos na Home, não precisa navegar
+        // Navega para a tela inicial
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (route) => false,
+        );
         break;
       case 1:
         navigateToFavorites(context);

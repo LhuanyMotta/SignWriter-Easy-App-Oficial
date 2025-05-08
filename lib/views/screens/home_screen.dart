@@ -20,12 +20,12 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       'title': 'Aprender e Praticar',
       'icon': Icons.school,
-      'color': const Color(0xFF4EB1F0),
+      'color': const Color(0xFF2D78BB),
     },
     {
       'title': 'Escrever Sinais',
       'icon': Icons.edit_document,
-      'color': const Color(0xFF2D78BB),
+      'color': const Color(0xFF4EB1F0),
     },
     {
       'title': 'Traduzir Sinais',

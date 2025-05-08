@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/favorites_viewmodel.dart';
+import '../../viewmodels/home_viewmodel.dart';
 import '../../models/sign_model.dart';
 
 /// Tela de Favoritos
@@ -13,6 +14,7 @@ class FavoritesScreen extends StatefulWidget {
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
   late FavoritesViewModel _viewModel;
+  final HomeViewModel _homeViewModel = HomeViewModel();
   final TextEditingController _searchController = TextEditingController();
   
   @override
@@ -89,6 +91,28 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   );
                 },
               ),
+            ),
+          ],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: 1,
+          onTap: (index) {
+            _homeViewModel.onBottomNavTapped(index, context);
+          },
+          selectedItemColor: Theme.of(context).colorScheme.primary,
+          unselectedItemColor: Colors.grey,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Início',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite),
+              label: 'Favoritos',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Perfil',
             ),
           ],
         ),
