@@ -1,19 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'auth_viewmodel.dart';
 
 /// ViewModel para a tela de Perfil do usuário
 class ProfileViewModel extends ChangeNotifier {
-  // Dados do perfil do usuário
-  final Map<String, dynamic> _userData = {
-    'nome': 'Maria Silva',
-    'email': 'maria.silva@email.com',
-    'foto': null, // Será implementado posteriormente
-    'nivel': 'Intermediário',
-    'dataCadastro': '10/01/2023',
-    'notificacoes': true,
-    'temaEscuro': false,
-    'idioma': 'Português',
-  };
+  final AuthViewModel _authViewModel;
   
   // Configurações gerais
   bool _notificationsEnabled = true;
@@ -25,7 +16,7 @@ class ProfileViewModel extends ChangeNotifier {
   double _spacing = 1.0;
   
   // Getters
-  Map<String, dynamic> get userData => _userData;
+  Map<String, dynamic>? get userData => _authViewModel.currentUser;
   bool get notificationsEnabled => _notificationsEnabled;
   bool get darkMode => _darkMode;
   double get fontSize => _fontSize;
@@ -43,7 +34,7 @@ class ProfileViewModel extends ChangeNotifier {
   String _language = 'Português';
   String get language => _language;
   
-  ProfileViewModel() {
+  ProfileViewModel({required AuthViewModel authViewModel}) : _authViewModel = authViewModel {
     _loadPreferences();
   }
   
@@ -84,7 +75,6 @@ class ProfileViewModel extends ChangeNotifier {
   /// Alterna estado das notificações
   void toggleNotifications(bool value) {
     _notificationsEnabled = value;
-    _userData['notificacoes'] = value;
     _savePreferences();
     notifyListeners();
   }
@@ -92,7 +82,6 @@ class ProfileViewModel extends ChangeNotifier {
   /// Alterna tema escuro/claro
   void toggleDarkMode(bool value) {
     _darkMode = value;
-    _userData['temaEscuro'] = value;
     _savePreferences();
     notifyListeners();
   }
@@ -101,28 +90,51 @@ class ProfileViewModel extends ChangeNotifier {
   void setLanguage(String language) {
     if (availableLanguages.contains(language)) {
       _language = language;
-      _userData['idioma'] = language;
       _savePreferences();
       notifyListeners();
     }
   }
   
   /// Atualiza informações de perfil
-  void updateProfile({
-    required String name,
-    required String email,
-  }) {
-    _userData['nome'] = name;
-    _userData['email'] = email;
-    notifyListeners();
+  Future<bool> updateProfile({required String name}) async {
+    try {
+      if (name.isEmpty || name.length < 2) {
+        return false;
+      }
+
+      final currentUser = Map<String, dynamic>.from(userData ?? {});
+      currentUser['name'] = name;
+      
+      // Atualiza o usuário no AuthViewModel
+      await _authViewModel.updateUserData(currentUser);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('Erro ao atualizar perfil: $e');
+      return false;
+    }
   }
   
   /// Efetua logout do usuário
-  Future<void> logout() async {
-    // Implementação futura para logout:
-    // - Limpar dados da sessão
-    // - Redirecionar para tela de login
-    await Future.delayed(const Duration(milliseconds: 500));
+  Future<void> logout(BuildContext context) async {
+    try {
+      final success = await _authViewModel.signOut();
+      
+      if (success && context.mounted) {
+        // Limpa a pilha de navegação e vai para a tela de autenticação
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/auth',
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      debugPrint('Erro ao fazer logout: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao fazer logout. Tente novamente.')),
+        );
+      }
+    }
   }
   
   /// Exporta dados do usuário

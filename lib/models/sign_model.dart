@@ -45,14 +45,12 @@ class SignModel {
     bool isFavorite = false,
   }) {
     return SignModel(
-      id: id,
-      name: name,
-      description: description,
-      signImagePath: 'assets/images/logo.png', // Usa imagem padrão
-      videoPath: null,
-      category: category,
+      id: '0',
+      name: 'Exemplo',
+      description: 'Sinal de exemplo',
+      signImagePath: 'assets/images/signwriter_logo.png', // Usa imagem padrão
+      category: 'Outros',
       createdAt: DateTime.now(),
-      isFavorite: isFavorite,
     );
   }
 

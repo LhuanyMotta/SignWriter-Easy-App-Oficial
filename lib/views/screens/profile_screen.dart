@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/profile_viewmodel.dart';
+import '../../viewmodels/auth_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
 
 /// Tela de Perfil do usuário
@@ -20,11 +21,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _viewModel = ProfileViewModel();
+    
+    // Usa o AuthViewModel existente
+    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+    _viewModel = ProfileViewModel(authViewModel: authViewModel);
     
     // Inicializa controladores com dados atuais
-    _nameController = TextEditingController(text: _viewModel.userData['nome']);
-    _emailController = TextEditingController(text: _viewModel.userData['email']);
+    final userData = _viewModel.userData ?? {};
+    _nameController = TextEditingController(text: userData['name'] as String? ?? '');
+    _emailController = TextEditingController(text: userData['email'] as String? ?? '');
   }
 
   @override
@@ -118,7 +123,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Cabeçalho com foto de perfil e informações básicas
   Widget _buildProfileHeader(ProfileViewModel viewModel) {
-    final userData = viewModel.userData;
+    final userData = viewModel.userData ?? {};
+    final userName = userData['name'] as String? ?? 'Usuário';
+    final createdAt = userData['createdAt'] != null 
+      ? DateTime.parse(userData['createdAt'] as String)
+      : DateTime.now();
     
     return Column(
       children: [
@@ -132,19 +141,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   CircleAvatar(
                     radius: 50,
                     backgroundColor: Colors.grey.shade200,
-                    backgroundImage: userData['foto'] != null
-                        ? NetworkImage(userData['foto'])
-                        : null,
-                    child: userData['foto'] == null
-                        ? Text(
-                            userData['nome'].toString().substring(0, 1).toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 40,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          )
-                        : null,
+                    child: Text(
+                      userName.substring(0, 1).toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
                   ),
                   Positioned(
                     bottom: 0,
@@ -160,7 +164,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         constraints: const BoxConstraints(),
                         icon: const Icon(Icons.camera_alt, color: Colors.white),
                         onPressed: () {
-                          // Implementação futura para alteração da foto
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Alteração de foto será implementada em breve')),
                           );
@@ -189,7 +192,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      userData['nivel'],
+                      userData['nivel']?.toString() ?? 'Iniciante',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.bold,
@@ -206,7 +209,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // Data de cadastro
         Center(
           child: Text(
-            'Membro desde ${userData['dataCadastro']}',
+            'Membro desde ${createdAt.day}/${createdAt.month}/${createdAt.year}',
             style: const TextStyle(
               fontSize: 14,
               color: Colors.grey,
@@ -245,28 +248,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (value == null || value.isEmpty) {
                 return 'Por favor, insira seu nome';
               }
+              if (value.length < 2) {
+                return 'O nome deve ter pelo menos 2 caracteres';
+              }
               return null;
             },
           ),
           const SizedBox(height: 16),
           
-          // Campo de email
+          // Campo de email (desabilitado)
           TextFormField(
             controller: _emailController,
+            enabled: false,
             decoration: const InputDecoration(
               labelText: 'Email',
               prefixIcon: Icon(Icons.email),
               border: OutlineInputBorder(),
+              disabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.grey),
+              ),
             ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Por favor, insira seu email';
-              }
-              if (!value.contains('@')) {
-                return 'Por favor, insira um email válido';
-              }
-              return null;
-            },
           ),
           const SizedBox(height: 16),
           
@@ -274,15 +275,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-                  _viewModel.updateProfile(
+                  final success = await _viewModel.updateProfile(
                     name: _nameController.text,
-                    email: _emailController.text,
                   );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Perfil atualizado com sucesso!')),
-                  );
+                  
+                  if (success && mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Perfil atualizado com sucesso!')),
+                    );
+                  } else if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Erro ao atualizar perfil. Tente novamente.')),
+                    );
+                  }
                 }
               },
               child: const Padding(
@@ -475,20 +482,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _confirmLogout(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Sair da conta'),
         content: const Text('Tem certeza que deseja sair da sua conta?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancelar'),
           ),
           TextButton(
             onPressed: () async {
-              await _viewModel.logout();
-              if (!context.mounted) return;
-              Navigator.pop(context); // Fecha o diálogo
-              Navigator.pop(context); // Volta para a tela anterior
+              // Mostra loading
+              showDialog(
+                context: dialogContext,
+                barrierDismissible: false,
+                builder: (_) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+              
+              // Faz logout
+              await _viewModel.logout(context);
             },
             child: const Text('Sair'),
           ),

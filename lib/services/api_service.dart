@@ -29,6 +29,8 @@ class ApiService {
   /// Realiza uma requisição POST para a API
   Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> data) async {
     try {
+      print('$_baseUrl/$endpoint');
+      print(json.encode(data));
       final response = await _httpClient.post(
         Uri.parse('$_baseUrl/$endpoint'),
         headers: {'Content-Type': 'application/json'},
