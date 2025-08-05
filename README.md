@@ -1,92 +1,128 @@
-# SignWriter Fácil
+# ✍️ SignWriter Fácil
 
-Aplicativo para facilitar a comunicação entre surdos e ouvintes utilizando o sistema de escrita visual SignWriting.
+**Facilitando a comunicação entre surdos e ouvintes com o sistema visual SignWriting.**
 
-## Sobre o Projeto
+---
 
-O SignWriter Fácil é um aplicativo desenvolvido para facilitar a comunicação entre surdos e ouvintes, utilizando o sistema de escrita visual SignWriting. Este sistema, criado por Valerie Sutton em 1974, permite a representação gráfica dos movimentos das mãos, expressões faciais e posturas corporais, elementos essenciais da língua de sinais.
+## 📌 Sobre o Projeto
 
-## Principais Funcionalidades
+O **SignWriter Fácil** é um aplicativo voltado para aproximar surdos e ouvintes por meio do sistema de escrita visual **SignWriting**. Criado por Valerie Sutton em 1974, o SignWriting permite representar graficamente os movimentos das mãos, expressões faciais e posturas corporais — elementos fundamentais da **língua de sinais**.
 
-- **Aprender e Praticar**: Módulo educacional para aprender e praticar o sistema SignWriting.
-- **Escrever Sinais**: Criar e editar sinais em SignWriting.
-- **Traduzir Sinais**: Conversão entre texto e SignWriting.
-- **Conversar**: Interface para comunicação utilizando SignWriting.
-- **Dicionário**: Banco de dados abrangente de sinais.
-- **Progresso**: Acompanhamento do aprendizado e uso.
+---
 
-## Recursos de Acessibilidade
+## 🚀 Funcionalidades Principais
 
-O aplicativo deve incluir recursos avançados de acessibilidade para garantir uma experiência inclusiva: (ainda em implementação)
+- 📘 **Aprender e Praticar**  
+  Módulo educacional interativo para dominar o SignWriting.
 
-- **Tamanho da Fonte Ajustável**:
-  - Controle deslizante para ajustar o tamanho do texto
-  - Escala de 80% a 200% do tamanho original
-  - Aplicação em tempo real em todo o aplicativo
+- ✍️ **Escrever Sinais**  
+  Ferramenta para criar e editar sinais manualmente.
 
-- **Contraste Configurável**:
-  - Ajuste do nível de contraste das cores
-  - Escala de 50% a 200% do contraste padrão
-  - Otimizado para diferentes condições de visão
+- 🔁 **Traduzir Sinais**  
+  Conversão entre texto e escrita em SignWriting (em desenvolvimento).
 
-- **Espaçamento Personalizado**:
-  - Controle do espaçamento entre elementos
-  - Escala de 80% a 200% do espaçamento padrão
-  - Layout adaptativo para melhor legibilidade
+- 💬 **Conversar**  
+  Interface de comunicação utilizando SignWriting em tempo real.
 
-- **Persistência de Configurações**:
-  - Salva as preferências do usuário
-  - Mantém as configurações entre sessões
-  - Aplica automaticamente ao iniciar o app
+- 📚 **Dicionário de Sinais**  
+  Banco de dados abrangente e pesquisável.
 
-## Arquitetura
+- 📊 **Progresso do Usuário**  
+  Acompanhamento personalizado do aprendizado e uso do app.
 
-O aplicativo segue a arquitetura MVVM (Model-View-ViewModel):
+---
 
-- **Model**: Representa os dados e a lógica de negócios.
-- **View**: Define a estrutura, o layout e a aparência da interface do usuário.
-- **ViewModel**: Atua como uma ponte entre o Model e a View, gerenciando a lógica de apresentação.
+## ♿ Recursos de Acessibilidade (Em Desenvolvimento)
 
-## Tecnologias Utilizadas
+O aplicativo foca em **inclusão total**, com diversas opções de personalização:
 
-- **Flutter**: Framework de desenvolvimento multiplataforma
-- **Provider**: Gerenciamento de estado para MVVM
-- **SharedPreferences**: Persistência de configurações de acessibilidade
-- **APIs externas**: Para funcionalidades como tradução e reconhecimento de sinais (implementação futura)
+- 🔠 **Tamanho da Fonte Ajustável**  
+  Controle deslizante (80% – 200%) com aplicação instantânea em toda a interface.
 
-## Como Executar
+- 🎨 **Contraste Configurável**  
+  Escala personalizável (50% – 200%) para diferentes necessidades visuais.
 
-1. Certifique-se de ter o Flutter instalado e configurado.
-2. Clone este repositório.
-3. Execute `flutter pub get` para instalar as dependências.
-4. Execute `flutter run` para iniciar o aplicativo.
+- 📐 **Espaçamento Personalizado**  
+  Ajustes de layout para melhor legibilidade (80% – 200%).
 
-## Estrutura do Projeto
+- 💾 **Persistência de Configurações**  
+  Preferências do usuário salvas localmente e aplicadas automaticamente.
+
+---
+
+## 🧠 Arquitetura
+
+Utilizamos a arquitetura **MVVM (Model-View-ViewModel)** para garantir modularidade, testabilidade e escalabilidade:
+
+- 🧩 **Model** — Dados e lógica de negócio  
+- 🖼️ **View** — Interface e layout  
+- 🔄 **ViewModel** — Conector entre View e Model com lógica de apresentação
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+| Tecnologia         | Descrição                                      |
+|--------------------|-----------------------------------------------|
+| **Flutter**        | Framework multiplataforma                     |
+| **Provider**       | Gerenciamento de estado (padrão MVVM)         |
+| **SharedPreferences** | Persistência local de configurações       |
+| **APIs Externas**  | Tradução e reconhecimento de sinais (futuro)  |
+
+---
+
+## 📂 Estrutura do Projeto
 
 ```
 lib/
-  ├── models/         # Classes de dados
-  ├── viewmodels/     # Lógica de apresentação e negócio
-  ├── views/
-  │    ├── screens/   # Telas do aplicativo
-  │    ├── widgets/   # Componentes reutilizáveis
-  ├── services/       # Serviços e APIs
-  ├── utils/          # Utilidades e helpers
-  ├── theme/          # Configurações de tema e acessibilidade
-  └── main.dart       # Ponto de entrada do aplicativo
+├── models/         # Classes de dados
+├── viewmodels/     # Lógica de apresentação e negócios
+├── views/
+│   ├── screens/    # Telas do app
+│   └── widgets/    # Componentes reutilizáveis
+├── services/       # Conexões com APIs e serviços
+├── utils/          # Helpers e funções utilitárias
+├── theme/          # Temas e acessibilidade
+└── main.dart       # Ponto de entrada
 ```
 
-## Desenvolvimento Futuro
+---
 
-- Implementação de banco de dados local
-- Integração com APIs para reconhecimento de sinais em tempo real
-- Melhorias na interface e experiência do usuário
-- Adicionar suporte para múltiplos idiomas
-- Expandir recursos de acessibilidade:
-  - Suporte a leitores de tela
-  - Mais opções de contraste
-  - Temas personalizados
+## 🧪 Como Executar
 
-## Contribuições
+1. Certifique-se de ter o **Flutter** instalado.
+2. Clone este repositório:  
+   `git clone https://github.com/LhuanyMotta/SignWriter-Easy-App`
+3. Instale as dependências:  
+   `flutter pub get`
+4. Execute o aplicativo:  
+   `flutter run`
 
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests.
+---
+
+## 🔮 Desenvolvimento Futuro
+
+- 📦 Banco de dados local (offline-first)
+- 📡 Reconhecimento de sinais em tempo real via câmera
+- 🌐 Suporte multilíngue
+- 🌈 Temas personalizados com mais contrastes
+- 🔊 Compatibilidade com leitores de tela
+
+---
+
+## 🤝 Contribuições
+
+Contribuições são **muito bem-vindas**!
+
+---
+
+## 👨‍💻 Desenvolvedores
+
+- [Bruno Santos](https://github.com/Br2n0)
+- [Lhuany Motta](https://github.com/LhuanyMotta)
+
+---
+
+## 📝 Licença
+
+Este projeto está licenciado sob a **MIT License**.
