@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../widgets/app_logo.dart';
 
-/// Tela de autenticação (login e cadastro)
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
@@ -17,7 +16,6 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   final _loginFormKey = GlobalKey<FormState>();
   final _signupFormKey = GlobalKey<FormState>();
   
-  // Controladores para os campos de texto
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _nameController = TextEditingController();
@@ -47,89 +45,82 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       child: Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-            child: Column(
-              children: [
-                // Logo centralizada (sem texto duplicado)
-                const SizedBox(height: 20),
-                const AppLogo(
-                  size: 80,
-                  colored: true,
-                  showText: false, // Remove o texto duplicado
-                ),
-                const SizedBox(height: 16),
-                
-                // Título
-                Text(
-                  'SignWriter Fácil',
-                  style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF2D78BB),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Conecte-se para começar',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(height: 32),
-                
-                // Abas de login e cadastro
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TabBar(
-                    controller: _tabController,
-                    indicator: BoxDecoration(
-                      color: const Color(0xFF2D78BB),
-                      borderRadius: BorderRadius.circular(12),
+          child: Column(
+            children: [
+              // Cabeçalho fixo (não rolável)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    const AppLogo(
+                      size: 80,
+                      colored: true,
+                      showText: false,
                     ),
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    labelColor: Colors.white,
-                    unselectedLabelColor: Colors.grey[600],
-                    labelStyle: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+                    const SizedBox(height: 16),
+                    Text(
+                      'SignWriter Fácil',
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF2D78BB),
+                      ),
                     ),
-                    tabs: const [
-                      Tab(
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: Center(
-                            child: Text('Entrar'),
-                          ),
-                        ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Conecte-se para começar',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Colors.grey[600],
                       ),
-                      Tab(
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: Center(
-                            child: Text('Cadastrar'),
-                          ),
-                        ),
+                    ),
+                    const SizedBox(height: 32),
+                    
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ],
-                  ),
+                      child: TabBar(
+                        controller: _tabController,
+                        indicator: BoxDecoration(
+                          color: const Color(0xFF2D78BB),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        labelColor: Colors.white,
+                        unselectedLabelColor: Colors.grey[600],
+                        labelStyle: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                        tabs: const [
+                          Tab(text: 'Entrar'),
+                          Tab(text: 'Cadastrar'),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                 ),
-                const SizedBox(height: 24),
-                
-                // Conteúdo das abas
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildLoginTab(),
-                      _buildSignupTab(),
-                    ],
-                  ),
+              ),
+              
+              // Área rolável dos formulários
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: _buildLoginTab(),
+                    ),
+                    SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: _buildSignupTab(),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -175,12 +166,10 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           ),
           const SizedBox(height: 8),
           
-          // Esqueci minha senha
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () {
-                // Implementar recuperação de senha
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Recuperação de senha será implementada em breve')),
                 );
@@ -196,7 +185,6 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           ),
           const SizedBox(height: 16),
           
-          // Botão de login
           Consumer<AuthViewModel>(
             builder: (context, viewModel, child) {
               return SizedBox(
@@ -538,4 +526,4 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       }
     }
   }
-} 
+}
