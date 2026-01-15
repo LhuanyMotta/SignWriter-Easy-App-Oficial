@@ -184,7 +184,7 @@ class AuthViewModel extends ChangeNotifier {
 
     try {
       await _supabase.auth.signInWithOAuth(
-        Provider.google,
+        OAuthProvider.google,
         redirectTo: kIsWeb ? Uri.base.toString() : null,
       );
       _setLoading(false);
@@ -202,7 +202,7 @@ class AuthViewModel extends ChangeNotifier {
 
     try {
       await _supabase.auth.signInWithOAuth(
-        Provider.apple,
+        OAuthProvider.apple,
         redirectTo: kIsWeb ? Uri.base.toString() : null,
       );
       _setLoading(false);
