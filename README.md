@@ -95,8 +95,15 @@ lib/
    `git clone https://github.com/LhuanyMotta/SignWriter-Easy-App`
 3. Instale as dependências:  
    `flutter pub get`
-4. Execute o aplicativo:  
-   `flutter run`
+4. Configure o Supabase (obrigatório para autenticação):
+   - Crie um projeto no Supabase e execute o SQL de criação da tabela `profiles` descrito em `BACKEND_SUPABASE.md`.
+   - Copie a URL do projeto e a chave anônima.
+5. Execute o aplicativo com as variáveis do Supabase:
+   ```bash
+   flutter run \
+     --dart-define=SUPABASE_URL=YOUR_SUPABASE_URL \
+     --dart-define=SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+   ```
 
 ---
 
