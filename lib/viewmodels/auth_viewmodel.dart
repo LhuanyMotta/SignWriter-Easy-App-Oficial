@@ -1,9 +1,16 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../services/storage_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../services/supabase_profile_service.dart';
 
 /// ViewModel para gerenciar autenticação
 class AuthViewModel extends ChangeNotifier {
-  final StorageService _storage = StorageService();
+  final SupabaseClient _supabase;
+  final SupabaseProfileService _profileService;
+  StreamSubscription<AuthState>? _authStateSubscription;
   bool _isLoading = false;
   String? _errorMessage;
   bool _isAuthenticated = false;
@@ -15,21 +22,66 @@ class AuthViewModel extends ChangeNotifier {
   bool get isAuthenticated => _isAuthenticated;
   Map<String, dynamic>? get currentUser => _currentUser;
 
-  AuthViewModel() {
+  AuthViewModel({SupabaseClient? supabaseClient})
+      : _supabase = supabaseClient ?? Supabase.instance.client,
+        _profileService =
+            SupabaseProfileService(supabaseClient ?? Supabase.instance.client) {
     _checkAuthStatus();
+    _authStateSubscription =
+        _supabase.auth.onAuthStateChange.listen((AuthState authState) {
+      final session = authState.session;
+      if (session?.user != null) {
+        _loadCurrentUser(session!.user);
+      } else {
+        _clearSession();
+      }
+    });
   }
 
   /// Verifica o status de autenticação ao inicializar
   Future<void> _checkAuthStatus() async {
     try {
-      _isAuthenticated = await _storage.isAuthenticated();
-      if (_isAuthenticated) {
-        _currentUser = await _storage.getUserData();
-        notifyListeners();
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        _clearSession();
+        return;
       }
+
+      await _loadCurrentUser(user);
     } catch (e) {
       debugPrint('Erro ao verificar status de autenticação: $e');
     }
+  }
+
+  Future<void> _loadCurrentUser(User user) async {
+    final profile = await _profileService.fetchProfile(user.id);
+    _currentUser = _mergeUserProfile(user, profile);
+    _isAuthenticated = true;
+    notifyListeners();
+  }
+
+  Map<String, dynamic> _mergeUserProfile(
+    User user,
+    Map<String, dynamic>? profile,
+  ) {
+    final metadata = user.userMetadata ?? {};
+    final name = (profile?['name'] ?? metadata['name'] ?? user.email ?? 'Usuário')
+        .toString();
+    final createdAt = profile?['createdAt'] ?? user.createdAt;
+
+    return {
+      'id': user.id,
+      'name': name,
+      'email': user.email,
+      'nivel': profile?['nivel'] ?? 'Iniciante',
+      'createdAt': createdAt,
+    };
+  }
+
+  void _clearSession() {
+    _isAuthenticated = false;
+    _currentUser = null;
+    notifyListeners();
   }
 
   /// Login com email e senha
@@ -41,39 +93,18 @@ class AuthViewModel extends ChangeNotifier {
     _clearError();
 
     try {
-      // Busca usuários temporários
-      final users = await _storage.getTemporaryUsers();
-      
-      // Verifica se existe usuário com esse email
-      final userIndex = users.indexWhere((u) => u['email'] == email);
-      
-      if (userIndex == -1) {
-        _setError('Email não cadastrado. Faça seu cadastro primeiro.');
-        return false;
-      }
-      
-      final user = users[userIndex];
-      
-      // Verifica senha
-      if (user['password'] != password) {
-        _setError('Senha incorreta.');
+      final response = await _supabase.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      if (response.user == null) {
+        _setError('Não foi possível autenticar. Tente novamente.');
         return false;
       }
 
-      // Remove senha antes de salvar dados do usuário
-      user.remove('password');
-      
-      // Gera token simulado
-      final token = DateTime.now().millisecondsSinceEpoch.toString();
-      
-      // Salva dados
-      await _storage.saveAuthToken(token);
-      await _storage.saveUserData(user);
-      
-      _currentUser = user;
-      _isAuthenticated = true;
+      await _loadCurrentUser(response.user!);
       _setLoading(false);
-      
       return true;
     } catch (e) {
       _setError('Erro ao fazer login: $e');
@@ -112,43 +143,33 @@ class AuthViewModel extends ChangeNotifier {
         return false;
       }
 
-      // Busca usuários existentes
-      final users = await _storage.getTemporaryUsers();
-      
-      // Verifica se email já existe
-      if (users.any((u) => u['email'] == email)) {
-        _setError('Email já cadastrado. Faça login.');
+      final response = await _supabase.auth.signUp(
+        email: email,
+        password: password,
+        data: {'name': name},
+      );
+
+      final user = response.user;
+      if (user == null) {
+        _setError('Não foi possível finalizar o cadastro.');
         return false;
       }
 
-      // Cria novo usuário
-      final newUser = {
-        'id': DateTime.now().millisecondsSinceEpoch.toString(),
-        'name': name,
-        'email': email,
-        'password': password, // Em produção, deve ser criptografada
-        'nivel': 'Iniciante',
-        'createdAt': DateTime.now().toIso8601String(),
-      };
+      await _profileService.upsertProfile(
+        id: user.id,
+        name: name,
+        email: email,
+      );
 
-      // Adiciona à lista e salva
-      users.add(newUser);
-      await _storage.saveTemporaryUsers(users);
+      if (response.session == null) {
+        _setError(
+          'Cadastro realizado. Confirme seu email para continuar.',
+        );
+        return false;
+      }
 
-      // Remove senha antes de salvar dados do usuário
-      final userData = Map<String, dynamic>.from(newUser)..remove('password');
-      
-      // Gera token simulado
-      final token = DateTime.now().millisecondsSinceEpoch.toString();
-      
-      // Salva dados
-      await _storage.saveAuthToken(token);
-      await _storage.saveUserData(userData);
-      
-      _currentUser = userData;
-      _isAuthenticated = true;
+      await _loadCurrentUser(user);
       _setLoading(false);
-      
       return true;
     } catch (e) {
       _setError('Erro ao fazer cadastro: $e');
@@ -162,27 +183,11 @@ class AuthViewModel extends ChangeNotifier {
     _clearError();
 
     try {
-      // Simula dados do Google
-      final userData = {
-        'id': 'g_${DateTime.now().millisecondsSinceEpoch}',
-        'name': 'Usuário Google',
-        'email': 'usuario@gmail.com',
-        'provider': 'google',
-        'nivel': 'Iniciante',
-        'createdAt': DateTime.now().toIso8601String(),
-      };
-
-      // Gera token simulado
-      final token = DateTime.now().millisecondsSinceEpoch.toString();
-      
-      // Salva dados
-      await _storage.saveAuthToken(token);
-      await _storage.saveUserData(userData);
-      
-      _currentUser = userData;
-      _isAuthenticated = true;
+      await _supabase.auth.signInWithOAuth(
+        Provider.google,
+        redirectTo: kIsWeb ? Uri.base.toString() : null,
+      );
       _setLoading(false);
-      
       return true;
     } catch (e) {
       _setError('Erro ao fazer login com Google: $e');
@@ -196,27 +201,11 @@ class AuthViewModel extends ChangeNotifier {
     _clearError();
 
     try {
-      // Simula dados da Apple
-      final userData = {
-        'id': 'a_${DateTime.now().millisecondsSinceEpoch}',
-        'name': 'Usuário Apple',
-        'email': 'usuario@icloud.com',
-        'provider': 'apple',
-        'nivel': 'Iniciante',
-        'createdAt': DateTime.now().toIso8601String(),
-      };
-
-      // Gera token simulado
-      final token = DateTime.now().millisecondsSinceEpoch.toString();
-      
-      // Salva dados
-      await _storage.saveAuthToken(token);
-      await _storage.saveUserData(userData);
-      
-      _currentUser = userData;
-      _isAuthenticated = true;
+      await _supabase.auth.signInWithOAuth(
+        Provider.apple,
+        redirectTo: kIsWeb ? Uri.base.toString() : null,
+      );
       _setLoading(false);
-      
       return true;
     } catch (e) {
       _setError('Erro ao fazer login com Apple: $e');
@@ -229,14 +218,9 @@ class AuthViewModel extends ChangeNotifier {
     _setLoading(true);
     
     try {
-      await _storage.clearAll();
-      
-      _isAuthenticated = false;
-      _currentUser = null;
+      await _supabase.auth.signOut();
       _errorMessage = null;
       _setLoading(false);
-      notifyListeners();
-      
       return true;
     } catch (e) {
       _setError('Erro ao fazer logout: $e');
@@ -271,8 +255,26 @@ class AuthViewModel extends ChangeNotifier {
   /// Atualiza dados do usuário
   Future<bool> updateUserData(Map<String, dynamic> userData) async {
     try {
-      await _storage.saveUserData(userData);
-      _currentUser = userData;
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        _setError('Usuário não autenticado.');
+        return false;
+      }
+
+      final name = userData['name']?.toString() ?? '';
+      if (name.isEmpty) {
+        _setError('Nome inválido.');
+        return false;
+      }
+
+      await _profileService.updateProfileName(
+        id: user.id,
+        name: name,
+      );
+      _currentUser = {
+        ...?_currentUser,
+        ...userData,
+      };
       notifyListeners();
       return true;
     } catch (e) {
@@ -280,4 +282,25 @@ class AuthViewModel extends ChangeNotifier {
       return false;
     }
   }
-} 
+
+  /// Recuperação de senha
+  Future<bool> resetPassword(String email) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      await _supabase.auth.resetPasswordForEmail(email);
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _setError('Erro ao enviar email de recuperação: $e');
+      return false;
+    }
+  }
+
+  @override
+  void dispose() {
+    _authStateSubscription?.cancel();
+    super.dispose();
+  }
+}

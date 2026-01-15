@@ -1,10 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'views/screens/auth_screen.dart';
 import 'views/screens/home_screen.dart';
 import 'viewmodels/auth_viewmodel.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+  const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+
+  if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
+    throw StateError(
+      'SUPABASE_URL e SUPABASE_ANON_KEY precisam estar definidos via --dart-define.',
+    );
+  }
+
+  await Supabase.initialize(
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
+  );
+
   runApp(const MyApp());
 }
 

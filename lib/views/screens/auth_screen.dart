@@ -11,7 +11,6 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateMixin {
-  late AuthViewModel _viewModel;
   late TabController _tabController;
   final _loginFormKey = GlobalKey<FormState>();
   final _signupFormKey = GlobalKey<FormState>();
@@ -24,7 +23,6 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _viewModel = AuthViewModel();
     _tabController = TabController(length: 2, vsync: this);
   }
 
@@ -40,88 +38,85 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _viewModel,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: Column(
-            children: [
-              // Cabeçalho fixo (não rolável)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    const AppLogo(
-                      size: 80,
-                      colored: true,
-                      showText: false,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Cabeçalho fixo (não rolável)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  const AppLogo(
+                    size: 80,
+                    colored: true,
+                    showText: false,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'SignWriter Fácil',
+                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF2D78BB),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'SignWriter Fácil',
-                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Conecte-se para começar',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: TabBar(
+                      controller: _tabController,
+                      indicator: BoxDecoration(
                         color: const Color(0xFF2D78BB),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Conecte-se para começar',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: TabBar(
-                        controller: _tabController,
-                        indicator: BoxDecoration(
-                          color: const Color(0xFF2D78BB),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        labelColor: Colors.white,
-                        unselectedLabelColor: Colors.grey[600],
-                        labelStyle: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                        tabs: const [
-                          Tab(text: 'Entrar'),
-                          Tab(text: 'Cadastrar'),
-                        ],
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      labelColor: Colors.white,
+                      unselectedLabelColor: Colors.grey[600],
+                      labelStyle: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
                       ),
+                      tabs: const [
+                        Tab(text: 'Entrar'),
+                        Tab(text: 'Cadastrar'),
+                      ],
                     ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
               ),
-              
-              // Área rolável dos formulários
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: _buildLoginTab(),
-                    ),
-                    SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: _buildSignupTab(),
-                    ),
-                  ],
-                ),
+            ),
+            
+            // Área rolável dos formulários
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: _buildLoginTab(),
+                  ),
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: _buildSignupTab(),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -132,6 +127,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       key: _loginFormKey,
       child: Column(
         children: [
+          _buildErrorMessage(),
           _buildTextField(
             controller: _emailController,
             label: 'Email',
@@ -169,11 +165,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Recuperação de senha será implementada em breve')),
-                );
-              },
+              onPressed: _handleResetPassword,
               child: Text(
                 'Esqueci minha senha',
                 style: TextStyle(
@@ -235,6 +227,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       key: _signupFormKey,
       child: Column(
         children: [
+          _buildErrorMessage(),
           _buildTextField(
             controller: _nameController,
             label: 'Nome completo',
@@ -426,7 +419,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           width: double.infinity,
           height: 50,
           child: OutlinedButton(
-            onPressed: () => _viewModel.signInWithGoogle(),
+            onPressed: () => context.read<AuthViewModel>().signInWithGoogle(),
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: Colors.grey[300]!),
               shape: RoundedRectangleBorder(
@@ -472,7 +465,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           width: double.infinity,
           height: 50,
           child: OutlinedButton(
-            onPressed: () => _viewModel.signInWithApple(),
+            onPressed: () => context.read<AuthViewModel>().signInWithApple(),
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: Colors.grey[300]!),
               shape: RoundedRectangleBorder(
@@ -502,7 +495,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   void _handleLogin() async {
     if (_loginFormKey.currentState!.validate()) {
-      final success = await _viewModel.signInWithEmail(
+      final success = await context.read<AuthViewModel>().signInWithEmail(
         email: _emailController.text,
         password: _passwordController.text,
       );
@@ -515,7 +508,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   void _handleSignup() async {
     if (_signupFormKey.currentState!.validate()) {
-      final success = await _viewModel.signUpWithEmail(
+      final success = await context.read<AuthViewModel>().signUpWithEmail(
         name: _nameController.text,
         email: _emailController.text,
         password: _passwordController.text,
@@ -525,5 +518,58 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         Navigator.of(context).pushReplacementNamed('/home');
       }
     }
+  }
+
+  void _handleResetPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Informe seu email para recuperar a senha.')),
+      );
+      return;
+    }
+
+    final success = await context.read<AuthViewModel>().resetPassword(email);
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enviamos um email com instruções de recuperação.'),
+        ),
+      );
+    }
+  }
+
+  Widget _buildErrorMessage() {
+    return Consumer<AuthViewModel>(
+      builder: (context, viewModel, child) {
+        final errorMessage = viewModel.errorMessage;
+        if (errorMessage == null || errorMessage.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.red.shade50,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.red.shade200),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.red.shade400),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  errorMessage,
+                  style: TextStyle(color: Colors.red.shade700),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
