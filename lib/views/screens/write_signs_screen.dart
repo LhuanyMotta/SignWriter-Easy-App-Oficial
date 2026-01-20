@@ -4,6 +4,8 @@ import '../../viewmodels/write_signs_viewmodel.dart';
 import '../../models/sign_model.dart';
 import '../widgets/sign_card.dart';
 import '../widgets/category_selector.dart';
+import 'create_text_screen.dart';
+import 'view_texts_screen.dart';
 
 class WriteSignsScreen extends StatefulWidget {
   const WriteSignsScreen({super.key});
@@ -45,6 +47,26 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
         appBar: AppBar(
           title: const Text('Escrever Sinais'),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.list_alt),
+              tooltip: 'Meus textos',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ViewTextsScreen()),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.note_add),
+              tooltip: 'Criar texto',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CreateTextScreen()),
+                );
+              },
+            ),
             IconButton(
               icon: const Icon(Icons.info_outline),
               onPressed: () {

@@ -66,6 +66,15 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                         child: CircularProgressIndicator(),
                       );
                     }
+
+                    if (viewModel.errorMessage != null) {
+                      return Center(
+                        child: Text(
+                          viewModel.errorMessage!,
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                      );
+                    }
                     
                     if (viewModel.signs.isEmpty) {
                       return Center(

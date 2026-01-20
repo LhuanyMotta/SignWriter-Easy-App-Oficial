@@ -19,7 +19,7 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
   void initState() {
     super.initState();
     _viewModel = ProgressViewModel();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -51,7 +51,6 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
             tabs: const [
               Tab(text: 'Resumo'),
               Tab(text: 'Categorias'),
-              Tab(text: 'Conquistas'),
             ],
           ),
         ),
@@ -60,7 +59,6 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
           children: [
             _buildSummaryTab(),
             _buildCategoriesTab(),
-            _buildAchievementsTab(),
           ],
         ),
       ),
@@ -71,13 +69,12 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
     return Consumer<ProgressViewModel>(
       builder: (context, viewModel, child) {
         final usageData = viewModel.usageData;
-        
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Progresso geral
+              // Progresso geral (dados reais serão integrados depois)
               _buildProgressCard(
                 title: 'Progresso Geral',
                 progress: viewModel.overallProgress,
@@ -86,7 +83,7 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
               
               const SizedBox(height: 24),
               
-              // Estatísticas de estudo
+              // Estatísticas (valores zerados até integração real)
               Text(
                 'Estatísticas',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -95,7 +92,6 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
               ),
               const SizedBox(height: 16),
               
-              // Grid de estatísticas
               GridView.count(
                 crossAxisCount: 2,
                 shrinkWrap: true,
@@ -130,7 +126,7 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 24),
               
               // Gráfico de tempo de estudo
@@ -142,7 +138,7 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
               ),
               const SizedBox(height: 8),
               Text(
-                'Melhor dia: ${viewModel.bestStudyDay} (${viewModel.studyTimeStats[viewModel.bestStudyDay]?.toInt()} min)',
+                'Melhor dia: ${viewModel.bestStudyDay}',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 16),
@@ -160,6 +156,9 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
   Widget _buildCategoriesTab() {
     return Consumer<ProgressViewModel>(
       builder: (context, viewModel, child) {
+        if (viewModel.categoryProgress.isEmpty) {
+          return _buildEmptyState('Sem categorias com progresso ainda.');
+        }
         return ListView.builder(
           padding: const EdgeInsets.all(16),
           itemCount: viewModel.categoryProgress.length,
@@ -167,105 +166,6 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
             final category = viewModel.categoryProgress[index];
             return _buildCategoryProgressItem(category);
           },
-        );
-      },
-    );
-  }
-
-  Widget _buildAchievementsTab() {
-    return Consumer<ProgressViewModel>(
-      builder: (context, viewModel, child) {
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Resumo de conquistas
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${viewModel.unlockedAchievementsCount}/${viewModel.achievements.length}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Conquistas Desbloqueadas',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          LinearProgressIndicator(
-                            value: viewModel.achievementsPercentage,
-                            backgroundColor: Colors.white.withOpacity(0.3),
-                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                            borderRadius: BorderRadius.circular(10),
-                            minHeight: 10,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${(viewModel.achievementsPercentage * 100).toInt()}% completo',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // Lista de conquistas
-              const Text(
-                'Todas as Conquistas',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-              const SizedBox(height: 16),
-              
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: viewModel.achievements.length,
-                itemBuilder: (context, index) {
-                  final achievement = viewModel.achievements[index];
-                  return _buildAchievementItem(achievement);
-                },
-              ),
-            ],
-          ),
         );
       },
     );
@@ -325,108 +225,16 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
               
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildProgressDetail(
-                    label: 'Aulas completadas',
-                    value: '24/36',
-                  ),
-                  const SizedBox(height: 8),
-                  _buildProgressDetail(
-                    label: 'Tempo total de estudo',
-                    value: '12h 30min',
-                  ),
-                  const SizedBox(height: 8),
-                  _buildProgressDetail(
-                    label: 'Exercícios concluídos',
-                    value: '48',
-                  ),
+                children: const [
+                  // Estrutura mantida com valores zerados até integração real.
+                  _ProgressDetail(label: 'Aulas completadas', value: '0/0'),
+                  SizedBox(height: 8),
+                  _ProgressDetail(label: 'Tempo total de estudo', value: '0h 0min'),
+                  SizedBox(height: 8),
+                  _ProgressDetail(label: 'Exercícios concluídos', value: '0'),
                 ],
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressDetail({required String label, required String value}) {
-    return Row(
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: color,
-            size: 32,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -642,21 +450,17 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
       ),
     );
   }
-
-  Widget _buildAchievementItem(Map<String, dynamic> achievement) {
-    final bool unlocked = achievement['unlocked'] as bool;
-    final IconData icon = achievement['icon'] as IconData;
-    
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: unlocked ? Theme.of(context).colorScheme.primary : Colors.grey.shade300,
-          width: 2,
-        ),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.1),
@@ -665,62 +469,88 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: unlocked
-                  ? Theme.of(context).colorScheme.primary
-                  : Colors.grey.shade300,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  achievement['title'] as String,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: unlocked ? Colors.black87 : Colors.grey,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  achievement['description'] as String,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: unlocked ? Colors.black54 : Colors.grey,
-                  ),
-                ),
-                if (unlocked && achievement['date'] != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    'Desbloqueado em: ${achievement['date']}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
           Icon(
-            unlocked ? Icons.check_circle : Icons.lock,
-            color: unlocked ? Colors.green : Colors.grey,
+            icon,
+            color: color,
+            size: 32,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: Theme.of(context).textTheme.bodyMedium,
+            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
+
+  Widget _buildEmptyState(String message) {
+    return Center(
+      child: Text(
+        message,
+        style: TextStyle(color: Colors.grey.shade600),
+      ),
+    );
+  }
 } 
+
+class _ProgressDetail extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _ProgressDetail({
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}

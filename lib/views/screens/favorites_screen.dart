@@ -78,6 +78,19 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 builder: (context, viewModel, _) {
                   final favorites = viewModel.favorites;
                   
+                  if (viewModel.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (viewModel.errorMessage != null) {
+                    return Center(
+                      child: Text(
+                        viewModel.errorMessage!,
+                        style: TextStyle(color: Colors.grey.shade600),
+                      ),
+                    );
+                  }
+
                   if (favorites.isEmpty) {
                     return _buildEmptyState();
                   }
@@ -321,19 +334,20 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           ),
           TextButton(
             onPressed: () {
-              viewModel.removeFavorite(sign.id);
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${sign.name} removido dos favoritos'),
-                  action: SnackBarAction(
-                    label: 'Desfazer',
-                    onPressed: () {
-                      // Implementação futura para desfazer ação
-                    },
+              viewModel.removeFavorite(sign.id).then((_) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${sign.name} removido dos favoritos'),
+                    action: SnackBarAction(
+                      label: 'Desfazer',
+                      onPressed: () {
+                        // Implementação futura para desfazer ação
+                      },
+                    ),
                   ),
-                ),
-              );
+                );
+              });
             },
             child: const Text('Remover'),
           ),
@@ -357,11 +371,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           TextButton(
             onPressed: () {
               final viewModel = Provider.of<FavoritesViewModel>(context, listen: false);
-              viewModel.clearAllFavorites();
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Todos os favoritos foram removidos')),
-              );
+              viewModel.clearAllFavorites().then((_) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Todos os favoritos foram removidos')),
+                );
+              });
             },
             child: const Text('Limpar'),
           ),

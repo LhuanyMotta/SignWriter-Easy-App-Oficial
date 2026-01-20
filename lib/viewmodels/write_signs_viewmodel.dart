@@ -60,18 +60,18 @@ class WriteSignsViewModel extends ChangeNotifier {
     _recentSigns = [
       SignModel(
         id: '1',
-        name: 'Olá',
-        description: 'Saudação básica',
-        signImagePath: 'assets/signs/ola.png',
-        category: 'Cumprimentos',
+        name: 'Conversar',
+        description: 'Interação por sinais',
+        signImagePath: 'assets/signs/conversar.png',
+        category: 'Comunicacao',
         createdAt: DateTime.now().subtract(const Duration(days: 1)),
       ),
       SignModel(
         id: '2',
-        name: 'Obrigado',
-        description: 'Expressão de gratidão',
-        signImagePath: 'assets/signs/obrigado.png',
-        category: 'Cumprimentos',
+        name: 'Estudar',
+        description: 'Atividade de aprendizagem',
+        signImagePath: 'assets/signs/estudar.png',
+        category: 'Educacao',
         createdAt: DateTime.now().subtract(const Duration(days: 2)),
       ),
     ];

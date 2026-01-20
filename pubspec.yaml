@@ -39,6 +39,7 @@ dependencies:
   fl_chart: ^0.66.0 # Para criação de gráficos
   shared_preferences: ^2.2.2
   supabase_flutter: ^2.9.1
+  sqflite: ^2.4.2
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +68,7 @@ flutter:
   assets:
     - assets/images/
     - assets/signs/
+    - assets/signs_catalog.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -3,8 +3,11 @@ import 'package:provider/provider.dart';
 import 'views/screens/auth_screen.dart';
 import 'views/screens/home_screen.dart';
 import 'viewmodels/auth_viewmodel.dart';
+import 'services/database_seed_service.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await DatabaseSeedService().seedDatabaseIfEmpty();
   runApp(const MyApp());
 }
 

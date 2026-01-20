@@ -28,7 +28,6 @@ class ProfileViewModel extends ChangeNotifier {
     'Português',
     'Inglês',
     'Espanhol',
-    'Libras',
   ];
   
   String _language = 'Português';
