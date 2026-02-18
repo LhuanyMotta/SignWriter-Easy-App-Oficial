@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../widgets/feature_card.dart';
+import 'profile_screen.dart';
 
 /// Tela inicial do aplicativo
 /// Exibe os principais recursos disponíveis em formato de grid
@@ -28,16 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
       'color': const Color(0xFF4EB1F0),
     },
     {
-      'title': 'Traduzir Sinais',
-      'icon': Icons.translate,
-      'color': const Color(0xFF2D78BB),
-    },
-    {
-      'title': 'Conversar',
-      'icon': Icons.chat,
-      'color': const Color(0xFF4EB1F0),
-    },
-    {
       'title': 'Dicionário',
       'icon': Icons.book,
       'color': const Color(0xFF2D78BB),
@@ -59,8 +50,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _navigationFunctions.addAll([
       _viewModel.navigateToLearnAndPractice,
       _viewModel.navigateToWriteSigns,
-      _viewModel.navigateToTranslateSigns,
-      _viewModel.navigateToChat,
       _viewModel.navigateToDictionary,
       _viewModel.navigateToProgress,
     ]);
@@ -72,13 +61,21 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text(
           'SignWriter Fácil',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
+        backgroundColor: const Color(0xFF2D78BB),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // Será implementado posteriormente
+              // Navega para a tela de perfil, que contém as configurações
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
             },
           ),
         ],
@@ -89,15 +86,23 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Título de boas-vindas
-              Text(
+              // Título de boas-vindas - Estilo igual ao da imagem (AZUL)
+              const Text(
                 'Bem-vindo!',
-                style: Theme.of(context).textTheme.displayMedium,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D78BB), // AZUL como na imagem
+                ),
               ),
               const SizedBox(height: 8),
-              Text(
+              // Subtítulo - Estilo igual ao da imagem
+              const Text(
                 'O que você deseja fazer hoje?',
-                style: Theme.of(context).textTheme.bodyLarge,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF666666), // Cor cinza médio como na imagem
+                ),
               ),
               const SizedBox(height: 24),
               
@@ -150,4 +155,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-} 
+}

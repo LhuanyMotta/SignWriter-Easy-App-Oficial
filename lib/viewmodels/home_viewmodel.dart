@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import '../views/screens/write_signs_screen.dart';
-import '../views/screens/translate_signs_screen.dart';
 import '../views/screens/learn_practice_screen.dart';
 import '../views/screens/dictionary_screen.dart';
-import '../views/screens/chat_screen.dart';
 import '../views/screens/progress_screen.dart';
 import '../views/screens/profile_screen.dart';
 import '../views/screens/favorites_screen.dart';
@@ -28,22 +26,6 @@ class HomeViewModel {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const WriteSignsScreen()),
-    );
-  }
-
-  /// Navega para a tela de Traduzir Sinais
-  void navigateToTranslateSigns(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const TranslateSignsScreen()),
-    );
-  }
-
-  /// Navega para a tela de Conversar
-  void navigateToChat(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ChatScreen()),
     );
   }
 
@@ -105,4 +87,4 @@ class HomeViewModel {
         break;
     }
   }
-} 
+}
