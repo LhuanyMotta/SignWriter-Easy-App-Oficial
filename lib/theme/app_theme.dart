@@ -62,30 +62,53 @@ class AppTheme {
     required double contrastLevel,
     required double spacingScale,
   }) {
+    final contrastT = _contrastNormalized(contrastLevel);
     final baseScheme = ColorScheme.fromSeed(
       seedColor: _brandPrimary,
       primary: _brandPrimary,
       secondary: _brandSecondary,
       brightness: Brightness.light,
     );
-    final surface = Colors.white;
-    final surfaceMuted = const Color(0xFFF8FAFC);
-    final border = contrastLevel > 1.3 ? const Color(0xFF6B7280) : const Color(0xFFD1D5DB);
-    final onSurfaceMuted = contrastLevel > 1.3 ? Colors.black : const Color(0xFF4B5563);
+    const surface = Colors.white;
+    final surfaceMuted = Color.lerp(
+      const Color(0xFFF8FAFC),
+      const Color(0xFFF2F4F7),
+      contrastT,
+    )!;
+    // Contraste progressivo: quanto maior o nível, mais escura a borda.
+    final border = Color.lerp(
+      const Color(0xFFD1D5DB),
+      const Color(0xFF374151),
+      contrastT,
+    )!;
+    final onSurface = Color.lerp(
+      const Color(0xFF1F2937),
+      const Color(0xFF000000),
+      contrastT,
+    )!;
+    final onSurfaceMuted = Color.lerp(
+      const Color(0xFF4B5563),
+      const Color(0xFF111827),
+      contrastT,
+    )!;
     final base = ThemeData(
       brightness: Brightness.light,
       colorScheme: baseScheme.copyWith(
         surface: surface,
-        onSurface: Colors.black87,
+        onSurface: onSurface,
         outline: border,
-        outlineVariant: border.withOpacity(0.65),
+        outlineVariant: Color.lerp(
+          const Color(0xFFE5E7EB),
+          const Color(0xFF6B7280),
+          contrastT,
+        ),
       ),
       useMaterial3: true,
     );
 
     final textTheme = _scaledTextTheme(base.textTheme, fontScale).apply(
-      bodyColor: Colors.black87,
-      displayColor: contrastLevel > 1.3 ? Colors.black : Colors.black87,
+      bodyColor: onSurface,
+      displayColor: onSurface,
     );
 
     return base.copyWith(
@@ -109,10 +132,20 @@ class AppTheme {
         foregroundColor: Colors.white,
         centerTitle: false,
       ),
+      listTileTheme: base.listTileTheme.copyWith(
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 16 * spacingScale.clamp(0.8, 2.0),
+          vertical: 2 * spacingScale.clamp(0.8, 2.0),
+        ),
+      ),
       inputDecorationTheme: base.inputDecorationTheme.copyWith(
         filled: true,
         fillColor: surfaceMuted,
         border: const OutlineInputBorder(),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 16 * spacingScale.clamp(0.8, 2.0),
+          vertical: 14 * spacingScale.clamp(0.8, 2.0),
+        ),
       ),
       bottomNavigationBarTheme: base.bottomNavigationBarTheme.copyWith(
         selectedItemColor: _brandPrimary,
@@ -129,7 +162,22 @@ class AppTheme {
     required double contrastLevel,
     required double spacingScale,
   }) {
-    final border = contrastLevel > 1.3 ? const Color(0xFF9CA3AF) : const Color(0xFF374151);
+    final contrastT = _contrastNormalized(contrastLevel);
+    final border = Color.lerp(
+      const Color(0xFF374151),
+      const Color(0xFFD1D5DB),
+      contrastT,
+    )!;
+    final surface = Color.lerp(
+      const Color(0xFF111827),
+      const Color(0xFF000000),
+      contrastT,
+    )!;
+    final surfaceMuted = Color.lerp(
+      const Color(0xFF1F2937),
+      const Color(0xFF0B1220),
+      contrastT,
+    )!;
     final base = ThemeData(
       brightness: Brightness.dark,
       colorScheme: ColorScheme(
@@ -140,17 +188,27 @@ class AppTheme {
         onSecondary: Colors.black,
         error: const Color(0xFFEF4444),
         onError: Colors.white,
-        surface: const Color(0xFF111827),
-        onSurface: const Color(0xFFF3F4F6),
+        surface: surface,
+        onSurface: Color.lerp(
+          const Color(0xFFE5E7EB),
+          const Color(0xFFFFFFFF),
+          contrastT,
+        )!,
         outline: border,
-        outlineVariant: border.withOpacity(0.65),
+        outlineVariant: Color.lerp(
+          const Color(0xFF4B5563),
+          const Color(0xFF9CA3AF),
+          contrastT,
+        ),
       ),
       useMaterial3: true,
     );
 
-    final onSurface = contrastLevel > 1.3
-        ? const Color(0xFFFFFFFF)
-        : const Color(0xFFE5E7EB);
+    final onSurface = Color.lerp(
+      const Color(0xFFE5E7EB),
+      const Color(0xFFFFFFFF),
+      contrastT,
+    )!;
 
     final textTheme = _scaledTextTheme(base.textTheme, fontScale).apply(
       bodyColor: onSurface,
@@ -160,34 +218,60 @@ class AppTheme {
     return base.copyWith(
       textTheme: textTheme,
       visualDensity: _visualDensity(spacingScale),
-      scaffoldBackgroundColor: const Color(0xFF030712),
-      canvasColor: const Color(0xFF030712),
+      scaffoldBackgroundColor: Color.lerp(
+        const Color(0xFF030712),
+        const Color(0xFF000000),
+        contrastT,
+      ),
+      canvasColor: Color.lerp(
+        const Color(0xFF030712),
+        const Color(0xFF000000),
+        contrastT,
+      ),
       extensions: [
         AppThemeTokens(
           spacingScale: spacingScale,
           contrastLevel: contrastLevel,
-          surface: const Color(0xFF111827),
-          surfaceMuted: const Color(0xFF1F2937),
-          onSurfaceMuted: contrastLevel > 1.3 ? const Color(0xFFE5E7EB) : const Color(0xFF9CA3AF),
+          surface: surface,
+          surfaceMuted: surfaceMuted,
+          onSurfaceMuted: Color.lerp(
+            const Color(0xFF9CA3AF),
+            const Color(0xFFFFFFFF),
+            contrastT,
+          )!,
           border: border,
         ),
       ],
       cardTheme: base.cardTheme.copyWith(
-        color: const Color(0xFF111827),
+        color: surface,
       ),
       appBarTheme: base.appBarTheme.copyWith(
-        backgroundColor: const Color(0xFF111827),
+        backgroundColor: surface,
         foregroundColor: onSurface,
+      ),
+      listTileTheme: base.listTileTheme.copyWith(
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 16 * spacingScale.clamp(0.8, 2.0),
+          vertical: 2 * spacingScale.clamp(0.8, 2.0),
+        ),
       ),
       inputDecorationTheme: base.inputDecorationTheme.copyWith(
         filled: true,
-        fillColor: const Color(0xFF1F2937),
+        fillColor: surfaceMuted,
         border: const OutlineInputBorder(),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 16 * spacingScale.clamp(0.8, 2.0),
+          vertical: 14 * spacingScale.clamp(0.8, 2.0),
+        ),
       ),
       bottomNavigationBarTheme: base.bottomNavigationBarTheme.copyWith(
-        backgroundColor: const Color(0xFF111827),
+        backgroundColor: surface,
         selectedItemColor: _brandSecondary,
-        unselectedItemColor: onSurface.withOpacity(0.7),
+        unselectedItemColor: Color.lerp(
+          const Color(0xFF9CA3AF),
+          const Color(0xFFE5E7EB),
+          contrastT,
+        ),
       ),
       dividerTheme: DividerThemeData(
         color: border,
@@ -246,7 +330,12 @@ class AppTheme {
   }
 
   static VisualDensity _visualDensity(double spacingScale) {
-    final adjustment = (spacingScale - 1.0).clamp(-0.2, 0.6);
+    // Efeito de espaçamento mais perceptível no app inteiro.
+    final adjustment = ((spacingScale - 1.0) * 1.6).clamp(-0.3, 1.2);
     return VisualDensity(horizontal: adjustment, vertical: adjustment);
+  }
+
+  static double _contrastNormalized(double contrastLevel) {
+    return ((contrastLevel.clamp(1.0, 2.0) - 1.0) / 1.0).clamp(0.0, 1.0);
   }
 }

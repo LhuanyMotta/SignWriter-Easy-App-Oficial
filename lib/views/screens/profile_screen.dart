@@ -318,19 +318,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onChanged: (value) => viewModel.toggleNotifications(value),
             ),
             const Divider(),
-            
-            // Tema escuro
-            SwitchListTile(
-              title: Text(l10n.darkThemeTitle),
-              subtitle: Text(l10n.darkThemeSubtitle),
-              secondary: Icon(
-                Icons.dark_mode,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              value: viewModel.darkMode,
-              onChanged: (value) => viewModel.toggleDarkMode(value),
-            ),
-            const Divider(),
 
             // Acessibilidade
             ExpansionTile(
@@ -341,8 +328,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               title: Text(l10n.accessibilityTitle),
               subtitle: Text(l10n.accessibilitySubtitle),
               children: [
-                // Tamanho da fonte
+                // Tamanho da fonte com ícone padrão da tela nova
                 ListTile(
+                  leading: Icon(
+                    Icons.format_size,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   title: Text(l10n.fontSizeTitle),
                   subtitle: Slider(
                     value: viewModel.fontSize,
@@ -353,8 +344,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onChanged: (value) => viewModel.updateFontSize(value),
                   ),
                 ),
-                // Contraste
+
+                // Contraste com ícone padrão da tela nova
                 ListTile(
+                  leading: Icon(
+                    Icons.contrast,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   title: Text(l10n.contrastTitle),
                   subtitle: Slider(
                     value: viewModel.contrastLevel,
@@ -369,8 +365,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onChanged: (value) => viewModel.updateContrast(value),
                   ),
                 ),
-                // Espaçamento
+
+                // Espaçamento com ícone padrão da tela nova
                 ListTile(
+                  leading: Icon(
+                    Icons.space_bar,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   title: Text(l10n.spacingTitle),
                   subtitle: Slider(
                     value: viewModel.spacing,
@@ -380,6 +381,126 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     label: '${(viewModel.spacing * 100).round()}%',
                     onChanged: (value) => viewModel.updateSpacing(value),
                   ),
+                ),
+
+                // Seletor de tema com os ícones (claro/escuro/sistema)
+                ListTile(
+                  leading: Icon(
+                    Icons.brightness_6,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  title: const Text('Tema'),
+                  subtitle: Wrap(
+                    spacing: 8,
+                    children: [
+                      ChoiceChip(
+                        avatar: Icon(
+                          Icons.light_mode,
+                          size: 18,
+                          color: viewModel.themeMode == ThemeMode.light
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : null,
+                        ),
+                        label: const Text('Claro'),
+                        selected: viewModel.themeMode == ThemeMode.light,
+                        selectedColor: Theme.of(context).colorScheme.primary,
+                        labelStyle: TextStyle(
+                          color: viewModel.themeMode == ThemeMode.light
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : null,
+                          fontWeight: viewModel.themeMode == ThemeMode.light
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                        onSelected: (_) => viewModel.setThemeMode(ThemeMode.light),
+                      ),
+                      ChoiceChip(
+                        avatar: Icon(
+                          Icons.dark_mode,
+                          size: 18,
+                          color: viewModel.themeMode == ThemeMode.dark
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : null,
+                        ),
+                        label: const Text('Escuro'),
+                        selected: viewModel.themeMode == ThemeMode.dark,
+                        selectedColor: Theme.of(context).colorScheme.primary,
+                        labelStyle: TextStyle(
+                          color: viewModel.themeMode == ThemeMode.dark
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : null,
+                          fontWeight: viewModel.themeMode == ThemeMode.dark
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                        onSelected: (_) => viewModel.setThemeMode(ThemeMode.dark),
+                      ),
+                      ChoiceChip(
+                        avatar: Icon(
+                          Icons.brightness_auto,
+                          size: 18,
+                          color: viewModel.themeMode == ThemeMode.system
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : null,
+                        ),
+                        label: const Text('Sistema'),
+                        selected: viewModel.themeMode == ThemeMode.system,
+                        selectedColor: Theme.of(context).colorScheme.primary,
+                        labelStyle: TextStyle(
+                          color: viewModel.themeMode == ThemeMode.system
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : null,
+                          fontWeight: viewModel.themeMode == ThemeMode.system
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                        onSelected: (_) => viewModel.setThemeMode(ThemeMode.system),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ---- Recursos futuros (desabilitados) ----
+                // Exibidos em cinza para indicar que estão planejados mas
+                // ainda não disponíveis, sem gerar expectativa de interação.
+
+                // Leitor de tela: compatibilidade com TalkBack / VoiceOver
+                ListTile(
+                  leading: const Icon(Icons.record_voice_over,
+                      color: Colors.grey),
+                  title: const Text(
+                    'Leitor de tela',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  trailing: Chip(
+                    label: const Text(
+                      'Em breve',
+                      style: TextStyle(fontSize: 11),
+                    ),
+                    backgroundColor: Colors.grey.shade200,
+                    padding: EdgeInsets.zero,
+                  ),
+                  // onTap nulo deixa claro que o item não é interativo
+                  onTap: null,
+                ),
+
+                // Dispositivos alternativos: teclados adaptados e rastreamento ocular
+                ListTile(
+                  leading: const Icon(Icons.devices_other,
+                      color: Colors.grey),
+                  title: const Text(
+                    'Dispositivos alternativos',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  trailing: Chip(
+                    label: const Text(
+                      'Em breve',
+                      style: TextStyle(fontSize: 11),
+                    ),
+                    backgroundColor: Colors.grey.shade200,
+                    padding: EdgeInsets.zero,
+                  ),
+                  onTap: null,
                 ),
               ],
             ),
@@ -470,7 +591,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           subtitle: Text(l10n.deleteAccountSubtitle, style: TextStyle(color: theme.colorScheme.error)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: theme.colorScheme.error.withOpacity(0.4)),
+            side: BorderSide(color: theme.colorScheme.error.withValues(alpha: 0.4)),
           ),
           onTap: () => _confirmDeleteAccount(context),
         ),

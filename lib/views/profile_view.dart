@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/profile_viewmodel.dart';
-import 'accessibility_settings_view.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -44,16 +43,9 @@ class ProfileView extends StatelessWidget {
                 child: ListTile(
                   leading: const Icon(Icons.accessibility_new),
                   title: const Text('Acessibilidade'),
-                  subtitle: const Text('Configurações de acessibilidade'),
-                  trailing: const Icon(Icons.arrow_forward_ios),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AccessibilitySettingsView(),
-                      ),
-                    );
-                  },
+                  subtitle: const Text('Configurações no Perfil'),
+                  trailing: const Icon(Icons.check_circle_outline),
+                  onTap: null,
                 ),
               ),
               

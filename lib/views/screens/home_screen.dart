@@ -72,10 +72,11 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
+          // Engrenagem leva para o perfil, onde ficam as configurações de acessibilidade
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // Será implementado posteriormente
+              _viewModel.navigateToProfile(context);
             },
           ),
         ],

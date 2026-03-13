@@ -15,6 +15,7 @@ class ProfileViewModel extends ChangeNotifier {
   Map<String, dynamic>? get userData => _authViewModel.currentUser;
   bool get notificationsEnabled => _notificationsEnabled;
   bool get darkMode => _appSettingsViewModel.isDarkMode;
+  ThemeMode get themeMode => _appSettingsViewModel.themeMode;
   double get fontSize => _appSettingsViewModel.fontScale;
   double get contrastLevel => _appSettingsViewModel.contrastLevel;
   double get spacing => _appSettingsViewModel.spacingScale;
@@ -65,6 +66,11 @@ class ProfileViewModel extends ChangeNotifier {
   /// Alterna tema escuro/claro
   void toggleDarkMode(bool value) {
     _appSettingsViewModel.toggleDarkMode(value);
+  }
+
+  /// Define modo de tema (claro, escuro ou sistema)
+  Future<void> setThemeMode(ThemeMode mode) async {
+    await _appSettingsViewModel.setThemeMode(mode);
   }
   
   /// Altera o idioma do aplicativo
