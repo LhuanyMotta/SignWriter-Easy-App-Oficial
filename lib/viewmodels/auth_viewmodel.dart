@@ -229,7 +229,7 @@ class AuthViewModel extends ChangeNotifier {
     _setLoading(true);
     
     try {
-      await _storage.clearAll();
+      await _storage.clearSession();
       
       _isAuthenticated = false;
       _currentUser = null;

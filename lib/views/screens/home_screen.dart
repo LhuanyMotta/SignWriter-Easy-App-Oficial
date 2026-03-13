@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../viewmodels/home_viewmodel.dart';
+import '../../l10n/l10n.dart';
+import '../../l10n/app_localizations.dart';
 import '../widgets/feature_card.dart';
 
 /// Tela inicial do aplicativo
@@ -18,32 +20,26 @@ class _HomeScreenState extends State<HomeScreen> {
   // Lista de funcionalidades com informações para exibição
   final List<Map<String, dynamic>> _features = [
     {
-      'title': 'Aprender e Praticar',
       'icon': Icons.school,
       'color': const Color(0xFF2D78BB),
     },
     {
-      'title': 'Escrever Sinais',
       'icon': Icons.edit_document,
       'color': const Color(0xFF4EB1F0),
     },
     {
-      'title': 'Traduzir Sinais',
       'icon': Icons.translate,
       'color': const Color(0xFF2D78BB),
     },
     {
-      'title': 'Conversar',
       'icon': Icons.chat,
       'color': const Color(0xFF4EB1F0),
     },
     {
-      'title': 'Dicionário',
       'icon': Icons.book,
       'color': const Color(0xFF2D78BB),
     },
     {
-      'title': 'Progresso',
       'icon': Icons.bar_chart,
       'color': const Color(0xFF4EB1F0),
     },
@@ -68,10 +64,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'SignWriter Fácil',
+        title: Text(
+          l10n.appTitle,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -91,12 +88,12 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               // Título de boas-vindas
               Text(
-                'Bem-vindo!',
+                l10n.homeWelcome,
                 style: Theme.of(context).textTheme.displayMedium,
               ),
               const SizedBox(height: 8),
               Text(
-                'O que você deseja fazer hoje?',
+                l10n.homeQuestion,
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               const SizedBox(height: 24),
@@ -112,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   itemCount: _features.length,
                   itemBuilder: (context, index) => FeatureCard(
-                    title: _features[index]['title'],
+                    title: _featureTitle(index, l10n),
                     icon: _features[index]['icon'],
                     color: _features[index]['color'],
                     onTap: (ctx) => _navigationFunctions[index](ctx),
@@ -133,21 +130,40 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Colors.grey,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Início',
+            icon: const Icon(Icons.home),
+            label: l10n.bottomHome,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favoritos',
+            icon: const Icon(Icons.favorite),
+            label: l10n.bottomFavorites,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Perfil',
+            icon: const Icon(Icons.person),
+            label: l10n.bottomProfile,
           ),
         ],
       ),
     );
+  }
+
+  String _featureTitle(int index, AppLocalizations l10n) {
+    switch (index) {
+      case 0:
+        return l10n.featureLearnPractice;
+      case 1:
+        return l10n.featureWriteSigns;
+      case 2:
+        return l10n.featureTranslateSigns;
+      case 3:
+        return l10n.featureChat;
+      case 4:
+        return l10n.featureDictionary;
+      case 5:
+        return l10n.featureProgress;
+      default:
+        return '';
+    }
   }
 } 

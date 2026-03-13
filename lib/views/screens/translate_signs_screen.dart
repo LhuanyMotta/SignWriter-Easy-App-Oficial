@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../viewmodels/translate_viewmodel.dart';
 import '../../models/sign_model.dart';
+import '../../l10n/l10n.dart';
+import '../../theme/app_theme.dart';
 
 /// Tela para traduzir texto para a Linguagem Brasileira de Sinais (Libras)
 /// usando o sistema de escrita SignWriting
@@ -56,36 +58,40 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final tokens = theme.extension<AppThemeTokens>();
+    final spacing = tokens?.spacingScale ?? 1.0;
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Traduzir Sinais'),
+          title: Text(l10n.translateSignsTitle),
           bottom: TabBar(
             controller: _tabController,
-            indicatorColor: Colors.white,
+            indicatorColor: theme.colorScheme.onPrimary,
             indicatorWeight: 3,
-            tabs: const [
-              Tab(text: 'Texto → Libras'),
-              Tab(text: 'Libras → Texto'),
+            tabs: [
+              Tab(text: l10n.tabTextToLibras),
+              Tab(text: l10n.tabLibrasToText),
             ],
           ),
         ),
         body: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0 * spacing),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _tabController.index == 0 ? 'Digite o texto' : 'Grave ou desenhe o sinal',
+                _tabController.index == 0 ? l10n.typeText : l10n.recordOrDrawSign,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8 * spacing),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: tokens?.surfaceMuted ?? theme.colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(color: tokens?.border ?? theme.colorScheme.outlineVariant),
                 ),
                 child: Column(
                   children: [
@@ -94,8 +100,8 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
                       maxLines: 3,
                       decoration: InputDecoration(
                         hintText: _tabController.index == 0
-                            ? 'Digite o texto para traduzir para Libras'
-                            : 'Este recurso será implementado em breve',
+                            ? l10n.inputHintTextToLibras
+                            : l10n.inputHintLibrasSoon,
                         contentPadding: const EdgeInsets.all(16),
                         border: InputBorder.none,
                       ),
@@ -111,20 +117,20 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
                             onPressed: _tabController.index == 0
                                 ? () {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Reconhecimento de voz em breve')),
+                                      SnackBar(content: Text(l10n.voiceSoon)),
                                     );
                                   }
                                 : null,
                             color: _tabController.index == 0
                                 ? Theme.of(context).colorScheme.primary
-                                : Colors.grey,
+                                : (tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant),
                           ),
                           if (_tabController.index == 1)
                             IconButton(
                               icon: const Icon(Icons.camera_alt),
                               onPressed: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Captura de sinais em breve')),
+                                  SnackBar(content: Text(l10n.captureSoon)),
                                 );
                               },
                               color: Theme.of(context).colorScheme.primary,
@@ -135,7 +141,7 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16 * spacing),
               SizedBox(
                 width: double.infinity,
                 child: Consumer<TranslateViewModel>(
@@ -145,39 +151,39 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
                           ? _translate
                           : null,
                       style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: EdgeInsets.symmetric(vertical: 14 * spacing),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: viewModel.isTranslating
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
-                                color: Colors.white,
+                                color: theme.colorScheme.onPrimary,
                                 strokeWidth: 2,
                               ),
                             )
-                          : Text(_tabController.index == 0 ? 'Traduzir para Libras' : 'Traduzir para Texto'),
+                          : Text(_tabController.index == 0 ? l10n.translateToLibras : l10n.translateToText),
                     );
                   },
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24 * spacing),
               Text(
-                'Resultado',
+                l10n.resultTitle,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8 * spacing),
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(16 * spacing),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: tokens?.surfaceMuted ?? theme.colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
+                    border: Border.all(color: tokens?.border ?? theme.colorScheme.outlineVariant),
                   ),
                   child: Consumer<TranslateViewModel>(
                     builder: (context, viewModel, _) {
@@ -185,7 +191,7 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
                         return Center(
                           child: Text(
                             viewModel.errorMessage!,
-                            style: TextStyle(color: Colors.grey.shade600),
+                            style: TextStyle(color: tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant),
                           ),
                         );
                       }
@@ -193,8 +199,8 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
                       if (_tabController.index == 1) {
                         return Center(
                           child: Text(
-                            'A tradução para texto aparecerá aqui',
-                            style: TextStyle(color: Colors.grey.shade600),
+                            l10n.textTranslationPlaceholder,
+                            style: TextStyle(color: tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant),
                           ),
                         );
                       }
@@ -202,8 +208,8 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
                       if (viewModel.signs.isEmpty && viewModel.notFoundWords.isEmpty) {
                         return Center(
                           child: Text(
-                            'A tradução para Libras aparecerá aqui',
-                            style: TextStyle(color: Colors.grey.shade600),
+                            l10n.librasTranslationPlaceholder,
+                            style: TextStyle(color: tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant),
                           ),
                         );
                       }
@@ -213,14 +219,14 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
                         children: [
                           if (viewModel.signs.isEmpty && viewModel.notFoundWords.isNotEmpty) ...[
                             Text(
-                              'Este sinal ainda não existe.',
-                              style: TextStyle(color: Colors.grey.shade700),
+                              l10n.signNotExists,
+                              style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
                             ),
                             const SizedBox(height: 8),
                           ],
                           if (viewModel.signWritingSequence != null) ...[
                             Text(
-                              'Sequência SignWriting',
+                              l10n.signWritingSequence,
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                             const SizedBox(height: 6),
@@ -232,10 +238,10 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
                           ],
                           if (viewModel.signs.isNotEmpty) ...[
                             Text(
-                              'Sinais encontrados',
+                              l10n.foundSigns,
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
-                            const SizedBox(height: 8),
+                            SizedBox(height: 8 * spacing),
                             SizedBox(
                               height: 110,
                               child: ListView.separated(
@@ -251,7 +257,7 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
                           if (viewModel.notFoundWords.isNotEmpty) ...[
                             const SizedBox(height: 12),
                             Text(
-                              'Palavras não encontradas',
+                              l10n.notFoundWords,
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                             const SizedBox(height: 8),
@@ -271,10 +277,10 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
                                 icon: const Icon(Icons.save_alt),
                                 onPressed: () {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Tradução salva no histórico')),
+                                    SnackBar(content: Text(l10n.translationSaved)),
                                   );
                                 },
-                                tooltip: 'Salvar',
+                                tooltip: l10n.save,
                               ),
                             ],
                           ),
@@ -293,12 +299,12 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16 * spacing),
                       Text(
-                        'Traduções Recentes',
+                        l10n.recentTranslations,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8 * spacing),
                       SizedBox(
                         height: 40,
                         child: ListView.builder(
@@ -310,7 +316,7 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
                                 ? '${item.sourceText.substring(0, 15)}...'
                                 : item.sourceText;
                             return Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
+                              padding: EdgeInsets.only(right: 8.0 * spacing),
                               child: ActionChip(
                                 label: Text(label),
                                 onPressed: () {
@@ -336,13 +342,15 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
   }
 
   Widget _buildSignMiniCard(SignModel sign) {
+    final theme = Theme.of(context);
+    final tokens = theme.extension<AppThemeTokens>();
     return Container(
       width: 90,
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: tokens?.border ?? theme.colorScheme.outlineVariant),
       ),
       child: Column(
         children: [
@@ -352,7 +360,7 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
               errorBuilder: (context, error, stackTrace) {
                 return Icon(
                   Icons.sign_language,
-                  color: Colors.grey.shade400,
+                  color: tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant,
                 );
               },
             ),

@@ -155,13 +155,17 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
   }
 
   Widget _buildSearchBar() {
+    final colorScheme = Theme.of(context).colorScheme;
     return TextField(
       controller: _searchController,
+      style: TextStyle(color: colorScheme.onSurface),
+      cursorColor: colorScheme.primary,
       decoration: InputDecoration(
         hintText: 'Buscar sinais...',
-        prefixIcon: const Icon(Icons.search),
+        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+        prefixIcon: Icon(Icons.search, color: colorScheme.onSurfaceVariant),
         filled: true,
-        fillColor: Colors.grey.shade200,
+        fillColor: colorScheme.surfaceContainerHighest,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,

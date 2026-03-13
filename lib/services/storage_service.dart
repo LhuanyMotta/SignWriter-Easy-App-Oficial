@@ -46,6 +46,14 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
   }
+
+  /// Limpa apenas dados de sessão do usuário atual.
+  /// Mantém registros temporários de usuários cadastrados.
+  Future<void> clearSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_authTokenKey);
+    await prefs.remove(_userKey);
+  }
   
   /// Salva dados temporários de usuários cadastrados
   /// Isso será substituído pelo Supabase posteriormente

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/auth_viewmodel.dart';
+import '../../l10n/l10n.dart';
+import '../../l10n/app_localizations.dart';
+import '../../theme/app_theme.dart';
 import '../widgets/app_logo.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -11,7 +14,6 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateMixin {
-  late AuthViewModel _viewModel;
   late TabController _tabController;
   final _loginFormKey = GlobalKey<FormState>();
   final _signupFormKey = GlobalKey<FormState>();
@@ -24,7 +26,6 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _viewModel = AuthViewModel();
     _tabController = TabController(length: 2, vsync: this);
   }
 
@@ -40,189 +41,199 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _viewModel,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: Column(
-            children: [
+    final l10n = context.l10n;
+    final spacing = _spacing(1);
+    final theme = Theme.of(context);
+    final tokens = theme.extension<AppThemeTokens>();
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
               // Cabeçalho fixo (não rolável)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                padding: EdgeInsets.symmetric(horizontal: 24.0 * spacing, vertical: 16.0 * spacing),
                 child: Column(
                   children: [
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20 * spacing),
                     const AppLogo(
                       size: 80,
                       colored: true,
                       showText: false,
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16 * spacing),
                     Text(
-                      'SignWriter Fácil',
+                      l10n.appTitle,
                       style: Theme.of(context).textTheme.displayMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF2D78BB),
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8 * spacing),
                     Text(
-                      'Conecte-se para começar',
+                      l10n.authSubtitle,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[600],
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32 * spacing),
                     
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.grey[100],
+                        color: tokens?.surfaceMuted ?? theme.colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: TabBar(
                         controller: _tabController,
                         indicator: BoxDecoration(
-                          color: const Color(0xFF2D78BB),
+                          color: theme.colorScheme.primary,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         indicatorSize: TabBarIndicatorSize.tab,
-                        labelColor: Colors.white,
-                        unselectedLabelColor: Colors.grey[600],
+                        labelColor: theme.colorScheme.onPrimary,
+                        unselectedLabelColor: tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant,
                         labelStyle: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                         ),
-                        tabs: const [
-                          Tab(text: 'Entrar'),
-                          Tab(text: 'Cadastrar'),
+                        tabs: [
+                          Tab(text: l10n.loginTab),
+                          Tab(text: l10n.signupTab),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24 * spacing),
                   ],
                 ),
               ),
               
               // Área rolável dos formulários
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: _buildLoginTab(),
-                    ),
-                    SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: _buildSignupTab(),
-                    ),
-                  ],
-                ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(horizontal: 24.0 * spacing),
+                    child: _buildLoginTab(l10n),
+                  ),
+                  SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(horizontal: 24.0 * spacing),
+                    child: _buildSignupTab(l10n),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
-  }
+  } 
 
-  Widget _buildLoginTab() {
+  Widget _buildLoginTab(AppLocalizations l10n) {
+    final spacing = _spacing(1);
+    final theme = Theme.of(context);
     return Form(
       key: _loginFormKey,
       child: Column(
         children: [
           _buildTextField(
             controller: _emailController,
-            label: 'Email',
+            label: l10n.emailLabel,
             icon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Por favor, insira seu email';
+                return l10n.enterEmailError;
               }
               if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                return 'Por favor, insira um email válido';
+                return l10n.invalidEmailError;
               }
               return null;
             },
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16 * spacing),
           
           _buildTextField(
             controller: _passwordController,
-            label: 'Senha',
+            label: l10n.passwordLabel,
             icon: Icons.lock_outlined,
             isPassword: true,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Por favor, insira sua senha';
+                return l10n.enterPasswordError;
               }
               if (value.length < 6) {
-                return 'A senha deve ter pelo menos 6 caracteres';
+                return l10n.passwordLengthError;
               }
               return null;
             },
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8 * spacing),
           
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Recuperação de senha será implementada em breve')),
+                  SnackBar(content: Text(l10n.passwordRecoverySoon)),
                 );
               },
               child: Text(
-                'Esqueci minha senha',
+                l10n.forgotPassword,
                 style: TextStyle(
-                  color: const Color(0xFF2D78BB),
+                  color: theme.colorScheme.primary,
                   fontSize: 14,
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16 * spacing),
           
           Consumer<AuthViewModel>(
             builder: (context, viewModel, child) {
-              return SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: viewModel.isLoading ? null : _handleLogin,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2D78BB),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              return Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: viewModel.isLoading ? null : _handleLogin,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primary,
+                        foregroundColor: theme.colorScheme.onPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: viewModel.isLoading
+                          ? SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onPrimary),
+                              ),
+                            )
+                          : Text(
+                              l10n.loginButton,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
-                  child: viewModel.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Text(
-                          'Entrar',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                ),
+                  if (viewModel.errorMessage != null) ...[
+                    SizedBox(height: 12 * spacing),
+                    _buildAuthError(viewModel.errorMessage!),
+                  ],
+                ],
               );
             },
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16 * spacing),
           
           _buildDivider(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16 * spacing),
           
           _buildSocialLoginButtons(),
         ],
@@ -230,116 +241,126 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildSignupTab() {
+  Widget _buildSignupTab(AppLocalizations l10n) {
+    final spacing = _spacing(1);
+    final theme = Theme.of(context);
     return Form(
       key: _signupFormKey,
       child: Column(
         children: [
           _buildTextField(
             controller: _nameController,
-            label: 'Nome completo',
+            label: l10n.fullNameLabel,
             icon: Icons.person_outlined,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Por favor, insira seu nome';
+                return l10n.enterNameError;
               }
               if (value.length < 2) {
-                return 'O nome deve ter pelo menos 2 caracteres';
+                return l10n.nameLengthError;
               }
               return null;
             },
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16 * spacing),
           
           _buildTextField(
             controller: _emailController,
-            label: 'Email',
+            label: l10n.emailLabel,
             icon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Por favor, insira seu email';
+                return l10n.enterEmailError;
               }
               if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                return 'Por favor, insira um email válido';
+                return l10n.invalidEmailError;
               }
               return null;
             },
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16 * spacing),
           
           _buildTextField(
             controller: _passwordController,
-            label: 'Senha',
+            label: l10n.passwordLabel,
             icon: Icons.lock_outlined,
             isPassword: true,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Por favor, insira uma senha';
+                return l10n.enterPasswordError;
               }
               if (value.length < 6) {
-                return 'A senha deve ter pelo menos 6 caracteres';
+                return l10n.passwordLengthError;
               }
               return null;
             },
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16 * spacing),
           
           _buildTextField(
             controller: _confirmPasswordController,
-            label: 'Confirmar senha',
+            label: l10n.confirmPasswordLabel,
             icon: Icons.lock_outlined,
             isPassword: true,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Por favor, confirme sua senha';
+                return l10n.confirmPasswordError;
               }
               if (value != _passwordController.text) {
-                return 'As senhas não coincidem';
+                return l10n.passwordMismatchError;
               }
               return null;
             },
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24 * spacing),
           
           Consumer<AuthViewModel>(
             builder: (context, viewModel, child) {
-              return SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: viewModel.isLoading ? null : _handleSignup,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2D78BB),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              return Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: viewModel.isLoading ? null : _handleSignup,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.colorScheme.primary,
+                        foregroundColor: theme.colorScheme.onPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: viewModel.isLoading
+                          ? SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onPrimary),
+                              ),
+                            )
+                          : Text(
+                              l10n.signupButton,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
-                  child: viewModel.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Text(
-                          'Cadastrar',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                ),
+                  if (viewModel.errorMessage != null) ...[
+                    SizedBox(height: 12 * spacing),
+                    _buildAuthError(viewModel.errorMessage!),
+                  ],
+                ],
               );
             },
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16 * spacing),
           
           _buildDivider(),
-          const SizedBox(height: 16),
+          SizedBox(height: 16 * spacing),
           
           _buildSocialLoginButtons(),
         ],
@@ -355,6 +376,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
+    final theme = Theme.of(context);
+    final tokens = theme.extension<AppThemeTokens>();
     return TextFormField(
       controller: controller,
       obscureText: isPassword,
@@ -362,49 +385,51 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: const Color(0xFF2D78BB)),
+        prefixIcon: Icon(icon, color: theme.colorScheme.primary),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide(color: tokens?.border ?? theme.colorScheme.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide(color: tokens?.border ?? theme.colorScheme.outlineVariant),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF2D78BB), width: 2),
+          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.red[300]!),
+          borderSide: BorderSide(color: theme.colorScheme.error.withOpacity(0.7)),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.red[400]!, width: 2),
+          borderSide: BorderSide(color: theme.colorScheme.error, width: 2),
         ),
         filled: true,
-        fillColor: Colors.grey[50],
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        fillColor: tokens?.surfaceMuted ?? theme.colorScheme.surfaceContainerLowest,
+        contentPadding: EdgeInsets.symmetric(horizontal: 16 * _spacing(1), vertical: 16 * _spacing(1)),
       ),
     );
   }
 
   Widget _buildDivider() {
+    final theme = Theme.of(context);
+    final tokens = theme.extension<AppThemeTokens>();
     return Row(
       children: [
         Expanded(
           child: Container(
             height: 1,
-            color: Colors.grey[300],
+            color: tokens?.border ?? theme.colorScheme.outlineVariant,
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: 16 * _spacing(1)),
           child: Text(
-            'ou',
+            context.l10n.orLabel,
             style: TextStyle(
-              color: Colors.grey[600],
+              color: tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant,
               fontSize: 14,
             ),
           ),
@@ -412,7 +437,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         Expanded(
           child: Container(
             height: 1,
-            color: Colors.grey[300],
+            color: tokens?.border ?? theme.colorScheme.outlineVariant,
           ),
         ),
       ],
@@ -420,90 +445,126 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildSocialLoginButtons() {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final tokens = theme.extension<AppThemeTokens>();
     return Column(
       children: [
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: OutlinedButton(
-            onPressed: () => _viewModel.signInWithGoogle(),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: Colors.grey[300]!),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              foregroundColor: Colors.black87,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
+        Consumer<AuthViewModel>(
+          builder: (context, viewModel, child) {
+            return SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: OutlinedButton(
+                onPressed: viewModel.isLoading ? null : _handleGoogleLogin,
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: tokens?.border ?? theme.colorScheme.outlineVariant),
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Text(
-                    'G',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
+                  foregroundColor: theme.colorScheme.onSurface,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'G',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    Text(
+                      l10n.continueWithGoogle,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                const Text(
-                  'Continuar com Google',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
         const SizedBox(height: 12),
-        
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: OutlinedButton(
-            onPressed: () => _viewModel.signInWithApple(),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: Colors.grey[300]!),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              foregroundColor: Colors.black87,
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.apple, size: 24, color: Colors.black87),
-                SizedBox(width: 12),
-                Text(
-                  'Continuar com Apple',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+        Consumer<AuthViewModel>(
+          builder: (context, viewModel, child) {
+            return SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: OutlinedButton(
+                onPressed: viewModel.isLoading ? null : _handleAppleLogin,
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: tokens?.border ?? theme.colorScheme.outlineVariant),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
+                  foregroundColor: theme.colorScheme.onSurface,
                 ),
-              ],
-            ),
-          ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.apple, size: 24, color: theme.colorScheme.onSurface),
+                    const SizedBox(width: 12),
+                    Text(
+                      l10n.continueWithApple,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ],
     );
   }
 
+  Widget _buildAuthError(String message) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.error.withOpacity(0.35)),
+      ),
+      child: Text(
+        message,
+        style: TextStyle(
+          color: theme.colorScheme.onErrorContainer,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  double _spacing(double base) {
+    final scale = Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0;
+    return base * scale;
+  }
+
   void _handleLogin() async {
+    final viewModel = context.read<AuthViewModel>();
     if (_loginFormKey.currentState!.validate()) {
-      final success = await _viewModel.signInWithEmail(
-        email: _emailController.text,
+      final success = await viewModel.signInWithEmail(
+        email: _emailController.text.trim(),
         password: _passwordController.text,
       );
       
@@ -514,16 +575,33 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   }
 
   void _handleSignup() async {
+    final viewModel = context.read<AuthViewModel>();
     if (_signupFormKey.currentState!.validate()) {
-      final success = await _viewModel.signUpWithEmail(
-        name: _nameController.text,
-        email: _emailController.text,
+      final success = await viewModel.signUpWithEmail(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
         password: _passwordController.text,
       );
       
       if (success && mounted) {
         Navigator.of(context).pushReplacementNamed('/home');
       }
+    }
+  }
+
+  void _handleGoogleLogin() async {
+    final viewModel = context.read<AuthViewModel>();
+    final success = await viewModel.signInWithGoogle();
+    if (success && mounted) {
+      Navigator.of(context).pushReplacementNamed('/home');
+    }
+  }
+
+  void _handleAppleLogin() async {
+    final viewModel = context.read<AuthViewModel>();
+    final success = await viewModel.signInWithApple();
+    if (success && mounted) {
+      Navigator.of(context).pushReplacementNamed('/home');
     }
   }
 }

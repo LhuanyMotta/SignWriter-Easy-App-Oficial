@@ -135,13 +135,17 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   
   // Barra de pesquisa com ícone e campo de texto
   Widget _buildSearchBar() {
+    final colorScheme = Theme.of(context).colorScheme;
     return TextField(
       controller: _searchController,
+      style: TextStyle(color: colorScheme.onSurface),
+      cursorColor: colorScheme.primary,
       decoration: InputDecoration(
         hintText: 'Buscar favoritos...',
-        prefixIcon: const Icon(Icons.search),
+        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+        prefixIcon: Icon(Icons.search, color: colorScheme.onSurfaceVariant),
         filled: true,
-        fillColor: Colors.grey.shade100,
+        fillColor: colorScheme.surfaceContainerHighest,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

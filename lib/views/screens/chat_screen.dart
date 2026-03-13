@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/chat_viewmodel.dart';
 import 'package:intl/intl.dart';
+import '../../theme/app_theme.dart';
 
 /// Tela de conversa para comunicação em Libras
 class ChatScreen extends StatefulWidget {
@@ -53,6 +54,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final tokens = theme.extension<AppThemeTokens>();
+    final spacing = tokens?.spacingScale ?? 1.0;
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Scaffold(
@@ -91,7 +95,7 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               // Área de informações sobre o chat
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16 * spacing),
                 color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                 child: Row(
                   children: [
@@ -102,7 +106,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16 * spacing),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,7 +163,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           child: Text(
                             'Assistente está digitando...',
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey,
+                              color: tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant,
                               fontStyle: FontStyle.italic,
                             ),
                           ),
@@ -170,12 +174,12 @@ class _ChatScreenState extends State<ChatScreen> {
               
               // Campo de entrada de mensagem
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8 * spacing),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: tokens?.surface ?? theme.colorScheme.surface,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: theme.colorScheme.shadow.withOpacity(0.12),
                       blurRadius: 4,
                       offset: const Offset(0, -1),
                     ),
@@ -202,10 +206,10 @@ class _ChatScreenState extends State<ChatScreen> {
                             borderSide: BorderSide.none,
                           ),
                           filled: true,
-                          fillColor: Colors.grey.shade100,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 10,
+                          fillColor: tokens?.surfaceMuted ?? theme.colorScheme.surfaceContainerHighest,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 16 * spacing,
+                            vertical: 10 * spacing,
                           ),
                         ),
                         textInputAction: TextInputAction.send,
@@ -233,7 +237,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final String timeString = DateFormat('HH:mm').format(timestamp);
     
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: 16 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
       child: Row(
         mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,11 +253,14 @@ class _ChatScreenState extends State<ChatScreen> {
           
           Flexible(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: EdgeInsets.symmetric(
+                horizontal: 16 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0),
+                vertical: 10 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0),
+              ),
               decoration: BoxDecoration(
                 color: isUser
                     ? Theme.of(context).colorScheme.primary
-                    : Colors.grey.shade200,
+                    : Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(16).copyWith(
                   bottomLeft: isUser ? const Radius.circular(16) : const Radius.circular(0),
                   bottomRight: isUser ? const Radius.circular(0) : const Radius.circular(16),
@@ -265,7 +272,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   Text(
                     message['text'] as String,
                     style: TextStyle(
-                      color: isUser ? Colors.white : Colors.black87,
+                      color: isUser
+                          ? Theme.of(context).colorScheme.onPrimary
+                          : Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -273,7 +282,10 @@ class _ChatScreenState extends State<ChatScreen> {
                     timeString,
                     style: TextStyle(
                       fontSize: 10,
-                      color: isUser ? Colors.white70 : Colors.black54,
+                      color: isUser
+                          ? Theme.of(context).colorScheme.onPrimary.withOpacity(0.8)
+                          : Theme.of(context).extension<AppThemeTokens>()?.onSurfaceMuted ??
+                              Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -284,9 +296,13 @@ class _ChatScreenState extends State<ChatScreen> {
           if (isUser) ...[
             const SizedBox(width: 8),
             CircleAvatar(
-              backgroundColor: Colors.grey.shade300,
+              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
               radius: 16,
-              child: const Icon(Icons.person, size: 16, color: Colors.white),
+              child: Icon(
+                Icons.person,
+                size: 16,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ],

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/progress_viewmodel.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../l10n/l10n.dart';
+import '../../theme/app_theme.dart';
 
 /// Tela de Progresso do usuário
 class ProgressScreen extends StatefulWidget {
@@ -30,11 +32,13 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Seu Progresso'),
+          title: Text(l10n.progressTitle),
           actions: [
             IconButton(
               icon: const Icon(Icons.share),
@@ -47,10 +51,10 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
           ],
           bottom: TabBar(
             controller: _tabController,
-            indicatorColor: Colors.white,
-            tabs: const [
-              Tab(text: 'Resumo'),
-              Tab(text: 'Categorias'),
+            indicatorColor: theme.colorScheme.onPrimary,
+            tabs: [
+              Tab(text: l10n.summaryTab),
+              Tab(text: l10n.categoriesTab),
             ],
           ),
         ),
@@ -68,29 +72,30 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
   Widget _buildSummaryTab() {
     return Consumer<ProgressViewModel>(
       builder: (context, viewModel, child) {
+        final spacing = Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0;
         final usageData = viewModel.usageData;
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16 * spacing),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Progresso geral (dados reais serão integrados depois)
               _buildProgressCard(
-                title: 'Progresso Geral',
+                title: context.l10n.overallProgress,
                 progress: viewModel.overallProgress,
                 showPercentage: true,
               ),
               
-              const SizedBox(height: 24),
+              SizedBox(height: 24 * spacing),
               
               // Estatísticas (valores zerados até integração real)
               Text(
-                'Estatísticas',
+                context.l10n.statsTitle,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16 * spacing),
               
               GridView.count(
                 crossAxisCount: 2,
@@ -101,47 +106,49 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
                 childAspectRatio: 1.5,
                 children: [
                   _buildStatCard(
-                    title: 'Dias Consecutivos',
+                    title: context.l10n.streakDays,
                     value: '${usageData['diasConsecutivos']}',
                     icon: Icons.calendar_today,
-                    color: const Color(0xFF2D78BB),
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   _buildStatCard(
-                    title: 'Horas de Estudo',
+                    title: context.l10n.studyHours,
                     value: '${usageData['totalHorasEstudo']}',
                     icon: Icons.access_time,
-                    color: const Color(0xFF4EB1F0),
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                   _buildStatCard(
-                    title: 'Exercícios',
+                    title: context.l10n.exercises,
                     value: '${usageData['exerciciosCompletados']}',
                     icon: Icons.assignment_turned_in,
-                    color: const Color(0xFF4EB1F0),
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                   _buildStatCard(
-                    title: 'Sinais Aprendidos',
+                    title: context.l10n.learnedSigns,
                     value: '${usageData['sinaisAprendidos']}',
                     icon: Icons.sign_language,
-                    color: const Color(0xFF2D78BB),
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ],
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 24 * spacing),
               
               // Gráfico de tempo de estudo
               Text(
-                'Tempo de Estudo Semanal',
+                context.l10n.weeklyStudyTime,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8 * spacing),
               Text(
-                'Melhor dia: ${viewModel.bestStudyDay}',
+                context.l10n.bestDayPrefix(
+                  _localizedDay(viewModel.bestStudyDay),
+                ),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16 * spacing),
               SizedBox(
                 height: 200,
                 child: _buildStudyTimeChart(viewModel.studyTimeStats),
@@ -157,10 +164,10 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
     return Consumer<ProgressViewModel>(
       builder: (context, viewModel, child) {
         if (viewModel.categoryProgress.isEmpty) {
-          return _buildEmptyState('Sem categorias com progresso ainda.');
+          return _buildEmptyState(context.l10n.emptyCategories);
         }
         return ListView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(16 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
           itemCount: viewModel.categoryProgress.length,
           itemBuilder: (context, index) {
             final category = viewModel.categoryProgress[index];
@@ -177,7 +184,7 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
     bool showPercentage = false,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary,
         borderRadius: BorderRadius.circular(16),
@@ -187,13 +194,13 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
         children: [
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onPrimary,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
           
           // Indicador de progresso circular
           Row(
@@ -207,14 +214,14 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
                   children: [
                     CircularProgressIndicator(
                       value: progress,
-                      backgroundColor: Colors.white.withOpacity(0.3),
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                      backgroundColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.3),
+                      valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onPrimary),
                       strokeWidth: 10,
                     ),
                     Text(
                       showPercentage ? '${(progress * 100).toInt()}%' : '',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
@@ -225,13 +232,13 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
               
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   // Estrutura mantida com valores zerados até integração real.
-                  _ProgressDetail(label: 'Aulas completadas', value: '0/0'),
-                  SizedBox(height: 8),
-                  _ProgressDetail(label: 'Tempo total de estudo', value: '0h 0min'),
-                  SizedBox(height: 8),
-                  _ProgressDetail(label: 'Exercícios concluídos', value: '0'),
+                  _ProgressDetail(label: context.l10n.completedLessons, value: '0/0'),
+                  SizedBox(height: 8 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
+                  _ProgressDetail(label: context.l10n.totalStudyTime, value: '0h 0min'),
+                  SizedBox(height: 8 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
+                  _ProgressDetail(label: context.l10n.completedExercises, value: '0'),
                 ],
               ),
             ],
@@ -242,6 +249,8 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
   }
 
   Widget _buildStudyTimeChart(Map<String, double> studyTimeStats) {
+    final theme = Theme.of(context);
+    final tokens = theme.extension<AppThemeTokens>();
     return BarChart(
       BarChartData(
         alignment: BarChartAlignment.spaceAround,
@@ -249,35 +258,12 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
         barTouchData: BarTouchData(
           enabled: true,
           touchTooltipData: BarTouchTooltipData(
-            tooltipBgColor: Colors.white,
+            tooltipBgColor: theme.colorScheme.surface,
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
-              String weekDay = '';
-              switch (group.x.toInt()) {
-                case 0:
-                  weekDay = 'Segunda';
-                  break;
-                case 1:
-                  weekDay = 'Terça';
-                  break;
-                case 2:
-                  weekDay = 'Quarta';
-                  break;
-                case 3:
-                  weekDay = 'Quinta';
-                  break;
-                case 4:
-                  weekDay = 'Sexta';
-                  break;
-                case 5:
-                  weekDay = 'Sábado';
-                  break;
-                case 6:
-                  weekDay = 'Domingo';
-                  break;
-              }
+              final weekDay = _dayNameByIndex(group.x.toInt());
               return BarTooltipItem(
                 '$weekDay\n${rod.toY.toInt()} min',
-                const TextStyle(color: Colors.black),
+                TextStyle(color: theme.colorScheme.onSurface),
               );
             },
           ),
@@ -289,34 +275,11 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
               showTitles: true,
               getTitlesWidget: (value, meta) {
                 final style = TextStyle(
-                  color: Colors.grey.shade600,
+                  color: tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 );
-                String text = '';
-                switch (value.toInt()) {
-                  case 0:
-                    text = 'Seg';
-                    break;
-                  case 1:
-                    text = 'Ter';
-                    break;
-                  case 2:
-                    text = 'Qua';
-                    break;
-                  case 3:
-                    text = 'Qui';
-                    break;
-                  case 4:
-                    text = 'Sex';
-                    break;
-                  case 5:
-                    text = 'Sáb';
-                    break;
-                  case 6:
-                    text = 'Dom';
-                    break;
-                }
+                final text = _dayShortByIndex(value.toInt());
                 return Text(text, style: style);
               },
               reservedSize: 25,
@@ -330,7 +293,7 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
                 return Text(
                   '${value.toInt()}',
                   style: TextStyle(
-                    color: Colors.grey.shade600,
+                    color: tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant,
                     fontSize: 10,
                   ),
                 );
@@ -352,7 +315,7 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
           horizontalInterval: 20,
           getDrawingHorizontalLine: (value) {
             return FlLine(
-              color: Colors.grey.shade200,
+              color: theme.colorScheme.outlineVariant.withOpacity(0.5),
               strokeWidth: 1,
             );
           },
@@ -393,14 +356,14 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
     final Color color = category['color'] as Color;
     
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: 16 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
+      padding: EdgeInsets.all(16 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.12),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -441,7 +404,7 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
           const SizedBox(height: 16),
           LinearProgressIndicator(
             value: progress,
-            backgroundColor: Colors.grey.shade200,
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
             valueColor: AlwaysStoppedAnimation<Color>(color),
             borderRadius: BorderRadius.circular(10),
             minHeight: 10,
@@ -457,13 +420,13 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.12),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -501,11 +464,84 @@ class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProvid
     return Center(
       child: Text(
         message,
-        style: TextStyle(color: Colors.grey.shade600),
+        style: TextStyle(
+          color: Theme.of(context).extension<AppThemeTokens>()?.onSurfaceMuted ??
+              Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       ),
     );
   }
-} 
+
+  String _localizedDay(String day) {
+    switch (day) {
+      case 'Segunda':
+      case 'Monday':
+        return context.l10n.monday;
+      case 'Terça':
+      case 'Tuesday':
+        return context.l10n.tuesday;
+      case 'Quarta':
+      case 'Wednesday':
+        return context.l10n.wednesday;
+      case 'Quinta':
+      case 'Thursday':
+        return context.l10n.thursday;
+      case 'Sexta':
+      case 'Friday':
+        return context.l10n.friday;
+      case 'Sábado':
+      case 'Saturday':
+        return context.l10n.saturday;
+      case 'Domingo':
+      case 'Sunday':
+        return context.l10n.sunday;
+      default:
+        return context.l10n.noData;
+    }
+  }
+
+  String _dayNameByIndex(int index) {
+    switch (index) {
+      case 0:
+        return context.l10n.monday;
+      case 1:
+        return context.l10n.tuesday;
+      case 2:
+        return context.l10n.wednesday;
+      case 3:
+        return context.l10n.thursday;
+      case 4:
+        return context.l10n.friday;
+      case 5:
+        return context.l10n.saturday;
+      case 6:
+        return context.l10n.sunday;
+      default:
+        return '';
+    }
+  }
+
+  String _dayShortByIndex(int index) {
+    switch (index) {
+      case 0:
+        return context.l10n.mondayShort;
+      case 1:
+        return context.l10n.tuesdayShort;
+      case 2:
+        return context.l10n.wednesdayShort;
+      case 3:
+        return context.l10n.thursdayShort;
+      case 4:
+        return context.l10n.fridayShort;
+      case 5:
+        return context.l10n.saturdayShort;
+      case 6:
+        return context.l10n.sundayShort;
+      default:
+        return '';
+    }
+  }
+}
 
 class _ProgressDetail extends StatelessWidget {
   final String label;
@@ -523,8 +559,8 @@ class _ProgressDetail extends StatelessWidget {
         Container(
           width: 8,
           height: 8,
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.onPrimary,
             shape: BoxShape.circle,
           ),
         ),
@@ -534,16 +570,16 @@ class _ProgressDetail extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onPrimary,
                 fontSize: 12,
               ),
             ),
             const SizedBox(height: 2),
             Text(
               value,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onPrimary,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),

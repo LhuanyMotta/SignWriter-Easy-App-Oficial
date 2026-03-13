@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/learn_practice_viewmodel.dart';
+import '../../theme/app_theme.dart';
 
 /// Tela de Aprender e Praticar (compatível com o ViewModel fornecido)
 class LearnPracticeScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final spacing = Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0;
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Scaffold(
@@ -37,16 +39,16 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
         ),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16 * spacing),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildProgressSection(),
-                const SizedBox(height: 24),
+                SizedBox(height: 24 * spacing),
                 Text('Categorias', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
+                SizedBox(height: 16 * spacing),
                 _buildCategoriesGrid(),
-                const SizedBox(height: 24),
+                SizedBox(height: 24 * spacing),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -63,7 +65,7 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8 * spacing),
                 _buildRecommendedExercises(),
               ],
             ),
@@ -75,21 +77,41 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
 
   Widget _buildProgressSection() {
     return Consumer<LearnPracticeViewModel>(builder: (context, vm, _) {
+      final theme = Theme.of(context);
+      final spacing = theme.extension<AppThemeTokens>()?.spacingScale ?? 1.0;
       final progress = (vm.overallProgress).clamp(0.0, 1.0);
       return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(16)),
+        padding: EdgeInsets.all(16 * spacing),
+        decoration: BoxDecoration(color: theme.colorScheme.primary, borderRadius: BorderRadius.circular(16)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Seu Progresso', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 12),
+          Text(
+            'Seu Progresso',
+            style: TextStyle(
+              color: theme.colorScheme.onPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 12 * spacing),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(value: progress, backgroundColor: Colors.white.withOpacity(0.25), valueColor: const AlwaysStoppedAnimation<Color>(Colors.white), minHeight: 10),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: theme.colorScheme.onPrimary.withOpacity(0.25),
+              valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onPrimary),
+              minHeight: 10,
+            ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8 * spacing),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text('${(progress * 100).toInt()}% Concluído', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-            const Text('Continue Aprendendo', style: TextStyle(color: Colors.white70)),
+            Text(
+              '${(progress * 100).toInt()}% Concluído',
+              style: TextStyle(color: theme.colorScheme.onPrimary, fontWeight: FontWeight.w600),
+            ),
+            Text(
+              'Continue Aprendendo',
+              style: TextStyle(color: theme.colorScheme.onPrimary.withOpacity(0.8)),
+            ),
           ]),
         ]),
       );
@@ -125,21 +147,33 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
               );
             },
             child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2)),
+              padding: EdgeInsets.all(16 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
+              decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(16), boxShadow: [
+                BoxShadow(color: Theme.of(context).colorScheme.shadow.withOpacity(0.12), blurRadius: 8, offset: const Offset(0, 2)),
               ]),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                   Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)), child: Icon(icon, color: color, size: 20)),
-                  Text('$lessonsCompleted/$lessons', style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+                  Text(
+                    '$lessonsCompleted/$lessons',
+                    style: TextStyle(
+                      color: Theme.of(context).extension<AppThemeTokens>()?.onSurfaceMuted ??
+                          Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ]),
                 const Spacer(),
                 Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16), maxLines: 2, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 8),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(value: progress, backgroundColor: Colors.grey.shade200, valueColor: AlwaysStoppedAnimation<Color>(color), minHeight: 6),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                    minHeight: 6,
+                  ),
                 ),
               ]),
             ),
@@ -165,7 +199,17 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
           final isNew = exercise['isNew'] as bool? ?? false;
 
           return Container(
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))]),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.shadow.withOpacity(0.12),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
             child: ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               title: Row(children: [
@@ -175,9 +219,32 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
               subtitle: Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(desc, style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
+                  Text(
+                    desc,
+                    style: TextStyle(
+                      color: Theme.of(context).extension<AppThemeTokens>()?.onSurfaceMuted ??
+                          Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 14,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Row(children: [Icon(Icons.access_time, size: 16, color: Colors.grey.shade600), const SizedBox(width: 4), Text(duration, style: TextStyle(color: Colors.grey.shade600, fontSize: 12))]),
+                  Row(children: [
+                    Icon(
+                      Icons.access_time,
+                      size: 16,
+                      color: Theme.of(context).extension<AppThemeTokens>()?.onSurfaceMuted ??
+                          Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      duration,
+                      style: TextStyle(
+                        color: Theme.of(context).extension<AppThemeTokens>()?.onSurfaceMuted ??
+                            Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ]),
                 ]),
               ),
               trailing: ElevatedButton(
@@ -232,7 +299,19 @@ class CategoryDetailScreen extends StatelessWidget {
           Row(children: [
             Container(width: 52, height: 52, decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: color)),
             const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)), const SizedBox(height: 4), Text('$completed de $lessons lições concluídas', style: TextStyle(color: Colors.grey.shade600))])),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                const SizedBox(height: 4),
+                Text(
+                  '$completed de $lessons lições concluídas',
+                  style: TextStyle(
+                    color: Theme.of(context).extension<AppThemeTokens>()?.onSurfaceMuted ??
+                        Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ]),
+            ),
           ]),
           const SizedBox(height: 16),
           Expanded(
@@ -243,7 +322,17 @@ class CategoryDetailScreen extends StatelessWidget {
                 final item = lessonList[i];
                 final done = item['subtitle'] == 'Concluída';
                 return ListTile(
-                  leading: CircleAvatar(backgroundColor: done ? color : Colors.grey.shade200, child: Text('${i + 1}', style: TextStyle(color: done ? Colors.white : Colors.black))),
+                  leading: CircleAvatar(
+                    backgroundColor: done ? color : Theme.of(context).colorScheme.surfaceContainerHighest,
+                    child: Text(
+                      '${i + 1}',
+                      style: TextStyle(
+                        color: done
+                            ? Theme.of(context).colorScheme.onPrimary
+                            : Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
                   title: Text(item['title']!),
                   subtitle: Text(item['subtitle']!),
                   trailing: ElevatedButton(
@@ -328,7 +417,23 @@ class RecommendedAllScreen extends StatelessWidget {
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 title: Row(children: [Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold))), if (isNew) Container(margin: const EdgeInsets.only(left: 8), padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(10)), child: const Text('NOVO', style: TextStyle(color: Colors.white, fontSize: 10)))]),
-                subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const SizedBox(height: 6), Text(desc, maxLines: 2, overflow: TextOverflow.ellipsis), const SizedBox(height: 8), Row(children: [const Icon(Icons.access_time, size: 14), const SizedBox(width: 6), Text(duration, style: TextStyle(color: Colors.grey.shade600, fontSize: 12))])]),
+                subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const SizedBox(height: 6),
+                  Text(desc, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 8),
+                  Row(children: [
+                    const Icon(Icons.access_time, size: 14),
+                    const SizedBox(width: 6),
+                    Text(
+                      duration,
+                      style: TextStyle(
+                        color: Theme.of(context).extension<AppThemeTokens>()?.onSurfaceMuted ??
+                            Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ]),
+                ]),
                 trailing: ElevatedButton(
                   onPressed: () {
                     try {

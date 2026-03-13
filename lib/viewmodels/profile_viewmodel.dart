@@ -1,62 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_viewmodel.dart';
+import 'app_settings_viewmodel.dart';
 
 /// ViewModel para a tela de Perfil do usuário
 class ProfileViewModel extends ChangeNotifier {
   final AuthViewModel _authViewModel;
+  final AppSettingsViewModel _appSettingsViewModel;
   
   // Configurações gerais
   bool _notificationsEnabled = true;
-  bool _darkMode = false;
-  
-  // Configurações de acessibilidade
-  double _fontSize = 1.0;
-  double _contrastLevel = 1.0;
-  double _spacing = 1.0;
   
   // Getters
   Map<String, dynamic>? get userData => _authViewModel.currentUser;
   bool get notificationsEnabled => _notificationsEnabled;
-  bool get darkMode => _darkMode;
-  double get fontSize => _fontSize;
-  double get contrastLevel => _contrastLevel;
-  double get spacing => _spacing;
+  bool get darkMode => _appSettingsViewModel.isDarkMode;
+  double get fontSize => _appSettingsViewModel.fontScale;
+  double get contrastLevel => _appSettingsViewModel.contrastLevel;
+  double get spacing => _appSettingsViewModel.spacingScale;
   
   /// Lista de idiomas disponíveis
   final List<String> availableLanguages = [
-    'Português',
-    'Inglês',
-    'Espanhol',
+    'pt',
+    'en',
   ];
   
-  String _language = 'Português';
-  String get language => _language;
+  String get language => _appSettingsViewModel.locale.languageCode;
   
-  ProfileViewModel({required AuthViewModel authViewModel}) : _authViewModel = authViewModel {
+  ProfileViewModel({
+    required AuthViewModel authViewModel,
+    required AppSettingsViewModel appSettingsViewModel,
+  })  : _authViewModel = authViewModel,
+        _appSettingsViewModel = appSettingsViewModel {
+    _appSettingsViewModel.addListener(_onAppSettingsChanged);
     _loadPreferences();
   }
+
+  void _onAppSettingsChanged() => notifyListeners();
   
   // Carrega preferências salvas
   Future<void> _loadPreferences() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       _notificationsEnabled = prefs.getBool('notifications') ?? true;
-      _darkMode = prefs.getBool('darkMode') ?? false;
-      
-      // Validação e limites para valores de acessibilidade
-      _fontSize = (prefs.getDouble('fontSize') ?? 1.0).clamp(0.8, 2.0);
-      _contrastLevel = (prefs.getDouble('contrast') ?? 1.0).clamp(0.5, 2.0);
-      _spacing = (prefs.getDouble('spacing') ?? 1.0).clamp(0.8, 2.0);
-      
-      _language = prefs.getString('language') ?? 'Português';
       notifyListeners();
     } catch (e) {
       debugPrint('Erro ao carregar preferências: $e');
-      // Valores padrão em caso de erro
-      _fontSize = 1.0;
-      _contrastLevel = 1.0;
-      _spacing = 1.0;
     }
   }
   
@@ -64,11 +53,6 @@ class ProfileViewModel extends ChangeNotifier {
   Future<void> _savePreferences() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('notifications', _notificationsEnabled);
-    await prefs.setBool('darkMode', _darkMode);
-    await prefs.setDouble('fontSize', _fontSize);
-    await prefs.setDouble('contrast', _contrastLevel);
-    await prefs.setDouble('spacing', _spacing);
-    await prefs.setString('language', _language);
   }
   
   /// Alterna estado das notificações
@@ -80,17 +64,13 @@ class ProfileViewModel extends ChangeNotifier {
   
   /// Alterna tema escuro/claro
   void toggleDarkMode(bool value) {
-    _darkMode = value;
-    _savePreferences();
-    notifyListeners();
+    _appSettingsViewModel.toggleDarkMode(value);
   }
   
   /// Altera o idioma do aplicativo
   void setLanguage(String language) {
     if (availableLanguages.contains(language)) {
-      _language = language;
-      _savePreferences();
-      notifyListeners();
+      _appSettingsViewModel.setLocale(Locale(language));
     }
   }
   
@@ -154,9 +134,7 @@ class ProfileViewModel extends ChangeNotifier {
   // Atualiza tamanho da fonte
   Future<void> updateFontSize(double value) async {
     try {
-      _fontSize = value.clamp(0.8, 2.0);
-      await _savePreferences();
-      notifyListeners();
+      await _appSettingsViewModel.updateFontScale(value);
     } catch (e) {
       debugPrint('Erro ao atualizar tamanho da fonte: $e');
     }
@@ -165,9 +143,7 @@ class ProfileViewModel extends ChangeNotifier {
   // Atualiza nível de contraste
   Future<void> updateContrast(double value) async {
     try {
-      _contrastLevel = value.clamp(0.5, 2.0);
-      await _savePreferences();
-      notifyListeners();
+      await _appSettingsViewModel.updateContrastLevel(value);
     } catch (e) {
       debugPrint('Erro ao atualizar contraste: $e');
     }
@@ -176,11 +152,15 @@ class ProfileViewModel extends ChangeNotifier {
   // Atualiza espaçamento
   Future<void> updateSpacing(double value) async {
     try {
-      _spacing = value.clamp(0.8, 2.0);
-      await _savePreferences();
-      notifyListeners();
+      await _appSettingsViewModel.updateSpacingScale(value);
     } catch (e) {
       debugPrint('Erro ao atualizar espaçamento: $e');
     }
+  }
+
+  @override
+  void dispose() {
+    _appSettingsViewModel.removeListener(_onAppSettingsChanged);
+    super.dispose();
   }
 } 
