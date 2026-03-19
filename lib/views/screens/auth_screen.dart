@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../viewmodels/auth_viewmodel.dart';
-import '../../l10n/l10n.dart';
-import '../../l10n/app_localizations.dart';
-import '../../theme/app_theme.dart';
-import '../widgets/app_logo.dart';
+import 'home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -14,356 +12,377 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateMixin {
+  late AuthViewModel _viewModel;
   late TabController _tabController;
   final _loginFormKey = GlobalKey<FormState>();
   final _signupFormKey = GlobalKey<FormState>();
   
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _loginEmailController = TextEditingController();
+  final TextEditingController _loginPasswordController = TextEditingController();
+  
+  final TextEditingController _signupNameController = TextEditingController();
+  final TextEditingController _signupEmailController = TextEditingController();
+  final TextEditingController _signupPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _viewModel = AuthViewModel(Supabase.instance.client);
     _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _nameController.dispose();
+    _loginEmailController.dispose();
+    _loginPasswordController.dispose();
+    _signupNameController.dispose();
+    _signupEmailController.dispose();
+    _signupPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final spacing = _spacing(1);
-    final theme = Theme.of(context);
-    final tokens = theme.extension<AppThemeTokens>();
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-              // Cabeçalho fixo (não rolável)
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Cabeçalho fixo
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.0 * spacing, vertical: 16.0 * spacing),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                 child: Column(
                   children: [
-                    SizedBox(height: 20 * spacing),
-                    const AppLogo(
-                      size: 80,
-                      colored: true,
-                      showText: false,
+                    const SizedBox(height: 40),
+                    // Logo personalizada
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2D78BB),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Icon(
+                        Icons.sign_language,
+                        size: 60,
+                        color: Colors.white,
+                      ),
                     ),
-                    SizedBox(height: 16 * spacing),
+                    const SizedBox(height: 20),
                     Text(
-                      l10n.appTitle,
-                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      'SignWriter Fácil',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: const Color(0xFF2D78BB),
                       ),
                     ),
-                    SizedBox(height: 8 * spacing),
+                    const SizedBox(height: 8),
                     Text(
-                      l10n.authSubtitle,
+                      'Conecte-se para começar',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                        color: Colors.grey[600],
                       ),
                     ),
-                    SizedBox(height: 32 * spacing),
+                    const SizedBox(height: 32),
                     
+                    // Abas
                     Container(
                       decoration: BoxDecoration(
-                        color: tokens?.surfaceMuted ?? theme.colorScheme.surfaceContainerHighest,
+                        color: Colors.grey[100],
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: TabBar(
                         controller: _tabController,
                         indicator: BoxDecoration(
-                          color: theme.colorScheme.primary,
+                          color: const Color(0xFF2D78BB),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         indicatorSize: TabBarIndicatorSize.tab,
-                        labelColor: theme.colorScheme.onPrimary,
-                        unselectedLabelColor: tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant,
+                        labelColor: Colors.white,
+                        unselectedLabelColor: Colors.grey[600],
                         labelStyle: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 16,
                         ),
-                        tabs: [
-                          Tab(text: l10n.loginTab),
-                          Tab(text: l10n.signupTab),
+                        tabs: const [
+                          Tab(text: 'Entrar'),
+                          Tab(text: 'Cadastrar'),
                         ],
                       ),
                     ),
-                    SizedBox(height: 24 * spacing),
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),
               
-              // Área rolável dos formulários
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: 24.0 * spacing),
-                    child: _buildLoginTab(l10n),
-                  ),
-                  SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(horizontal: 24.0 * spacing),
-                    child: _buildSignupTab(l10n),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  } 
-
-  Widget _buildLoginTab(AppLocalizations l10n) {
-    final spacing = _spacing(1);
-    final theme = Theme.of(context);
-    return Form(
-      key: _loginFormKey,
-      child: Column(
-        children: [
-          _buildTextField(
-            controller: _emailController,
-            label: l10n.emailLabel,
-            icon: Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return l10n.enterEmailError;
-              }
-              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                return l10n.invalidEmailError;
-              }
-              return null;
-            },
-          ),
-          SizedBox(height: 16 * spacing),
-          
-          _buildTextField(
-            controller: _passwordController,
-            label: l10n.passwordLabel,
-            icon: Icons.lock_outlined,
-            isPassword: true,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return l10n.enterPasswordError;
-              }
-              if (value.length < 6) {
-                return l10n.passwordLengthError;
-              }
-              return null;
-            },
-          ),
-          SizedBox(height: 8 * spacing),
-          
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(l10n.passwordRecoverySoon)),
-                );
-              },
-              child: Text(
-                l10n.forgotPassword,
-                style: TextStyle(
-                  color: theme.colorScheme.primary,
-                  fontSize: 14,
+              // Formulários
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildLoginTab(),
+                    _buildSignupTab(),
+                  ],
                 ),
               ),
-            ),
+            ],
           ),
-          SizedBox(height: 16 * spacing),
-          
-          Consumer<AuthViewModel>(
-            builder: (context, viewModel, child) {
-              return Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: viewModel.isLoading ? null : _handleLogin,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: theme.colorScheme.onPrimary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: viewModel.isLoading
-                          ? SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onPrimary),
-                              ),
-                            )
-                          : Text(
-                              l10n.loginButton,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                    ),
-                  ),
-                  if (viewModel.errorMessage != null) ...[
-                    SizedBox(height: 12 * spacing),
-                    _buildAuthError(viewModel.errorMessage!),
-                  ],
-                ],
-              );
-            },
-          ),
-          SizedBox(height: 16 * spacing),
-          
-          _buildDivider(),
-          SizedBox(height: 16 * spacing),
-          
-          _buildSocialLoginButtons(),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildSignupTab(AppLocalizations l10n) {
-    final spacing = _spacing(1);
-    final theme = Theme.of(context);
-    return Form(
-      key: _signupFormKey,
-      child: Column(
-        children: [
-          _buildTextField(
-            controller: _nameController,
-            label: l10n.fullNameLabel,
-            icon: Icons.person_outlined,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return l10n.enterNameError;
-              }
-              if (value.length < 2) {
-                return l10n.nameLengthError;
-              }
-              return null;
-            },
-          ),
-          SizedBox(height: 16 * spacing),
-          
-          _buildTextField(
-            controller: _emailController,
-            label: l10n.emailLabel,
-            icon: Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return l10n.enterEmailError;
-              }
-              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                return l10n.invalidEmailError;
-              }
-              return null;
-            },
-          ),
-          SizedBox(height: 16 * spacing),
-          
-          _buildTextField(
-            controller: _passwordController,
-            label: l10n.passwordLabel,
-            icon: Icons.lock_outlined,
-            isPassword: true,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return l10n.enterPasswordError;
-              }
-              if (value.length < 6) {
-                return l10n.passwordLengthError;
-              }
-              return null;
-            },
-          ),
-          SizedBox(height: 16 * spacing),
-          
-          _buildTextField(
-            controller: _confirmPasswordController,
-            label: l10n.confirmPasswordLabel,
-            icon: Icons.lock_outlined,
-            isPassword: true,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return l10n.confirmPasswordError;
-              }
-              if (value != _passwordController.text) {
-                return l10n.passwordMismatchError;
-              }
-              return null;
-            },
-          ),
-          SizedBox(height: 24 * spacing),
-          
-          Consumer<AuthViewModel>(
-            builder: (context, viewModel, child) {
-              return Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: viewModel.isLoading ? null : _handleSignup,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: theme.colorScheme.onPrimary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: viewModel.isLoading
-                          ? SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.onPrimary),
-                              ),
-                            )
-                          : Text(
-                              l10n.signupButton,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+  Widget _buildLoginTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Form(
+        key: _loginFormKey,
+        child: Column(
+          children: [
+            _buildTextField(
+              controller: _loginEmailController,
+              label: 'Email',
+              hintText: 'Digite seu email',
+              icon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, insira seu email';
+                }
+                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                  return 'Por favor, insira um email válido';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            
+            _buildTextField(
+              controller: _loginPasswordController,
+              label: 'Senha',
+              hintText: 'Digite sua senha',
+              icon: Icons.lock_outlined,
+              isPassword: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, insira sua senha';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 8),
+            
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Recuperação de senha será implementada em breve'),
+                      duration: Duration(seconds: 2),
                     ),
+                  );
+                },
+                child: Text(
+                  'Esqueci minha senha',
+                  style: TextStyle(
+                    color: const Color(0xFF2D78BB),
+                    fontSize: 14,
                   ),
-                  if (viewModel.errorMessage != null) ...[
-                    SizedBox(height: 12 * spacing),
-                    _buildAuthError(viewModel.errorMessage!),
-                  ],
-                ],
-              );
-            },
-          ),
-          SizedBox(height: 16 * spacing),
-          
-          _buildDivider(),
-          SizedBox(height: 16 * spacing),
-          
-          _buildSocialLoginButtons(),
-        ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            
+            Consumer<AuthViewModel>(
+              builder: (context, viewModel, child) {
+                return SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: viewModel.isLoading ? null : () => _handleLogin(viewModel, context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D78BB),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
+                    ),
+                    child: viewModel.isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.login, size: 22),
+                              SizedBox(width: 10),
+                              Text(
+                                'Entrar',
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            
+            _buildDivider(),
+            const SizedBox(height: 20),
+            
+            _buildSocialLoginButtons(),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignupTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Form(
+        key: _signupFormKey,
+        child: Column(
+          children: [
+            _buildTextField(
+              controller: _signupNameController,
+              label: 'Nome completo',
+              hintText: 'Digite seu nome completo',
+              icon: Icons.person_outlined,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, insira seu nome';
+                }
+                if (value.length < 2) {
+                  return 'O nome deve ter pelo menos 2 caracteres';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            
+            _buildTextField(
+              controller: _signupEmailController,
+              label: 'Email',
+              hintText: 'Digite seu email',
+              icon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, insira seu email';
+                }
+                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                  return 'Por favor, insira um email válido';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            
+            _buildTextField(
+              controller: _signupPasswordController,
+              label: 'Senha',
+              hintText: 'Digite sua senha',
+              icon: Icons.lock_outlined,
+              isPassword: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, insira uma senha';
+                }
+                if (value.length < 6) {
+                  return 'A senha deve ter pelo menos 6 caracteres';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            
+            _buildTextField(
+              controller: _confirmPasswordController,
+              label: 'Confirmar senha',
+              hintText: 'Confirme sua senha',
+              icon: Icons.lock_outlined,
+              isPassword: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, confirme sua senha';
+                }
+                if (value != _signupPasswordController.text) {
+                  return 'As senhas não coincidem';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 32),
+            
+            Consumer<AuthViewModel>(
+              builder: (context, viewModel, child) {
+                return SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: viewModel.isLoading ? null : () => _handleSignup(viewModel, context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D78BB),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
+                    ),
+                    child: viewModel.isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.person_add, size: 22),
+                              SizedBox(width: 10),
+                              Text(
+                                'Cadastrar',
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            
+            _buildDivider(),
+            const SizedBox(height: 20),
+            
+            _buildSocialLoginButtons(),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
@@ -371,65 +390,76 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
+    required String hintText,
     required IconData icon,
     bool isPassword = false,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
-    final theme = Theme.of(context);
-    final tokens = theme.extension<AppThemeTokens>();
-    return TextFormField(
-      controller: controller,
-      obscureText: isPassword,
-      keyboardType: keyboardType,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: theme.colorScheme.primary),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: tokens?.border ?? theme.colorScheme.outlineVariant),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[700],
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: tokens?.border ?? theme.colorScheme.outlineVariant),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: controller,
+          obscureText: isPassword,
+          keyboardType: keyboardType,
+          validator: validator,
+          decoration: InputDecoration(
+            hintText: hintText,
+            prefixIcon: Icon(icon, color: const Color(0xFF2D78BB)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF2D78BB), width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.red[300]!),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.red[400]!, width: 2),
+            ),
+            filled: true,
+            fillColor: Colors.grey[50],
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          ),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: theme.colorScheme.error.withOpacity(0.7)),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: theme.colorScheme.error, width: 2),
-        ),
-        filled: true,
-        fillColor: tokens?.surfaceMuted ?? theme.colorScheme.surfaceContainerLowest,
-        contentPadding: EdgeInsets.symmetric(horizontal: 16 * _spacing(1), vertical: 16 * _spacing(1)),
-      ),
+      ],
     );
   }
 
   Widget _buildDivider() {
-    final theme = Theme.of(context);
-    final tokens = theme.extension<AppThemeTokens>();
     return Row(
       children: [
         Expanded(
           child: Container(
             height: 1,
-            color: tokens?.border ?? theme.colorScheme.outlineVariant,
+            color: Colors.grey[300],
           ),
         ),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16 * _spacing(1)),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            context.l10n.orLabel,
+            'ou',
             style: TextStyle(
-              color: tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant,
+              color: Colors.grey[600],
               fontSize: 14,
             ),
           ),
@@ -437,7 +467,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         Expanded(
           child: Container(
             height: 1,
-            color: tokens?.border ?? theme.colorScheme.outlineVariant,
+            color: Colors.grey[300],
           ),
         ),
       ],
@@ -445,163 +475,152 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildSocialLoginButtons() {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final tokens = theme.extension<AppThemeTokens>();
     return Column(
       children: [
-        Consumer<AuthViewModel>(
-          builder: (context, viewModel, child) {
-            return SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: OutlinedButton(
-                onPressed: viewModel.isLoading ? null : _handleGoogleLogin,
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: tokens?.border ?? theme.colorScheme.outlineVariant),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+        // Botão Google com fundo AZUL sólido e G branco
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: () async {
+              final success = await _viewModel.signInWithGoogle();
+              if (!success && _viewModel.error != null && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(_viewModel.error!),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 3),
                   ),
-                  foregroundColor: theme.colorScheme.onSurface,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Text(
-                        'G',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      l10n.continueWithGoogle,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2D78BB),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-            );
-          },
+              elevation: 2,
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Ícone do Google - apenas o G branco
+                Text(
+                  'G',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Text(
+                  'Continuar com Google',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
         const SizedBox(height: 12),
-        Consumer<AuthViewModel>(
-          builder: (context, viewModel, child) {
-            return SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: OutlinedButton(
-                onPressed: viewModel.isLoading ? null : _handleAppleLogin,
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: tokens?.border ?? theme.colorScheme.outlineVariant),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+        
+        // Botão Apple com fundo AZUL sólido
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: () async {
+              final success = await _viewModel.signInWithApple();
+              if (!success && _viewModel.error != null && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(_viewModel.error!),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 3),
                   ),
-                  foregroundColor: theme.colorScheme.onSurface,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.apple, size: 24, color: theme.colorScheme.onSurface),
-                    const SizedBox(width: 12),
-                    Text(
-                      l10n.continueWithApple,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2D78BB),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-            );
-          },
+              elevation: 2,
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.apple, size: 24, color: Colors.white),
+                SizedBox(width: 12),
+                Text(
+                  'Continuar com Apple',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildAuthError(String message) {
-    final theme = Theme.of(context);
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.errorContainer,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.error.withOpacity(0.35)),
-      ),
-      child: Text(
-        message,
-        style: TextStyle(
-          color: theme.colorScheme.onErrorContainer,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-
-  double _spacing(double base) {
-    final scale = Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0;
-    return base * scale;
-  }
-
-  void _handleLogin() async {
-    final viewModel = context.read<AuthViewModel>();
+  void _handleLogin(AuthViewModel viewModel, BuildContext context) async {
     if (_loginFormKey.currentState!.validate()) {
       final success = await viewModel.signInWithEmail(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
+        email: _loginEmailController.text,
+        password: _loginPasswordController.text,
       );
       
       if (success && mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
+        // Navega para HomeScreen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(viewModel.error ?? 'Erro no login'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
       }
     }
   }
 
-  void _handleSignup() async {
-    final viewModel = context.read<AuthViewModel>();
+  void _handleSignup(AuthViewModel viewModel, BuildContext context) async {
     if (_signupFormKey.currentState!.validate()) {
       final success = await viewModel.signUpWithEmail(
-        name: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
+        name: _signupNameController.text,
+        email: _signupEmailController.text,
+        password: _signupPasswordController.text,
       );
       
       if (success && mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
+        // Navega para HomeScreen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(viewModel.error ?? 'Erro no cadastro'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
       }
-    }
-  }
-
-  void _handleGoogleLogin() async {
-    final viewModel = context.read<AuthViewModel>();
-    final success = await viewModel.signInWithGoogle();
-    if (success && mounted) {
-      Navigator.of(context).pushReplacementNamed('/home');
-    }
-  }
-
-  void _handleAppleLogin() async {
-    final viewModel = context.read<AuthViewModel>();
-    final success = await viewModel.signInWithApple();
-    if (success && mounted) {
-      Navigator.of(context).pushReplacementNamed('/home');
     }
   }
 }

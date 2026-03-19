@@ -1,590 +1,445 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/progress_viewmodel.dart';
-import 'package:fl_chart/fl_chart.dart';
-import '../../l10n/l10n.dart';
-import '../../theme/app_theme.dart';
 
-/// Tela de Progresso do usuário
-class ProgressScreen extends StatefulWidget {
+class ProgressScreen extends StatelessWidget {
   const ProgressScreen({super.key});
 
   @override
-  State<ProgressScreen> createState() => _ProgressScreenState();
-}
-
-class _ProgressScreenState extends State<ProgressScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  late ProgressViewModel _viewModel;
-
-  @override
-  void initState() {
-    super.initState();
-    _viewModel = ProgressViewModel();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final theme = Theme.of(context);
-    return ChangeNotifierProvider.value(
-      value: _viewModel,
+    return ChangeNotifierProvider(
+      create: (_) => ProgressViewModel(),
       child: Scaffold(
         appBar: AppBar(
-          title: Text(l10n.progressTitle),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.share),
-              onPressed: () => _viewModel.shareProgress(context),
-            ),
-            IconButton(
-              icon: const Icon(Icons.download),
-              onPressed: () => _viewModel.exportProgressData(context),
-            ),
-          ],
-          bottom: TabBar(
-            controller: _tabController,
-            indicatorColor: theme.colorScheme.onPrimary,
-            tabs: [
-              Tab(text: l10n.summaryTab),
-              Tab(text: l10n.categoriesTab),
-            ],
+          title: const Text('Meu Progresso'),
+          backgroundColor: const Color(0xFF2D78BB),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
           ),
         ),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildSummaryTab(),
-            _buildCategoriesTab(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSummaryTab() {
-    return Consumer<ProgressViewModel>(
-      builder: (context, viewModel, child) {
-        final spacing = Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0;
-        final usageData = viewModel.usageData;
-        return SingleChildScrollView(
-          padding: EdgeInsets.all(16 * spacing),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Progresso geral (dados reais serão integrados depois)
-              _buildProgressCard(
-                title: context.l10n.overallProgress,
-                progress: viewModel.overallProgress,
-                showPercentage: true,
-              ),
-              
-              SizedBox(height: 24 * spacing),
-              
-              // Estatísticas (valores zerados até integração real)
-              Text(
-                context.l10n.statsTitle,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 16 * spacing),
-              
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 1.5,
-                children: [
-                  _buildStatCard(
-                    title: context.l10n.streakDays,
-                    value: '${usageData['diasConsecutivos']}',
-                    icon: Icons.calendar_today,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  _buildStatCard(
-                    title: context.l10n.studyHours,
-                    value: '${usageData['totalHorasEstudo']}',
-                    icon: Icons.access_time,
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
-                  _buildStatCard(
-                    title: context.l10n.exercises,
-                    value: '${usageData['exerciciosCompletados']}',
-                    icon: Icons.assignment_turned_in,
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
-                  _buildStatCard(
-                    title: context.l10n.learnedSigns,
-                    value: '${usageData['sinaisAprendidos']}',
-                    icon: Icons.sign_language,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ],
-              ),
-
-              SizedBox(height: 24 * spacing),
-              
-              // Gráfico de tempo de estudo
-              Text(
-                context.l10n.weeklyStudyTime,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 8 * spacing),
-              Text(
-                context.l10n.bestDayPrefix(
-                  _localizedDay(viewModel.bestStudyDay),
-                ),
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              SizedBox(height: 16 * spacing),
-              SizedBox(
-                height: 200,
-                child: _buildStudyTimeChart(viewModel.studyTimeStats),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCategoriesTab() {
-    return Consumer<ProgressViewModel>(
-      builder: (context, viewModel, child) {
-        if (viewModel.categoryProgress.isEmpty) {
-          return _buildEmptyState(context.l10n.emptyCategories);
-        }
-        return ListView.builder(
-          padding: EdgeInsets.all(16 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
-          itemCount: viewModel.categoryProgress.length,
-          itemBuilder: (context, index) {
-            final category = viewModel.categoryProgress[index];
-            return _buildCategoryProgressItem(category);
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildProgressCard({
-    required String title,
-    required double progress,
-    bool showPercentage = false,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(16 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onPrimary,
-            ),
-          ),
-          SizedBox(height: 16 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
-          
-          // Indicador de progresso circular
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              SizedBox(
-                width: 80,
-                height: 80,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    CircularProgressIndicator(
-                      value: progress,
-                      backgroundColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.3),
-                      valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onPrimary),
-                      strokeWidth: 10,
-                    ),
-                    Text(
-                      showPercentage ? '${(progress * 100).toInt()}%' : '',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              Column(
+        body: Consumer<ProgressViewModel>(
+          builder: (context, viewModel, child) {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Estrutura mantida com valores zerados até integração real.
-                  _ProgressDetail(label: context.l10n.completedLessons, value: '0/0'),
-                  SizedBox(height: 8 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
-                  _ProgressDetail(label: context.l10n.totalStudyTime, value: '0h 0min'),
-                  SizedBox(height: 8 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
-                  _ProgressDetail(label: context.l10n.completedExercises, value: '0'),
+                  // Resumo geral
+                  _buildProgressSummary(viewModel),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Estatísticas
+                  Text(
+                    '📊 Estatísticas de Estudo',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  _buildStudyStatsGrid(viewModel),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Progresso por categoria
+                  Text(
+                    '📚 Progresso por Categoria',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  ...viewModel.categoryProgress.map((category) {
+                    return _buildCategoryCard(category);
+                  }).toList(),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Conquistas
+                  Text(
+                    '🏆 Conquistas',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  _buildAchievementsSection(viewModel),
+                  
+                  const SizedBox(height: 32),
+                  
+                  // Botões de ação
+                  _buildActionButtons(context, viewModel),
                 ],
               ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStudyTimeChart(Map<String, double> studyTimeStats) {
-    final theme = Theme.of(context);
-    final tokens = theme.extension<AppThemeTokens>();
-    return BarChart(
-      BarChartData(
-        alignment: BarChartAlignment.spaceAround,
-        maxY: 100,
-        barTouchData: BarTouchData(
-          enabled: true,
-          touchTooltipData: BarTouchTooltipData(
-            tooltipBgColor: theme.colorScheme.surface,
-            getTooltipItem: (group, groupIndex, rod, rodIndex) {
-              final weekDay = _dayNameByIndex(group.x.toInt());
-              return BarTooltipItem(
-                '$weekDay\n${rod.toY.toInt()} min',
-                TextStyle(color: theme.colorScheme.onSurface),
-              );
-            },
-          ),
-        ),
-        titlesData: FlTitlesData(
-          show: true,
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (value, meta) {
-                final style = TextStyle(
-                  color: tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                );
-                final text = _dayShortByIndex(value.toInt());
-                return Text(text, style: style);
-              },
-              reservedSize: 25,
-            ),
-          ),
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (value, meta) {
-                if (value % 20 != 0) return const Text('');
-                return Text(
-                  '${value.toInt()}',
-                  style: TextStyle(
-                    color: tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant,
-                    fontSize: 10,
-                  ),
-                );
-              },
-              reservedSize: 30,
-            ),
-          ),
-          rightTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-          topTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
-          ),
-        ),
-        borderData: FlBorderData(show: false),
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: false,
-          horizontalInterval: 20,
-          getDrawingHorizontalLine: (value) {
-            return FlLine(
-              color: theme.colorScheme.outlineVariant.withOpacity(0.5),
-              strokeWidth: 1,
             );
           },
         ),
-        barGroups: [
-          _buildBarGroup(0, studyTimeStats['Segunda'] ?? 0),
-          _buildBarGroup(1, studyTimeStats['Terça'] ?? 0),
-          _buildBarGroup(2, studyTimeStats['Quarta'] ?? 0),
-          _buildBarGroup(3, studyTimeStats['Quinta'] ?? 0),
-          _buildBarGroup(4, studyTimeStats['Sexta'] ?? 0),
-          _buildBarGroup(5, studyTimeStats['Sábado'] ?? 0),
-          _buildBarGroup(6, studyTimeStats['Domingo'] ?? 0),
-        ],
       ),
     );
   }
 
-  BarChartGroupData _buildBarGroup(int x, double y) {
-    return BarChartGroupData(
-      x: x,
-      barRods: [
-        BarChartRodData(
-          toY: y,
-          color: Theme.of(context).colorScheme.primary,
-          width: 16,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(6),
-            topRight: Radius.circular(6),
-          ),
+  Widget _buildProgressSummary(ProgressViewModel viewModel) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const Text(
+              'Seu Progresso Geral',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2D78BB),
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Barra de progresso
+            LinearProgressIndicator(
+              value: viewModel.overallProgress,
+              backgroundColor: Colors.grey[200],
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2D78BB)),
+              borderRadius: BorderRadius.circular(10),
+              minHeight: 20,
+            ),
+            const SizedBox(height: 12),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${(viewModel.overallProgress * 100).toStringAsFixed(0)}%',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  '${viewModel.usageData['sinaisAprendidos']} sinais aprendidos',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStudyStatsGrid(ProgressViewModel viewModel) {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 1.2,
+      children: [
+        _buildStatCard(
+          title: 'Dias Consecutivos',
+          value: '${viewModel.usageData['diasConsecutivos']}',
+          icon: Icons.calendar_today,
+          color: Colors.blue,
+        ),
+        _buildStatCard(
+          title: 'Horas de Estudo',
+          value: '${viewModel.usageData['totalHorasEstudo']}h',
+          icon: Icons.timer,
+          color: Colors.green,
+        ),
+        _buildStatCard(
+          title: 'Exercícios',
+          value: '${viewModel.usageData['exerciciosCompletados']}',
+          icon: Icons.check_circle,
+          color: Colors.orange,
+        ),
+        _buildStatCard(
+          title: 'Média Diária',
+          value: '${viewModel.averageStudyTime.toStringAsFixed(0)}min',
+          icon: Icons.trending_up,
+          color: Colors.purple,
         ),
       ],
     );
   }
 
-  Widget _buildCategoryProgressItem(Map<String, dynamic> category) {
-    final String name = category['name'] as String;
-    final double progress = category['progress'] as double;
-    final Color color = category['color'] as Color;
-    
-    return Container(
-      margin: EdgeInsets.only(bottom: 16 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
-      padding: EdgeInsets.all(16 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.shadow.withOpacity(0.12),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${(progress * 100).toInt()}%',
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          LinearProgressIndicator(
-            value: progress,
-            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-            borderRadius: BorderRadius.circular(10),
-            minHeight: 10,
-          ),
-        ],
-      ),
-    );
-  }
   Widget _buildStatCard({
     required String title,
     required String value,
     required IconData icon,
     required Color color,
   }) {
-    return Container(
-      padding: EdgeInsets.all(16 * (Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0)),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).colorScheme.shadow.withOpacity(0.12),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: color,
-            size: 32,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.bodyMedium,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(String message) {
-    return Center(
-      child: Text(
-        message,
-        style: TextStyle(
-          color: Theme.of(context).extension<AppThemeTokens>()?.onSurfaceMuted ??
-              Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      ),
-    );
-  }
-
-  String _localizedDay(String day) {
-    switch (day) {
-      case 'Segunda':
-      case 'Monday':
-        return context.l10n.monday;
-      case 'Terça':
-      case 'Tuesday':
-        return context.l10n.tuesday;
-      case 'Quarta':
-      case 'Wednesday':
-        return context.l10n.wednesday;
-      case 'Quinta':
-      case 'Thursday':
-        return context.l10n.thursday;
-      case 'Sexta':
-      case 'Friday':
-        return context.l10n.friday;
-      case 'Sábado':
-      case 'Saturday':
-        return context.l10n.saturday;
-      case 'Domingo':
-      case 'Sunday':
-        return context.l10n.sunday;
-      default:
-        return context.l10n.noData;
-    }
-  }
-
-  String _dayNameByIndex(int index) {
-    switch (index) {
-      case 0:
-        return context.l10n.monday;
-      case 1:
-        return context.l10n.tuesday;
-      case 2:
-        return context.l10n.wednesday;
-      case 3:
-        return context.l10n.thursday;
-      case 4:
-        return context.l10n.friday;
-      case 5:
-        return context.l10n.saturday;
-      case 6:
-        return context.l10n.sunday;
-      default:
-        return '';
-    }
-  }
-
-  String _dayShortByIndex(int index) {
-    switch (index) {
-      case 0:
-        return context.l10n.mondayShort;
-      case 1:
-        return context.l10n.tuesdayShort;
-      case 2:
-        return context.l10n.wednesdayShort;
-      case 3:
-        return context.l10n.thursdayShort;
-      case 4:
-        return context.l10n.fridayShort;
-      case 5:
-        return context.l10n.saturdayShort;
-      case 6:
-        return context.l10n.sundayShort;
-      default:
-        return '';
-    }
-  }
-}
-
-class _ProgressDetail extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _ProgressDetail({
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.onPrimary,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onPrimary,
-                fontSize: 12,
-              ),
-            ),
-            const SizedBox(height: 2),
+            Icon(icon, color: color, size: 32),
+            const SizedBox(height: 8),
             Text(
               value,
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onPrimary,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
-                fontSize: 14,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryCard(Map<String, dynamic> category) {
+    final String name = category['name'] as String;
+    final double progress = category['progress'] as double;
+    final Color color = category['color'] as Color;
+    
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${(progress * 100).toStringAsFixed(0)}%',
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            LinearProgressIndicator(
+              value: progress,
+              backgroundColor: color.withOpacity(0.1),
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+              borderRadius: BorderRadius.circular(6),
+              minHeight: 8,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAchievementsSection(ProgressViewModel viewModel) {
+    final unlockedCount = viewModel.unlockedAchievementsCount;
+    final totalCount = viewModel.achievements.length;
+    
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Cabeçalho das conquistas
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2D78BB).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.emoji_events, color: Color(0xFF2D78BB), size: 32),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Conquistas Desbloqueadas',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '$unlockedCount de $totalCount conquistas',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        LinearProgressIndicator(
+                          value: viewModel.achievementsPercentage,
+                          backgroundColor: Colors.grey[300],
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2D78BB)),
+                          borderRadius: BorderRadius.circular(6),
+                          minHeight: 6,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Lista de conquistas
+            ...viewModel.achievements.map((achievement) {
+              final bool unlocked = achievement['unlocked'] as bool;
+              final IconData icon = achievement['icon'] as IconData;
+              
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: unlocked ? Colors.green[50] : Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: unlocked ? Colors.green[100]! : Colors.grey[300]!,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      icon,
+                      color: unlocked ? Colors.green : Colors.grey,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            achievement['title'] as String,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: unlocked ? Colors.green[800] : Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            achievement['description'] as String,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: unlocked ? Colors.green[600] : Colors.grey,
+                            ),
+                          ),
+                          if (unlocked && achievement['date'] != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                'Desbloqueado: ${achievement['date']}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      unlocked ? Icons.check_circle : Icons.lock,
+                      color: unlocked ? Colors.green : Colors.grey,
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context, ProgressViewModel viewModel) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () => viewModel.shareProgress(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2D78BB),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            icon: const Icon(Icons.share),
+            label: const Text('Compartilhar Progresso'),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () => viewModel.exportProgressData(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF2D78BB),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: Color(0xFF2D78BB)),
+              ),
+            ),
+            icon: const Icon(Icons.download),
+            label: const Text('Exportar Dados'),
+          ),
         ),
       ],
     );

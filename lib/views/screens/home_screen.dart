@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../viewmodels/home_viewmodel.dart';
-import '../../l10n/l10n.dart';
-import '../../l10n/app_localizations.dart';
 import '../widgets/feature_card.dart';
+import 'profile_screen.dart';
 
 /// Tela inicial do aplicativo
 /// Exibe os principais recursos disponíveis em formato de grid
@@ -20,26 +19,22 @@ class _HomeScreenState extends State<HomeScreen> {
   // Lista de funcionalidades com informações para exibição
   final List<Map<String, dynamic>> _features = [
     {
+      'title': 'Aprender e Praticar',
       'icon': Icons.school,
       'color': const Color(0xFF2D78BB),
     },
     {
+      'title': 'Escrever Sinais',
       'icon': Icons.edit_document,
       'color': const Color(0xFF4EB1F0),
     },
     {
-      'icon': Icons.translate,
-      'color': const Color(0xFF2D78BB),
-    },
-    {
-      'icon': Icons.chat,
-      'color': const Color(0xFF4EB1F0),
-    },
-    {
+      'title': 'Dicionário',
       'icon': Icons.book,
       'color': const Color(0xFF2D78BB),
     },
     {
+      'title': 'Progresso',
       'icon': Icons.bar_chart,
       'color': const Color(0xFF4EB1F0),
     },
@@ -55,8 +50,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _navigationFunctions.addAll([
       _viewModel.navigateToLearnAndPractice,
       _viewModel.navigateToWriteSigns,
-      _viewModel.navigateToTranslateSigns,
-      _viewModel.navigateToChat,
       _viewModel.navigateToDictionary,
       _viewModel.navigateToProgress,
     ]);
@@ -64,19 +57,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          l10n.appTitle,
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: const Text(
+          'SignWriter Fácil',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
+        backgroundColor: const Color(0xFF2D78BB),
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          // Engrenagem leva para o perfil, onde ficam as configurações de acessibilidade
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              _viewModel.navigateToProfile(context);
+              // Navega para a tela de perfil, que contém as configurações
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              );
             },
           ),
         ],
@@ -87,15 +86,23 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Título de boas-vindas
-              Text(
-                l10n.homeWelcome,
-                style: Theme.of(context).textTheme.displayMedium,
+              // Título de boas-vindas - Estilo igual ao da imagem (AZUL)
+              const Text(
+                'Bem-vindo!',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D78BB), // AZUL como na imagem
+                ),
               ),
               const SizedBox(height: 8),
-              Text(
-                l10n.homeQuestion,
-                style: Theme.of(context).textTheme.bodyLarge,
+              // Subtítulo - Estilo igual ao da imagem
+              const Text(
+                'O que você deseja fazer hoje?',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF666666), // Cor cinza médio como na imagem
+                ),
               ),
               const SizedBox(height: 24),
               
@@ -110,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   itemCount: _features.length,
                   itemBuilder: (context, index) => FeatureCard(
-                    title: _featureTitle(index, l10n),
+                    title: _features[index]['title'],
                     icon: _features[index]['icon'],
                     color: _features[index]['color'],
                     onTap: (ctx) => _navigationFunctions[index](ctx),
@@ -131,40 +138,21 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Colors.grey,
-        items: [
+        items: const [
           BottomNavigationBarItem(
-            icon: const Icon(Icons.home),
-            label: l10n.bottomHome,
+            icon: Icon(Icons.home),
+            label: 'Início',
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.favorite),
-            label: l10n.bottomFavorites,
+            icon: Icon(Icons.favorite),
+            label: 'Favoritos',
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.person),
-            label: l10n.bottomProfile,
+            icon: Icon(Icons.person),
+            label: 'Perfil',
           ),
         ],
       ),
     );
   }
-
-  String _featureTitle(int index, AppLocalizations l10n) {
-    switch (index) {
-      case 0:
-        return l10n.featureLearnPractice;
-      case 1:
-        return l10n.featureWriteSigns;
-      case 2:
-        return l10n.featureTranslateSigns;
-      case 3:
-        return l10n.featureChat;
-      case 4:
-        return l10n.featureDictionary;
-      case 5:
-        return l10n.featureProgress;
-      default:
-        return '';
-    }
-  }
-} 
+}

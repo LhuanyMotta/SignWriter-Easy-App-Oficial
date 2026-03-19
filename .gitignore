@@ -1,3 +1,7 @@
+# Dotenv environment variables file
+.env
+.env.*
+
 # Miscellaneous
 *.class
 *.log

@@ -42,12 +42,20 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       value: _viewModel,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Meus Favoritos'),
+          title: const Text(
+            'Meus Favoritos',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          backgroundColor: const Color(0xFF2D78BB),
+          iconTheme: const IconThemeData(color: Colors.white),
           actions: [
             Consumer<FavoritesViewModel>(
               builder: (context, viewModel, _) {
                 return IconButton(
-                  icon: const Icon(Icons.delete_sweep),
+                  icon: const Icon(Icons.delete_sweep, color: Colors.white),
                   onPressed: viewModel.favorites.isEmpty 
                       ? null 
                       : () => _confirmClearAll(context),
@@ -57,62 +65,92 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ),
           ],
         ),
-        body: Column(
-          children: [
-            // Barra de pesquisa
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: _buildSearchBar(),
-            ),
-            
-            // Filtros de categoria
-            Consumer<FavoritesViewModel>(
-              builder: (context, viewModel, _) {
-                return _buildCategoryFilter(viewModel);
-              },
-            ),
-            
-            // Lista de favoritos
-            Expanded(
-              child: Consumer<FavoritesViewModel>(
-                builder: (context, viewModel, _) {
-                  final favorites = viewModel.favorites;
-                  
-                  if (viewModel.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (viewModel.errorMessage != null) {
-                    return Center(
-                      child: Text(
-                        viewModel.errorMessage!,
-                        style: TextStyle(color: Colors.grey.shade600),
+        body: Consumer<FavoritesViewModel>(
+          builder: (context, viewModel, child) {
+            return Column(
+              children: [
+                // Barra de pesquisa e filtros
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  color: Colors.white,
+                  child: Column(
+                    children: [
+                      // Barra de pesquisa
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            hintText: 'Buscar favoritos...',
+                            prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            suffixIcon: _searchController.text.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear, color: Colors.grey),
+                                    onPressed: () => _searchController.clear(),
+                                  )
+                                : null,
+                          ),
+                        ),
                       ),
-                    );
-                  }
-
-                  if (favorites.isEmpty) {
-                    return _buildEmptyState();
-                  }
-                  
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    itemCount: favorites.length,
-                    itemBuilder: (context, index) {
-                      return _buildFavoriteItem(favorites[index], viewModel);
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
+                      const SizedBox(height: 16),
+                      
+                      // Filtros de categoria horizontal
+                      if (viewModel.categories.isNotEmpty)
+                        SizedBox(
+                          height: 40,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: viewModel.categories.length,
+                            itemBuilder: (context, index) {
+                              final category = viewModel.categories[index];
+                              final isSelected = category == viewModel.selectedCategory;
+                              
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  right: 8,
+                                  left: index == 0 ? 0 : 8,
+                                ),
+                                child: ChoiceChip(
+                                  label: Text(category),
+                                  selected: isSelected,
+                                  selectedColor: const Color(0xFF2D78BB),
+                                  labelStyle: TextStyle(
+                                    color: isSelected ? Colors.white : const Color(0xFF666666),
+                                    fontSize: 14,
+                                  ),
+                                  onSelected: (selected) {
+                                    if (selected) {
+                                      viewModel.filterByCategory(category);
+                                    }
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                
+                // Lista de favoritos
+                Expanded(
+                  child: _buildContent(viewModel),
+                ),
+              ],
+            );
+          },
         ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: 1,
           onTap: (index) {
             _homeViewModel.onBottomNavTapped(index, context);
           },
-          selectedItemColor: Theme.of(context).colorScheme.primary,
+          selectedItemColor: const Color(0xFF2D78BB),
           unselectedItemColor: Colors.grey,
           items: const [
             BottomNavigationBarItem(
@@ -133,67 +171,123 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     );
   }
   
-  // Barra de pesquisa com ícone e campo de texto
-  Widget _buildSearchBar() {
-    final colorScheme = Theme.of(context).colorScheme;
-    return TextField(
-      controller: _searchController,
-      style: TextStyle(color: colorScheme.onSurface),
-      cursorColor: colorScheme.primary,
-      decoration: InputDecoration(
-        hintText: 'Buscar favoritos...',
-        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-        prefixIcon: Icon(Icons.search, color: colorScheme.onSurfaceVariant),
-        filled: true,
-        fillColor: colorScheme.surfaceContainerHighest,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 0),
-        suffixIcon: _searchController.text.isNotEmpty
-            ? IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () {
-                  _searchController.clear();
-                },
-              )
-            : null,
-      ),
+  // Conteúdo principal (lista ou estado vazio)
+  Widget _buildContent(FavoritesViewModel viewModel) {
+    if (viewModel.favorites.isEmpty) {
+      return _buildEmptyState();
+    }
+    
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: viewModel.favorites.length,
+      itemBuilder: (context, index) {
+        final sign = viewModel.favorites[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: _buildFavoriteCard(sign, viewModel),
+        );
+      },
     );
   }
   
-  // Filtro horizontal de categorias
-  Widget _buildCategoryFilter(FavoritesViewModel viewModel) {
+  // Card de favorito individual
+  Widget _buildFavoriteCard(SignModel sign, FavoritesViewModel viewModel) {
     return Container(
-      height: 48,
-      margin: const EdgeInsets.only(bottom: 16),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: viewModel.categories.length,
-        itemBuilder: (context, index) {
-          final category = viewModel.categories[index];
-          final isSelected = category == viewModel.selectedCategory;
-          
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(category),
-              selected: isSelected,
-              selectedColor: Theme.of(context).colorScheme.primary,
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Colors.grey.shade700,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-              onSelected: (selected) {
-                if (selected) {
-                  viewModel.filterByCategory(category);
-                }
-              },
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 4,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Imagem do sinal
+          Container(
+            width: 80,
+            height: 80,
+            margin: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(8),
             ),
-          );
-        },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                sign.signImagePath,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Center(
+                    child: Icon(
+                      Icons.sign_language,
+                      size: 40,
+                      color: Colors.grey[400],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          
+          // Informações do sinal
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    sign.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Color(0xFF333333),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    sign.description ?? 'Sem descrição',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D78BB).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      sign.category,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: const Color(0xFF2D78BB),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          // Botão de favorito
+          IconButton(
+            icon: const Icon(Icons.favorite, color: Colors.red),
+            onPressed: () => _confirmRemoveFavorite(context, sign, viewModel),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
     );
   }
@@ -201,121 +295,35 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   // Estado vazio quando não há favoritos
   Widget _buildEmptyState() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.favorite_border,
-            size: 72,
-            color: Colors.grey.shade400,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Nenhum favorito encontrado',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey.shade600,
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.favorite_border,
+              size: 72,
+              color: Colors.grey.shade400,
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Adicione sinais aos favoritos para vê-los aqui',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey.shade500,
+            const SizedBox(height: 20),
+            const Text(
+              'Nenhum favorito encontrado',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF666666),
+              ),
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-  
-  // Item da lista de favoritos com ações
-  Widget _buildFavoriteItem(SignModel sign, FavoritesViewModel viewModel) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: () => viewModel.openSignDetails(context, sign),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            children: [
-              // Imagem do sinal
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Image.asset(
-                  sign.signImagePath,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Center(
-                      child: Icon(
-                        Icons.sign_language,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    );
-                  },
-                ),
+            const SizedBox(height: 12),
+            Text(
+              'Adicione sinais aos favoritos para vê-los aqui',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade500,
               ),
-              const SizedBox(width: 16),
-              
-              // Informações do sinal
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      sign.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      sign.description ?? 'Sem descrição',
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        sign.category,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              // Botão de remover dos favoritos
-              IconButton(
-                icon: const Icon(Icons.favorite, color: Colors.red),
-                onPressed: () => _confirmRemoveFavorite(context, sign, viewModel),
-                tooltip: 'Remover dos favoritos',
-              ),
-            ],
-          ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
@@ -329,30 +337,48 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
         title: const Text('Remover dos favoritos'),
         content: Text('Deseja remover "${sign.name}" dos seus favoritos?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF2D78BB),
+            ),
             child: const Text('Cancelar'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
-              viewModel.removeFavorite(sign.id).then((_) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${sign.name} removido dos favoritos'),
-                    action: SnackBarAction(
-                      label: 'Desfazer',
-                      onPressed: () {
-                        // Implementação futura para desfazer ação
-                      },
-                    ),
+              viewModel.removeFavorite(sign.id);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${sign.name} removido dos favoritos'),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: const BorderRadius.all(Radius.circular(8)),
                   ),
-                );
-              });
+                  action: SnackBarAction(
+                    label: 'Desfazer',
+                    textColor: Colors.white,
+                    onPressed: () {
+                      // Implementação futura para desfazer ação
+                    },
+                  ),
+                ),
+              );
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
             child: const Text('Remover'),
           ),
         ],
@@ -365,27 +391,46 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
         title: const Text('Limpar favoritos'),
         content: const Text('Deseja remover todos os itens dos seus favoritos?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF2D78BB),
+            ),
             child: const Text('Cancelar'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
               final viewModel = Provider.of<FavoritesViewModel>(context, listen: false);
-              viewModel.clearAllFavorites().then((_) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Todos os favoritos foram removidos')),
-                );
-              });
+              viewModel.clearAllFavorites();
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Todos os favoritos foram removidos'),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                  ),
+                ),
+              );
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
             child: const Text('Limpar'),
           ),
         ],
       ),
     );
   }
-} 
+}
