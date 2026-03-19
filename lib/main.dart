@@ -2,73 +2,70 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'views/screens/auth_screen.dart';
 import 'views/screens/home_screen.dart';
+import 'views/screens/accessibility_setup_screen.dart';
 import 'viewmodels/auth_viewmodel.dart';
+import 'viewmodels/app_settings_viewmodel.dart';
+import 'services/database_seed_service.dart';
+import 'theme/app_theme.dart';
+import 'l10n/app_localizations.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await DatabaseSeedService().seedDatabaseIfEmpty();
+
+  // Carrega as preferências antes do runApp para que a rota inicial
+  // já reflita o estado salvo (onboarding feito ou não)
+  final appSettings = AppSettingsViewModel();
+  await appSettings.loadPreferences();
+
+  runApp(MyApp(appSettings: appSettings));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final AppSettingsViewModel appSettings;
+
+  const MyApp({super.key, required this.appSettings});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AuthViewModel(),
-      child: MaterialApp(
-        title: 'SignWriter Fácil',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2D78BB),
-            primary: const Color(0xFF2D78BB),
-            secondary: const Color(0xFF4EB1F0),
-            background: Colors.white,
-          ),
-          scaffoldBackgroundColor: Colors.white,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFF2D78BB),
-            foregroundColor: Colors.white,
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2D78BB),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider<AppSettingsViewModel>.value(value: appSettings),
+      ],
+      child: Consumer<AppSettingsViewModel>(
+        builder: (context, settings, _) {
+          // A rota inicial é definida uma única vez na construção do MaterialApp.
+          // Como as preferências já foram carregadas no main(), o valor de
+          // accessibilityOnboardingDone é confiável aqui.
+          final initialRoute =
+              settings.accessibilityOnboardingDone ? '/auth' : '/accessibility-setup';
+
+          return MaterialApp(
+            title: 'SignWriter Fácil',
+            debugShowCheckedModeBanner: false,
+            locale: settings.locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            themeMode: settings.themeMode,
+            theme: AppTheme.light(
+              fontScale: settings.fontScale,
+              contrastLevel: settings.contrastLevel,
+              spacingScale: settings.spacingScale,
             ),
-          ),
-          textTheme: const TextTheme(
-            displayLarge: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2D78BB),
+            darkTheme: AppTheme.dark(
+              fontScale: settings.fontScale,
+              contrastLevel: settings.contrastLevel,
+              spacingScale: settings.spacingScale,
             ),
-            displayMedium: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2D78BB),
-            ),
-            displaySmall: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2D78BB),
-            ),
-            bodyLarge: TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-            ),
-            bodyMedium: TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
-            ),
-          ),
-        ),
-        initialRoute: '/auth',
-        routes: {
-          '/auth': (context) => const AuthScreen(),
-          '/home': (context) => const HomeScreen(),
+            initialRoute: initialRoute,
+            routes: {
+              '/accessibility-setup': (context) =>
+                  const AccessibilitySetupScreen(),
+              '/auth': (context) => const AuthScreen(),
+              '/home': (context) => const HomeScreen(),
+            },
+          );
         },
       ),
     );

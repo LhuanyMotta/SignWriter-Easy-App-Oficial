@@ -1,59 +1,23 @@
 import 'package:flutter/material.dart';
 import '../models/sign_model.dart';
+import '../services/database_service.dart';
+import '../views/screens/sign_detail_screen.dart';
 
 /// ViewModel para a tela de Favoritos
 class FavoritesViewModel extends ChangeNotifier {
-  // Lista de sinais favoritos (mockada)
-  final List<SignModel> _favorites = [
-    SignModel.demo(
-      id: '1',
-      name: 'Olá',
-      description: 'Saudação básica',
-      category: 'Cumprimentos',
-      isFavorite: true,
-    ),
-    SignModel.demo(
-      id: '2',
-      name: 'Obrigado',
-      description: 'Expressão de gratidão',
-      category: 'Expressões',
-      isFavorite: true,
-    ),
-    SignModel.demo(
-      id: '3',
-      name: 'Bom dia',
-      description: 'Saudação matinal',
-      category: 'Cumprimentos',
-      isFavorite: true,
-    ),
-    SignModel.demo(
-      id: '4',
-      name: 'Casa',
-      description: 'Residência, lar',
-      category: 'Lugares',
-      isFavorite: true,
-    ),
-    SignModel.demo(
-      id: '5',
-      name: 'Família',
-      description: 'Grupo de parentes',
-      category: 'Pessoas',
-      isFavorite: true,
-    ),
-  ];
+  final DatabaseService _databaseService = DatabaseService();
+
+  // Lista de sinais favoritos
+  final List<SignModel> _favorites = [];
   
   // Lista de categorias disponíveis
-  final List<String> _categories = [
-    'Todos',
-    'Cumprimentos',
-    'Expressões',
-    'Lugares',
-    'Pessoas',
-  ];
+  List<String> _categories = ['Todos'];
   
   String _searchQuery = '';
   String _selectedCategory = 'Todos';
   List<SignModel> _filteredFavorites = [];
+  bool _isLoading = false;
+  String? _errorMessage;
   
   // Getters
   List<SignModel> get favorites => _filteredFavorites.isEmpty && _searchQuery.isEmpty && _selectedCategory == 'Todos'
@@ -63,10 +27,34 @@ class FavoritesViewModel extends ChangeNotifier {
   List<String> get categories => _categories;
   String get selectedCategory => _selectedCategory;
   String get searchQuery => _searchQuery;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
   
   /// Construtor que inicializa a lista filtrada
   FavoritesViewModel() {
-    _filteredFavorites = List.from(_favorites);
+    loadFavorites();
+  }
+
+  /// Carrega favoritos do banco
+  Future<void> loadFavorites() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final favorites = await _databaseService.getFavoriteSigns();
+      _favorites
+        ..clear()
+        ..addAll(favorites);
+      _filteredFavorites = List.from(_favorites);
+      _categories = _buildCategories(_favorites);
+    } catch (e) {
+      _errorMessage = 'Não foi possível carregar os favoritos.';
+      _filteredFavorites = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
   
   /// Filtra itens favoritos por categoria
@@ -99,7 +87,7 @@ class FavoritesViewModel extends ChangeNotifier {
   }
   
   /// Remove um item dos favoritos
-  void removeFavorite(String id) {
+  Future<void> removeFavorite(String id) async {
     final index = _favorites.indexWhere((sign) => sign.id == id);
     if (index != -1) {
       final removed = _favorites.removeAt(index);
@@ -109,27 +97,42 @@ class FavoritesViewModel extends ChangeNotifier {
       
       // Atualiza estado do item para não favorito
       removed.isFavorite = false;
-      
+      await _databaseService.toggleSignFavorite(id, false);
       notifyListeners();
     }
   }
   
   /// Abre detalhes de um sinal
-  void openSignDetails(BuildContext context, SignModel sign) {
-    // Implementação futura para abrir detalhes do sinal
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Detalhes do sinal "${sign.name}" serão implementados em breve')),
+  Future<void> openSignDetails(BuildContext context, SignModel sign) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SignDetailScreen(signId: sign.id),
+      ),
     );
+    await loadFavorites();
   }
   
   /// Limpa todos os favoritos
-  void clearAllFavorites() {
+  Future<void> clearAllFavorites() async {
     for (var sign in _favorites) {
       sign.isFavorite = false;
+      await _databaseService.toggleSignFavorite(sign.id, false);
     }
     
     _favorites.clear();
     _filteredFavorites.clear();
     notifyListeners();
+  }
+
+  List<String> _buildCategories(List<SignModel> signs) {
+    final set = <String>{};
+    for (final sign in signs) {
+      if (sign.category.isNotEmpty) {
+        set.add(sign.category);
+      }
+    }
+    final list = set.toList()..sort();
+    return ['Todos', ...list];
   }
 } 

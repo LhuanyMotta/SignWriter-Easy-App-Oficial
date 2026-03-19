@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import '../models/sign_model.dart';
+import '../services/database_service.dart';
+import '../views/screens/sign_detail_screen.dart';
 
 /// ViewModel para a tela de Dicionário
 class DictionaryViewModel extends ChangeNotifier {
+  final DatabaseService _databaseService = DatabaseService();
+
   /// Lista de sinais no dicionário
   List<SignModel> _signs = [];
   
@@ -18,19 +22,11 @@ class DictionaryViewModel extends ChangeNotifier {
   /// Flag para indicar se está carregando
   bool _isLoading = false;
 
+  /// Mensagem de erro (se houver)
+  String? _errorMessage;
+
   /// Categorias disponíveis para filtro
-  final List<String> categories = [
-    'Todos',
-    'Alfabeto',
-    'Números',
-    'Cumprimentos',
-    'Família',
-    'Alimentos',
-    'Verbos',
-    'Cores',
-    'Tempo',
-    'Lugares',
-  ];
+  List<String> _categories = ['Todos'];
   
   /// Acesso à lista de sinais
   List<SignModel> get signs => _filteredSigns.isEmpty && _searchQuery.isEmpty && _selectedCategory == 'Todos'
@@ -46,143 +42,54 @@ class DictionaryViewModel extends ChangeNotifier {
   /// Acesso ao status de carregamento
   bool get isLoading => _isLoading;
 
+  /// Acesso ao erro
+  String? get errorMessage => _errorMessage;
+
+  /// Acesso às categorias
+  List<String> get categories => _categories;
+
   /// Construtor
   DictionaryViewModel() {
-    _loadSigns();
+    loadSigns();
   }
 
-  /// Carrega os sinais do dicionário (no futuro, a partir do banco)
-  void _loadSigns() {
-    _isLoading = true;
-    notifyListeners();
-    
-    // Simular carregamento de dados
-    Future.delayed(const Duration(milliseconds: 800), () {
-      // Criar dados de exemplo
-      _signs = [
-        SignModel(
-          id: '1',
-          name: 'Olá',
-          description: 'Saudação básica',
-          signImagePath: 'assets/signs/ola.png',
-          category: 'Cumprimentos',
-          createdAt: DateTime.now(),
-        ),
-        SignModel(
-          id: '2',
-          name: 'Obrigado',
-          description: 'Expressão de gratidão',
-          signImagePath: 'assets/signs/obrigado.png',
-          category: 'Cumprimentos',
-          createdAt: DateTime.now(),
-          isFavorite: true,
-        ),
-        SignModel(
-          id: '3',
-          name: 'Bom dia',
-          description: 'Saudação matinal',
-          signImagePath: 'assets/signs/bom_dia.png',
-          category: 'Cumprimentos',
-          createdAt: DateTime.now(),
-        ),
-        SignModel(
-          id: '4',
-          name: 'Casa',
-          description: 'Local onde se mora',
-          signImagePath: 'assets/signs/casa.png',
-          category: 'Lugares',
-          createdAt: DateTime.now(),
-        ),
-        SignModel(
-          id: '5',
-          name: 'Família',
-          description: 'Grupo de pessoas relacionadas',
-          signImagePath: 'assets/signs/familia.png',
-          category: 'Família',
-          createdAt: DateTime.now(),
-          isFavorite: true,
-        ),
-        SignModel(
-          id: '6',
-          name: 'Água',
-          description: 'Líquido essencial para a vida',
-          signImagePath: 'assets/signs/agua.png',
-          category: 'Alimentos',
-          createdAt: DateTime.now(),
-        ),
-        SignModel(
-          id: '7',
-          name: 'Comer',
-          description: 'Ação de se alimentar',
-          signImagePath: 'assets/signs/comer.png',
-          category: 'Verbos',
-          createdAt: DateTime.now(),
-        ),
-        SignModel(
-          id: '8',
-          name: 'Estudar',
-          description: 'Ação de adquirir conhecimento',
-          signImagePath: 'assets/signs/estudar.png',
-          category: 'Verbos',
-          createdAt: DateTime.now(),
-        ),
-      ];
-      
-      // Inicialmente, todos os sinais são mostrados
-      _filteredSigns = List.from(_signs);
-      
-      _isLoading = false;
-      notifyListeners();
-    });
+  /// Carrega os sinais do dicionário a partir do banco
+  Future<void> loadSigns() async {
+    _searchQuery = '';
+    _selectedCategory = 'Todos';
+    await _refreshSigns();
   }
 
   /// Pesquisa sinais pelo termo fornecido
   void search(String query) {
     _searchQuery = query;
-    _applyFilters();
+    _refreshSigns();
   }
 
   /// Filtra sinais por categoria
   void filterByCategory(String category) {
     _selectedCategory = category;
-    _applyFilters();
-  }
-  
-  /// Aplica os filtros de busca e categoria
-  void _applyFilters() {
-    if (_searchQuery.isEmpty && _selectedCategory == 'Todos') {
-      _filteredSigns = List.from(_signs);
-    } else {
-      _filteredSigns = _signs.where((sign) {
-        // Filtro de categoria
-        bool matchesCategory = _selectedCategory == 'Todos' || 
-                              sign.category == _selectedCategory;
-        
-        // Filtro de pesquisa
-        bool matchesSearch = _searchQuery.isEmpty || 
-                           sign.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                           (sign.description?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
-        
-        return matchesCategory && matchesSearch;
-      }).toList();
-    }
-    
-    notifyListeners();
+    _refreshSigns();
   }
 
   /// Abre os detalhes de um sinal
-  void openSignDetails(BuildContext context, SignModel sign) {
-    // No futuro, navegará para a tela de detalhes
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Detalhes do sinal: ${sign.name}')),
+  Future<void> openSignDetails(BuildContext context, SignModel sign) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SignDetailScreen(signId: sign.id),
+      ),
     );
+    await _refreshSigns();
   }
 
   /// Alterna um sinal como favorito
-  void toggleFavorite(String signId) {
+  Future<void> toggleFavorite(String signId) async {
     final index = _signs.indexWhere((sign) => sign.id == signId);
     if (index >= 0) {
-      _signs[index].isFavorite = !_signs[index].isFavorite;
+      final newValue = !_signs[index].isFavorite;
+      _signs[index].isFavorite = newValue;
+      await _databaseService.toggleSignFavorite(signId, newValue);
       
       // Atualiza também na lista filtrada, se o sinal estiver lá
       final filteredIndex = _filteredSigns.indexWhere((sign) => sign.id == signId);
@@ -192,5 +99,43 @@ class DictionaryViewModel extends ChangeNotifier {
       
       notifyListeners();
     }
+  }
+
+  Future<void> _refreshSigns() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      if (_searchQuery.isEmpty && _selectedCategory == 'Todos') {
+        _signs = await _databaseService.getSigns();
+        _filteredSigns = List.from(_signs);
+        _categories = _buildCategories(_signs);
+      } else if (_searchQuery.isNotEmpty && _selectedCategory == 'Todos') {
+        _filteredSigns = await _databaseService.searchSigns(_searchQuery);
+      } else if (_searchQuery.isEmpty && _selectedCategory != 'Todos') {
+        _filteredSigns = await _databaseService.getSignsByCategory(_selectedCategory);
+      } else {
+        final results = await _databaseService.searchSigns(_searchQuery);
+        _filteredSigns = results.where((sign) => sign.category == _selectedCategory).toList();
+      }
+    } catch (e) {
+      _errorMessage = 'Não foi possível carregar os sinais.';
+      _filteredSigns = [];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  List<String> _buildCategories(List<SignModel> signs) {
+    final set = <String>{};
+    for (final sign in signs) {
+      if (sign.category.isNotEmpty) {
+        set.add(sign.category);
+      }
+    }
+    final list = set.toList()..sort();
+    return ['Todos', ...list];
   }
 } 

@@ -79,27 +79,25 @@ class LearnPracticeViewModel extends ChangeNotifier {
   /// Progresso geral do usuário
   double get overallProgress {
     if (categories.isEmpty) return 0.0;
-    
+
     double total = 0;
     for (var category in categories) {
-      total += category['progress'] as double;
+      total += (category['progress'] as double? ?? 0.0);
     }
-    return total / categories.length;
+    return (total / categories.length).clamp(0.0, 1.0);
   }
 
-  /// Abre uma categoria para aprendizado
+  /// Abre uma categoria para aprendizado (atualmente apenas mostra SnackBar)
   void openCategory(BuildContext context, int index) {
-    // Implementação futura para abrir detalhes da categoria
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Abrindo categoria: ${categories[index]['title']}')),
     );
   }
 
-  /// Inicia um exercício recomendado
+  /// Inicia um exercício recomendado (atualmente apenas mostra SnackBar)
   void startExercise(BuildContext context, int index) {
-    // Implementação futura para iniciar um exercício
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Iniciando exercício: ${recommendedExercises[index]['title']}')),
     );
   }
-} 
+}

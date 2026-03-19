@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/sign_model.dart';
+import '../../theme/app_theme.dart';
 
 /// Widget que mostra um card de sinal
 class SignCard extends StatelessWidget {
@@ -26,8 +27,11 @@ class SignCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final tokens = theme.extension<AppThemeTokens>();
+    final spacing = tokens?.spacingScale ?? 1.0;
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16 * spacing),
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -38,15 +42,15 @@ class SignCard extends StatelessWidget {
           // Aqui no futuro podemos mostrar detalhes do sinal
         },
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0 * spacing),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSignImage(),
-                  const SizedBox(width: 16),
+                  _buildSignImage(context),
+                  SizedBox(width: 16 * spacing),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,18 +62,18 @@ class SignCard extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4 * spacing),
                         if (sign.description != null) ...[
                           Text(
                             sign.description!,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
-                              color: Colors.black54,
+                              color: tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4 * spacing),
                         ],
                         Row(
                           children: [
@@ -92,7 +96,7 @@ class SignCard extends StatelessWidget {
                               ),
                             ),
                             const Spacer(),
-                            _buildDateText(),
+                            _buildDateText(context),
                           ],
                         ),
                       ],
@@ -107,7 +111,9 @@ class SignCard extends StatelessWidget {
                   IconButton(
                     icon: Icon(
                       sign.isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: sign.isFavorite ? Colors.red : Colors.grey,
+                      color: sign.isFavorite
+                          ? theme.colorScheme.error
+                          : (tokens?.onSurfaceMuted ?? theme.colorScheme.onSurfaceVariant),
                     ),
                     onPressed: onFavoriteToggle,
                   ),
@@ -128,12 +134,13 @@ class SignCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSignImage() {
+  Widget _buildSignImage(BuildContext context) {
     return Container(
       width: 80,
       height: 80,
       decoration: BoxDecoration(
-        color: Colors.grey.shade200,
+        color: Theme.of(context).extension<AppThemeTokens>()?.surfaceMuted ??
+            Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Image.asset(
@@ -143,7 +150,8 @@ class SignCard extends StatelessWidget {
             child: Icon(
               Icons.sign_language,
               size: 40,
-              color: Colors.grey.shade400,
+              color: Theme.of(context).extension<AppThemeTokens>()?.onSurfaceMuted ??
+                  Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           );
         },
@@ -151,7 +159,7 @@ class SignCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDateText() {
+  Widget _buildDateText(BuildContext context) {
     final now = DateTime.now();
     final difference = now.difference(sign.createdAt);
     
@@ -159,33 +167,37 @@ class SignCard extends StatelessWidget {
       if (difference.inHours == 0) {
         return Text(
           'Há ${difference.inMinutes} min',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
-            color: Colors.grey,
+            color: Theme.of(context).extension<AppThemeTokens>()?.onSurfaceMuted ??
+                Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         );
       }
       return Text(
         'Há ${difference.inHours} h',
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
-          color: Colors.grey,
+          color: Theme.of(context).extension<AppThemeTokens>()?.onSurfaceMuted ??
+              Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       );
     } else if (difference.inDays < 7) {
       return Text(
         'Há ${difference.inDays} dias',
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
-          color: Colors.grey,
+          color: Theme.of(context).extension<AppThemeTokens>()?.onSurfaceMuted ??
+              Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       );
     } else {
       return Text(
         '${sign.createdAt.day}/${sign.createdAt.month}/${sign.createdAt.year}',
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
-          color: Colors.grey,
+          color: Theme.of(context).extension<AppThemeTokens>()?.onSurfaceMuted ??
+              Theme.of(context).colorScheme.onSurfaceVariant,
         ),
       );
     }

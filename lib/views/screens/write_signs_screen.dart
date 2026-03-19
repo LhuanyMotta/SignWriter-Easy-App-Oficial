@@ -4,6 +4,8 @@ import '../../viewmodels/write_signs_viewmodel.dart';
 import '../../models/sign_model.dart';
 import '../widgets/sign_card.dart';
 import '../widgets/category_selector.dart';
+import 'create_text_screen.dart';
+import 'view_texts_screen.dart';
 
 class WriteSignsScreen extends StatefulWidget {
   const WriteSignsScreen({super.key});
@@ -45,6 +47,26 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
         appBar: AppBar(
           title: const Text('Escrever Sinais'),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.list_alt),
+              tooltip: 'Meus textos',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ViewTextsScreen()),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.note_add),
+              tooltip: 'Criar texto',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CreateTextScreen()),
+                );
+              },
+            ),
             IconButton(
               icon: const Icon(Icons.info_outline),
               onPressed: () {
@@ -133,13 +155,17 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
   }
 
   Widget _buildSearchBar() {
+    final colorScheme = Theme.of(context).colorScheme;
     return TextField(
       controller: _searchController,
+      style: TextStyle(color: colorScheme.onSurface),
+      cursorColor: colorScheme.primary,
       decoration: InputDecoration(
         hintText: 'Buscar sinais...',
-        prefixIcon: const Icon(Icons.search),
+        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+        prefixIcon: Icon(Icons.search, color: colorScheme.onSurfaceVariant),
         filled: true,
-        fillColor: Colors.grey.shade200,
+        fillColor: colorScheme.surfaceContainerHighest,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "sign_exemplo_001",
+    "name": "Conversar",
+    "description": "Interacao por sinais",
+    "category": "Comunicacao",
+    "tags": ["conversar", "dialogo", "falar", "comunicacao"],
+    "assetPath": "assets/signs/conversar.png",
+    "signWritingCode": null,
+    "portugueseText": "conversar"
+  },
+  {
+    "id": "sign_exemplo_002",
+    "name": "Estudar",
+    "description": "Atividade de aprendizagem",
+    "category": "Educacao",
+    "tags": ["estudar", "aprender", "educacao"],
+    "assetPath": "assets/signs/estudar.png",
+    "signWritingCode": null,
+    "portugueseText": "estudar"
+  },
+  {
+    "id": "sign_exemplo_003",
+    "name": "Informatica",
+    "description": "Area de tecnologia",
+    "category": "Tecnologia",
+    "tags": ["informatica", "tecnologia", "computacao"],
+    "assetPath": "assets/signs/informatica (1).png",
+    "signWritingCode": null,
+    "portugueseText": "informatica"
+  }
+]

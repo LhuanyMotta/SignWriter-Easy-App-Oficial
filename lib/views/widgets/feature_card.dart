@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_theme.dart';
 
 /// Widget que representa um card de funcionalidade na tela inicial
 /// 
@@ -28,6 +29,9 @@ class FeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onPrimary = theme.colorScheme.onPrimary;
+    final spacing = theme.extension<AppThemeTokens>()?.spacingScale ?? 1.0;
     // Uso de Material para efeito de ink splash quando pressionado
     return Material(
       color: color,
@@ -37,10 +41,10 @@ class FeatureCard extends StatelessWidget {
         onTap: () => onTap(context),
         borderRadius: BorderRadius.circular(20),
         // Ripple effect na cor branca com opacidade reduzida
-        splashColor: Colors.white.withOpacity(0.3),
-        highlightColor: Colors.white.withOpacity(0.1),
+        splashColor: onPrimary.withOpacity(0.3),
+        highlightColor: onPrimary.withOpacity(0.1),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0 * spacing),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -48,15 +52,15 @@ class FeatureCard extends StatelessWidget {
               Icon(
                 icon,
                 size: 42,
-                color: Colors.white,
+                color: onPrimary,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16 * spacing),
               // Texto com estilo definido e alinhamento centralizado
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: onPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.5,
