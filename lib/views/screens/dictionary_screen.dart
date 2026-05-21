@@ -208,7 +208,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                 child: Stack(
                   children: [
                     Center(
-                      child: Image.asset(
+                      child: Image.network(
                         sign.signImagePath,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {

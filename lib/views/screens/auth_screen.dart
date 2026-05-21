@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../viewmodels/auth_viewmodel.dart';
-import '../widgets/app_logo.dart';
+import 'home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -16,24 +17,29 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   final _loginFormKey = GlobalKey<FormState>();
   final _signupFormKey = GlobalKey<FormState>();
   
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _loginEmailController = TextEditingController();
+  final TextEditingController _loginPasswordController = TextEditingController();
+  
+  final TextEditingController _signupNameController = TextEditingController();
+  final TextEditingController _signupEmailController = TextEditingController();
+  final TextEditingController _signupPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _viewModel = AuthViewModel();
+    _viewModel = AuthViewModel(Supabase.instance.client);
     _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _nameController.dispose();
+    _loginEmailController.dispose();
+    _loginPasswordController.dispose();
+    _signupNameController.dispose();
+    _signupEmailController.dispose();
+    _signupPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
@@ -47,21 +53,30 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         body: SafeArea(
           child: Column(
             children: [
-              // Cabeçalho fixo (não rolável)
+              // Cabeçalho fixo
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                 child: Column(
                   children: [
-                    const SizedBox(height: 20),
-                    const AppLogo(
-                      size: 80,
-                      colored: true,
-                      showText: false,
+                    const SizedBox(height: 40),
+                    // Logo personalizada
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2D78BB),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Icon(
+                        Icons.sign_language,
+                        size: 60,
+                        color: Colors.white,
+                      ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     Text(
                       'SignWriter Fácil',
-                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF2D78BB),
                       ),
@@ -75,6 +90,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                     ),
                     const SizedBox(height: 32),
                     
+                    // Abas
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
@@ -104,19 +120,13 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 ),
               ),
               
-              // Área rolável dos formulários
+              // Formulários
               Expanded(
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: _buildLoginTab(),
-                    ),
-                    SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: _buildSignupTab(),
-                    ),
+                    _buildLoginTab(),
+                    _buildSignupTab(),
                   ],
                 ),
               ),
@@ -128,221 +138,251 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildLoginTab() {
-    return Form(
-      key: _loginFormKey,
-      child: Column(
-        children: [
-          _buildTextField(
-            controller: _emailController,
-            label: 'Email',
-            icon: Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Por favor, insira seu email';
-              }
-              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                return 'Por favor, insira um email válido';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          _buildTextField(
-            controller: _passwordController,
-            label: 'Senha',
-            icon: Icons.lock_outlined,
-            isPassword: true,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Por favor, insira sua senha';
-              }
-              if (value.length < 6) {
-                return 'A senha deve ter pelo menos 6 caracteres';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 8),
-          
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Recuperação de senha será implementada em breve')),
-                );
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Form(
+        key: _loginFormKey,
+        child: Column(
+          children: [
+            _buildTextField(
+              controller: _loginEmailController,
+              label: 'Email',
+              hintText: 'Digite seu email',
+              icon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, insira seu email';
+                }
+                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                  return 'Por favor, insira um email válido';
+                }
+                return null;
               },
-              child: Text(
-                'Esqueci minha senha',
-                style: TextStyle(
-                  color: const Color(0xFF2D78BB),
-                  fontSize: 14,
+            ),
+            const SizedBox(height: 16),
+            
+            _buildTextField(
+              controller: _loginPasswordController,
+              label: 'Senha',
+              hintText: 'Digite sua senha',
+              icon: Icons.lock_outlined,
+              isPassword: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, insira sua senha';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 8),
+            
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Recuperação de senha será implementada em breve'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+                child: Text(
+                  'Esqueci minha senha',
+                  style: TextStyle(
+                    color: const Color(0xFF2D78BB),
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          
-          Consumer<AuthViewModel>(
-            builder: (context, viewModel, child) {
-              return SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: viewModel.isLoading ? null : _handleLogin,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2D78BB),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+            const SizedBox(height: 24),
+            
+            Consumer<AuthViewModel>(
+              builder: (context, viewModel, child) {
+                return SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: viewModel.isLoading ? null : () => _handleLogin(viewModel, context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D78BB),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
                     ),
+                    child: viewModel.isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.login, size: 22),
+                              SizedBox(width: 10),
+                              Text(
+                                'Entrar',
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
-                  child: viewModel.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Text(
-                          'Entrar',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          _buildDivider(),
-          const SizedBox(height: 16),
-          
-          _buildSocialLoginButtons(),
-        ],
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            
+            _buildDivider(),
+            const SizedBox(height: 20),
+            
+            _buildSocialLoginButtons(),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSignupTab() {
-    return Form(
-      key: _signupFormKey,
-      child: Column(
-        children: [
-          _buildTextField(
-            controller: _nameController,
-            label: 'Nome completo',
-            icon: Icons.person_outlined,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Por favor, insira seu nome';
-              }
-              if (value.length < 2) {
-                return 'O nome deve ter pelo menos 2 caracteres';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          _buildTextField(
-            controller: _emailController,
-            label: 'Email',
-            icon: Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Por favor, insira seu email';
-              }
-              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                return 'Por favor, insira um email válido';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          _buildTextField(
-            controller: _passwordController,
-            label: 'Senha',
-            icon: Icons.lock_outlined,
-            isPassword: true,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Por favor, insira uma senha';
-              }
-              if (value.length < 6) {
-                return 'A senha deve ter pelo menos 6 caracteres';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          _buildTextField(
-            controller: _confirmPasswordController,
-            label: 'Confirmar senha',
-            icon: Icons.lock_outlined,
-            isPassword: true,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Por favor, confirme sua senha';
-              }
-              if (value != _passwordController.text) {
-                return 'As senhas não coincidem';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 24),
-          
-          Consumer<AuthViewModel>(
-            builder: (context, viewModel, child) {
-              return SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: viewModel.isLoading ? null : _handleSignup,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2D78BB),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Form(
+        key: _signupFormKey,
+        child: Column(
+          children: [
+            _buildTextField(
+              controller: _signupNameController,
+              label: 'Nome completo',
+              hintText: 'Digite seu nome completo',
+              icon: Icons.person_outlined,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, insira seu nome';
+                }
+                if (value.length < 2) {
+                  return 'O nome deve ter pelo menos 2 caracteres';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            
+            _buildTextField(
+              controller: _signupEmailController,
+              label: 'Email',
+              hintText: 'Digite seu email',
+              icon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, insira seu email';
+                }
+                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                  return 'Por favor, insira um email válido';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            
+            _buildTextField(
+              controller: _signupPasswordController,
+              label: 'Senha',
+              hintText: 'Digite sua senha',
+              icon: Icons.lock_outlined,
+              isPassword: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, insira uma senha';
+                }
+                if (value.length < 6) {
+                  return 'A senha deve ter pelo menos 6 caracteres';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            
+            _buildTextField(
+              controller: _confirmPasswordController,
+              label: 'Confirmar senha',
+              hintText: 'Confirme sua senha',
+              icon: Icons.lock_outlined,
+              isPassword: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Por favor, confirme sua senha';
+                }
+                if (value != _signupPasswordController.text) {
+                  return 'As senhas não coincidem';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 32),
+            
+            Consumer<AuthViewModel>(
+              builder: (context, viewModel, child) {
+                return SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: viewModel.isLoading ? null : () => _handleSignup(viewModel, context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D78BB),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 2,
                     ),
+                    child: viewModel.isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.person_add, size: 22),
+                              SizedBox(width: 10),
+                              Text(
+                                'Cadastrar',
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                   ),
-                  child: viewModel.isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Text(
-                          'Cadastrar',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          _buildDivider(),
-          const SizedBox(height: 16),
-          
-          _buildSocialLoginButtons(),
-        ],
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+            
+            _buildDivider(),
+            const SizedBox(height: 20),
+            
+            _buildSocialLoginButtons(),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
@@ -350,43 +390,58 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
+    required String hintText,
     required IconData icon,
     bool isPassword = false,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: isPassword,
-      keyboardType: keyboardType,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: const Color(0xFF2D78BB)),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[700],
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: controller,
+          obscureText: isPassword,
+          keyboardType: keyboardType,
+          validator: validator,
+          decoration: InputDecoration(
+            hintText: hintText,
+            prefixIcon: Icon(icon, color: const Color(0xFF2D78BB)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF2D78BB), width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.red[300]!),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.red[400]!, width: 2),
+            ),
+            filled: true,
+            fillColor: Colors.grey[50],
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          ),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF2D78BB), width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.red[300]!),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.red[400]!, width: 2),
-        ),
-        filled: true,
-        fillColor: Colors.grey[50],
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      ),
+      ],
     );
   }
 
@@ -422,44 +477,50 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   Widget _buildSocialLoginButtons() {
     return Column(
       children: [
+        // Botão Google com fundo AZUL sólido e G branco
         SizedBox(
           width: double.infinity,
-          height: 50,
-          child: OutlinedButton(
-            onPressed: () => _viewModel.signInWithGoogle(),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: Colors.grey[300]!),
+          height: 56,
+          child: ElevatedButton(
+            onPressed: () async {
+              final success = await _viewModel.signInWithGoogle();
+              if (!success && _viewModel.error != null && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(_viewModel.error!),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2D78BB),
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              foregroundColor: Colors.black87,
+              elevation: 2,
             ),
-            child: Row(
+            child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
+                // Ícone do Google - apenas o G branco
+                Text(
+                  'G',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    'G',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                const Text(
+                SizedBox(width: 12),
+                Text(
                   'Continuar com Google',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -468,28 +529,42 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         ),
         const SizedBox(height: 12),
         
+        // Botão Apple com fundo AZUL sólido
         SizedBox(
           width: double.infinity,
-          height: 50,
-          child: OutlinedButton(
-            onPressed: () => _viewModel.signInWithApple(),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: Colors.grey[300]!),
+          height: 56,
+          child: ElevatedButton(
+            onPressed: () async {
+              final success = await _viewModel.signInWithApple();
+              if (!success && _viewModel.error != null && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(_viewModel.error!),
+                    backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 3),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2D78BB),
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              foregroundColor: Colors.black87,
+              elevation: 2,
             ),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.apple, size: 24, color: Colors.black87),
+                Icon(Icons.apple, size: 24, color: Colors.white),
                 SizedBox(width: 12),
                 Text(
                   'Continuar com Apple',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -500,29 +575,51 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     );
   }
 
-  void _handleLogin() async {
+  void _handleLogin(AuthViewModel viewModel, BuildContext context) async {
     if (_loginFormKey.currentState!.validate()) {
-      final success = await _viewModel.signInWithEmail(
-        email: _emailController.text,
-        password: _passwordController.text,
+      final success = await viewModel.signInWithEmail(
+        email: _loginEmailController.text,
+        password: _loginPasswordController.text,
       );
       
       if (success && mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
+        // Navega para HomeScreen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(viewModel.error ?? 'Erro no login'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
       }
     }
   }
 
-  void _handleSignup() async {
+  void _handleSignup(AuthViewModel viewModel, BuildContext context) async {
     if (_signupFormKey.currentState!.validate()) {
-      final success = await _viewModel.signUpWithEmail(
-        name: _nameController.text,
-        email: _emailController.text,
-        password: _passwordController.text,
+      final success = await viewModel.signUpWithEmail(
+        name: _signupNameController.text,
+        email: _signupEmailController.text,
+        password: _signupPasswordController.text,
       );
       
       if (success && mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
+        // Navega para HomeScreen
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(viewModel.error ?? 'Erro no cadastro'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
       }
     }
   }

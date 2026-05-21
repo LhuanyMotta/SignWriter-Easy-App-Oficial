@@ -56,17 +56,16 @@ class SignModel {
 
   /// Construtor a partir de um mapa (para uso futuro com banco de dados)
   factory SignModel.fromMap(Map<String, dynamic> map) {
-    return SignModel(
-      id: map['id'],
-      name: map['name'],
-      description: map['description'],
-      signImagePath: map['signImagePath'],
-      videoPath: map['videoPath'],
-      category: map['category'],
-      createdAt: DateTime.parse(map['createdAt']),
-      isFavorite: map['isFavorite'] ?? false,
-    );
-  }
+  return SignModel(
+    id: map['id'].toString(),
+    name: map['title'] ?? map['name'] ?? 'Sem nome',
+    description: map['description'],
+    signImagePath: map['image_url'] ?? '',
+    category: map['category'] ?? 'Sem categoria',
+    createdAt: DateTime.tryParse(map['created_at'] ?? '') ?? DateTime.now(),
+    isFavorite: false,
+  );
+}
 
   /// Converte o modelo para um mapa (para uso futuro com banco de dados)
   Map<String, dynamic> toMap() {
