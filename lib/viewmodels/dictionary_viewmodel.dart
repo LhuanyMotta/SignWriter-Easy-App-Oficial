@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/sign_model.dart';
 
 class DictionaryViewModel extends ChangeNotifier {
+  final SupabaseClient _supabase = Supabase.instance.client;
+
   List<SignModel> _signs = [];
   List<SignModel> _filteredSigns = [];
 
@@ -28,7 +30,9 @@ class DictionaryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await Supabase.instance.client
+      final user = _supabase.auth.currentUser;
+
+      final response = await _supabase
           .from('signs_dictionary')
           .select()
           .order('created_at', ascending: true);
@@ -36,6 +40,21 @@ class DictionaryViewModel extends ChangeNotifier {
       _signs = response
           .map<SignModel>((item) => SignModel.fromMap(item))
           .toList();
+
+      if (user != null) {
+        final favoritesResponse = await _supabase
+            .from('favorite_signs')
+            .select('sign_id')
+            .eq('user_id', user.id);
+
+        final favoriteIds = favoritesResponse
+            .map<String>((item) => item['sign_id'].toString())
+            .toSet();
+
+        for (final sign in _signs) {
+          sign.isFavorite = favoriteIds.contains(sign.id);
+        }
+      }
 
       final categorySet = _signs.map((sign) => sign.category).toSet().toList();
       categorySet.sort();
@@ -123,20 +142,48 @@ class DictionaryViewModel extends ChangeNotifier {
     );
   }
 
-  void toggleFavorite(String signId) {
+  Future<void> toggleFavorite(String signId) async {
+    final user = _supabase.auth.currentUser;
+
+    if (user == null) {
+      debugPrint('Usuário não autenticado');
+      return;
+    }
+
     final index = _signs.indexWhere((sign) => sign.id == signId);
 
-    if (index >= 0) {
-      _signs[index].isFavorite = !_signs[index].isFavorite;
+    if (index < 0) return;
+
+    final sign = _signs[index];
+
+    try {
+      if (sign.isFavorite) {
+        await _supabase
+            .from('favorite_signs')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('sign_id', signId);
+
+        sign.isFavorite = false;
+      } else {
+        await _supabase.from('favorite_signs').insert({
+          'user_id': user.id,
+          'sign_id': signId,
+        });
+
+        sign.isFavorite = true;
+      }
 
       final filteredIndex =
-          _filteredSigns.indexWhere((sign) => sign.id == signId);
+          _filteredSigns.indexWhere((item) => item.id == signId);
 
       if (filteredIndex >= 0) {
-        _filteredSigns[filteredIndex].isFavorite = _signs[index].isFavorite;
+        _filteredSigns[filteredIndex].isFavorite = sign.isFavorite;
       }
 
       notifyListeners();
+    } catch (e) {
+      debugPrint('Erro ao atualizar favorito: $e');
     }
   }
 }

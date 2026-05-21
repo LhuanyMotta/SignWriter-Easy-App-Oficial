@@ -217,7 +217,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
+              child: Image.network(
                 sign.signImagePath,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {

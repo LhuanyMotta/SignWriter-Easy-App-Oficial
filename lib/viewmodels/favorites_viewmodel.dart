@@ -1,135 +1,192 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/sign_model.dart';
 
-/// ViewModel para a tela de Favoritos
 class FavoritesViewModel extends ChangeNotifier {
-  // Lista de sinais favoritos (mockada)
-  final List<SignModel> _favorites = [
-    SignModel.demo(
-      id: '1',
-      name: 'Olá',
-      description: 'Saudação básica',
-      category: 'Cumprimentos',
-      isFavorite: true,
-    ),
-    SignModel.demo(
-      id: '2',
-      name: 'Obrigado',
-      description: 'Expressão de gratidão',
-      category: 'Expressões',
-      isFavorite: true,
-    ),
-    SignModel.demo(
-      id: '3',
-      name: 'Bom dia',
-      description: 'Saudação matinal',
-      category: 'Cumprimentos',
-      isFavorite: true,
-    ),
-    SignModel.demo(
-      id: '4',
-      name: 'Casa',
-      description: 'Residência, lar',
-      category: 'Lugares',
-      isFavorite: true,
-    ),
-    SignModel.demo(
-      id: '5',
-      name: 'Família',
-      description: 'Grupo de parentes',
-      category: 'Pessoas',
-      isFavorite: true,
-    ),
-  ];
-  
-  // Lista de categorias disponíveis
-  final List<String> _categories = [
-    'Todos',
-    'Cumprimentos',
-    'Expressões',
-    'Lugares',
-    'Pessoas',
-  ];
-  
+  final SupabaseClient _supabase = Supabase.instance.client;
+
+  List<SignModel> _favorites = [];
+  List<SignModel> _filteredFavorites = [];
+
+  List<String> _categories = ['Todos'];
+
   String _searchQuery = '';
   String _selectedCategory = 'Todos';
-  List<SignModel> _filteredFavorites = [];
-  
-  // Getters
-  List<SignModel> get favorites => _filteredFavorites.isEmpty && _searchQuery.isEmpty && _selectedCategory == 'Todos'
-      ? _favorites
-      : _filteredFavorites;
-  
+
+  bool _isLoading = false;
+
+  List<SignModel> get favorites => _filteredFavorites;
   List<String> get categories => _categories;
   String get selectedCategory => _selectedCategory;
   String get searchQuery => _searchQuery;
-  
-  /// Construtor que inicializa a lista filtrada
+  bool get isLoading => _isLoading;
+
   FavoritesViewModel() {
-    _filteredFavorites = List.from(_favorites);
+    loadFavorites();
   }
-  
-  /// Filtra itens favoritos por categoria
+
+  Future<void> loadFavorites() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final user = _supabase.auth.currentUser;
+
+      if (user == null) {
+        _favorites = [];
+        _filteredFavorites = [];
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+
+      final response = await _supabase
+          .from('favorite_signs')
+          .select('''
+            sign_id,
+            signs_dictionary (
+              id,
+              title,
+              description,
+              category,
+              image_url,
+              created_at
+            )
+          ''')
+          .eq('user_id', user.id);
+
+      _favorites = response.map<SignModel>((item) {
+        final sign = item['signs_dictionary'];
+
+        return SignModel(
+          id: sign['id'].toString(),
+          name: sign['title'] ?? 'Sem nome',
+          description: sign['description'],
+          signImagePath: sign['image_url'] ?? '',
+          category: sign['category'] ?? 'Sem categoria',
+          createdAt: DateTime.tryParse(
+                  sign['created_at'] ?? DateTime.now().toString()) ??
+              DateTime.now(),
+          isFavorite: true,
+        );
+      }).toList();
+
+      final categorySet =
+          _favorites.map((sign) => sign.category).toSet().toList();
+
+      categorySet.sort();
+
+      _categories = ['Todos', ...categorySet];
+
+      _filteredFavorites = List.from(_favorites);
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Erro ao carregar favoritos: $e');
+
+      _favorites = [];
+      _filteredFavorites = [];
+
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   void filterByCategory(String category) {
     _selectedCategory = category;
     _applyFilters();
   }
-  
-  /// Pesquisa nos itens favoritos
+
   void search(String query) {
     _searchQuery = query;
     _applyFilters();
   }
-  
-  /// Aplica filtros de categoria e pesquisa
+
   void _applyFilters() {
-    if (_searchQuery.isEmpty && _selectedCategory == 'Todos') {
-      _filteredFavorites = List.from(_favorites);
-    } else {
-      _filteredFavorites = _favorites.where((sign) {
-        final matchesCategory = _selectedCategory == 'Todos' || sign.category == _selectedCategory;
-        final matchesSearch = _searchQuery.isEmpty || 
-                             sign.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                             (sign.description?.toLowerCase() ?? '').contains(_searchQuery.toLowerCase());
-        return matchesCategory && matchesSearch;
-      }).toList();
-    }
-    
+    _filteredFavorites = _favorites.where((sign) {
+      final matchesCategory =
+          _selectedCategory == 'Todos' || sign.category == _selectedCategory;
+
+      final searchLower = _searchQuery.toLowerCase();
+
+      final matchesSearch = _searchQuery.isEmpty ||
+          sign.name.toLowerCase().contains(searchLower) ||
+          (sign.description?.toLowerCase().contains(searchLower) ?? false);
+
+      return matchesCategory && matchesSearch;
+    }).toList();
+
     notifyListeners();
   }
-  
-  /// Remove um item dos favoritos
-  void removeFavorite(String id) {
-    final index = _favorites.indexWhere((sign) => sign.id == id);
-    if (index != -1) {
-      final removed = _favorites.removeAt(index);
-      
-      // Também remove da lista filtrada
+
+  Future<void> removeFavorite(String id) async {
+    try {
+      final user = _supabase.auth.currentUser;
+
+      if (user == null) return;
+
+      await _supabase
+          .from('favorite_signs')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('sign_id', id);
+
+      _favorites.removeWhere((sign) => sign.id == id);
       _filteredFavorites.removeWhere((sign) => sign.id == id);
-      
-      // Atualiza estado do item para não favorito
-      removed.isFavorite = false;
-      
+
       notifyListeners();
+    } catch (e) {
+      debugPrint('Erro ao remover favorito: $e');
     }
   }
-  
-  /// Abre detalhes de um sinal
+
+  Future<void> clearAllFavorites() async {
+    try {
+      final user = _supabase.auth.currentUser;
+
+      if (user == null) return;
+
+      await _supabase
+          .from('favorite_signs')
+          .delete()
+          .eq('user_id', user.id);
+
+      _favorites.clear();
+      _filteredFavorites.clear();
+
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Erro ao limpar favoritos: $e');
+    }
+  }
+
   void openSignDetails(BuildContext context, SignModel sign) {
-    // Implementação futura para abrir detalhes do sinal
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Detalhes do sinal "${sign.name}" serão implementados em breve')),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(sign.name),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.network(
+                sign.signImagePath,
+                height: 180,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 12),
+              Text(sign.description ?? 'Sem descrição'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Fechar'),
+            ),
+          ],
+        );
+      },
     );
   }
-  
-  /// Limpa todos os favoritos
-  void clearAllFavorites() {
-    for (var sign in _favorites) {
-      sign.isFavorite = false;
-    }
-    
-    _favorites.clear();
-    _filteredFavorites.clear();
-    notifyListeners();
-  }
-} 
+}
