@@ -119,6 +119,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   Widget _buildProfileTab() {
     return Consumer<ProfileViewModel>(
       builder: (context, viewModel, child) {
+        if (viewModel.userData == null) {
+  return const Center(
+    child: CircularProgressIndicator(
+      color: Color(0xFF2D78BB),
+    ),
+  );
+}
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -143,6 +150,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   final userEmail = userData['email'] as String? ?? '';
   final userBio = userData['bio'] as String? ?? '';
   final avatarUrl = userData['avatar_url'] as String?;
+  if (avatarUrl != null && avatarUrl.isNotEmpty) {
+  precacheImage(NetworkImage(avatarUrl), context);
+}
 
   return Container(
     padding: const EdgeInsets.all(20),

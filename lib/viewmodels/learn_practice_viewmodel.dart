@@ -1,105 +1,158 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// ViewModel para a tela de Aprender e Praticar
+import '../models/sign_model.dart';
+import '../views/screens/practice_quiz_screen.dart';
+
 class LearnPracticeViewModel extends ChangeNotifier {
-  /// Lista de categorias de aprendizado
-  final List<Map<String, dynamic>> categories = [
-    {
-      'title': 'Introdução ao SignWriting',
-      'icon': Icons.menu_book,
-      'color': const Color(0xFF2D78BB),
-      'progress': 0.8,
-      'lessons': 5,
-      'lessonsCompleted': 4,
-    },
-    {
-      'title': 'Alfabeto Manual',
-      'icon': Icons.sign_language,
-      'color': const Color(0xFF4EB1F0),
-      'progress': 0.6,
-      'lessons': 8,
-      'lessonsCompleted': 5,
-    },
-    {
-      'title': 'Números',
-      'icon': Icons.looks_one,
-      'color': const Color(0xFF2D78BB),
-      'progress': 0.4,
-      'lessons': 6,
-      'lessonsCompleted': 2,
-    },
-    {
-      'title': 'Expressões Faciais',
-      'icon': Icons.face,
-      'color': const Color(0xFF4EB1F0),
-      'progress': 0.3,
-      'lessons': 10,
-      'lessonsCompleted': 3,
-    },
-    {
-      'title': 'Movimentos',
-      'icon': Icons.swipe,
-      'color': const Color(0xFF2D78BB),
-      'progress': 0.1,
-      'lessons': 8,
-      'lessonsCompleted': 1,
-    },
-    {
-      'title': 'Frases',
-      'icon': Icons.format_quote,
-      'color': const Color(0xFF4EB1F0),
-      'progress': 0.0,
-      'lessons': 12,
-      'lessonsCompleted': 0,
-    },
-  ];
+  final SupabaseClient _supabase = Supabase.instance.client;
 
-  /// Lista de exercícios recomendados
-  final List<Map<String, dynamic>> recommendedExercises = [
-    {
-      'title': 'Praticar Alfabeto',
-      'description': 'Exercício para reforçar o aprendizado do alfabeto manual',
-      'duration': '5 min',
-      'isNew': true,
-    },
-    {
-      'title': 'Números de 1 a 10',
-      'description': 'Pratique a escrita de números em SignWriting',
-      'duration': '7 min',
-      'isNew': false,
-    },
-    {
-      'title': 'Cumprimentos Básicos',
-      'description': 'Pratique sinais de cumprimentos e despedidas',
-      'duration': '10 min',
-      'isNew': true,
-    },
-  ];
+  List<SignModel> _allSigns = [];
 
-  /// Progresso geral do usuário
+  List<Map<String, dynamic>> categories = [];
+
+  List<Map<String, dynamic>> recommendedExercises = [];
+
+  bool _isLoading = true;
+
+  bool get isLoading => _isLoading;
+
+  LearnPracticeViewModel() {
+    loadLearningData();
+  }
+
+  Future<void> loadLearningData() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      final signsResponse = await _supabase
+          .from('signs_dictionary')
+          .select()
+          .order('created_at', ascending: true);
+
+      _allSigns = signsResponse.map<SignModel>((item) {
+        return SignModel(
+          id: item['id'].toString(),
+          name: item['title'] ?? 'Sem nome',
+          description: item['description'],
+          signImagePath: item['image_url'] ?? '',
+          category: item['category'] ?? 'Sem categoria',
+          createdAt: DateTime.tryParse(
+                  item['created_at'] ?? DateTime.now().toString()) ??
+              DateTime.now(),
+        );
+      }).toList();
+
+      final categoriesMap = <String, List<SignModel>>{};
+
+      for (final sign in _allSigns) {
+        categoriesMap.putIfAbsent(sign.category, () => []);
+        categoriesMap[sign.category]!.add(sign);
+      }
+
+      categories = categoriesMap.entries.map((entry) {
+        return {
+          'title': entry.key,
+          'icon': Icons.school,
+          'color': const Color(0xFF2D78BB),
+          'progress': 0.0,
+          'lessons': entry.value.length,
+          'lessonsCompleted': 0,
+          'signs': entry.value,
+        };
+      }).toList();
+
+      recommendedExercises = categories.take(3).map((category) {
+        return {
+          'title': category['title'],
+          'description':
+              'Pratique sinais da categoria ${category['title']}',
+          'duration': '5 min',
+          'isNew': true,
+          'signs': category['signs'],
+        };
+      }).toList();
+
+      await _loadProgress();
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Erro ao carregar aprendizado: $e');
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadProgress() async {
+    final user = _supabase.auth.currentUser;
+
+    if (user == null) return;
+
+    final progressResponse = await _supabase
+        .from('learning_progress')
+        .select()
+        .eq('user_id', user.id);
+
+    final completedIds = progressResponse
+        .where((item) => item['completed'] == true)
+        .map<String>((item) => item['sign_id'].toString())
+        .toSet();
+
+    for (final category in categories) {
+      final signs = category['signs'] as List<SignModel>;
+
+      int completed = signs
+          .where((sign) => completedIds.contains(sign.id))
+          .length;
+
+      category['lessonsCompleted'] = completed;
+
+      category['progress'] =
+          signs.isEmpty ? 0.0 : completed / signs.length;
+    }
+
+    notifyListeners();
+  }
+
   double get overallProgress {
     if (categories.isEmpty) return 0.0;
-    
+
     double total = 0;
+
     for (var category in categories) {
       total += category['progress'] as double;
     }
+
     return total / categories.length;
   }
 
-  /// Abre uma categoria para aprendizado
   void openCategory(BuildContext context, int index) {
-    // Implementação futura para abrir detalhes da categoria
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Abrindo categoria: ${categories[index]['title']}')),
+    final category = categories[index];
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PracticeQuizScreen(
+          title: category['title'],
+          signs: List<SignModel>.from(category['signs']),
+        ),
+      ),
     );
   }
 
-  /// Inicia um exercício recomendado
   void startExercise(BuildContext context, int index) {
-    // Implementação futura para iniciar um exercício
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Iniciando exercício: ${recommendedExercises[index]['title']}')),
+    final exercise = recommendedExercises[index];
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PracticeQuizScreen(
+          title: exercise['title'],
+          signs: List<SignModel>.from(exercise['signs']),
+        ),
+      ),
     );
   }
-} 
+}

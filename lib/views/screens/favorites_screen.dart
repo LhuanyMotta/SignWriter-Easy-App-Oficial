@@ -192,7 +192,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   
   // Card de favorito individual
   Widget _buildFavoriteCard(SignModel sign, FavoritesViewModel viewModel) {
-    return Container(
+    return InkWell(
+  borderRadius: BorderRadius.circular(12),
+  onTap: () => viewModel.openSignDetails(context, sign),
+  child: Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -289,6 +292,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           const SizedBox(width: 8),
         ],
       ),
+  ),
     );
   }
   
