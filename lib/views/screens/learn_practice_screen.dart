@@ -17,7 +17,7 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
   @override
   void initState() {
     super.initState();
-    _viewModel = LearnPracticeViewModel();
+    _viewModel = Provider.of<LearnPracticeViewModel>(context, listen: false);
   }
 
   @override

@@ -20,7 +20,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   void initState() {
     super.initState();
-    _viewModel = FavoritesViewModel();
+    _viewModel = Provider.of<DictionaryViewModel>(context, listen: false);
     _searchController.addListener(_onSearchChanged);
   }
   

@@ -27,7 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _viewModel = ProfileViewModel();
+    _viewModel = Provider.of<ProfileViewModel>(context, listen: false);
     _tabController = TabController(length: 3, vsync: this);
     
     // Carrega dados do usuário

@@ -19,7 +19,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
   @override
   void initState() {
     super.initState();
-    _viewModel = DictionaryViewModel();
+    _viewModel = Provider.of<DictionaryViewModel>(context, listen: false);
     _searchController.addListener(_onSearchChanged);
   }
 

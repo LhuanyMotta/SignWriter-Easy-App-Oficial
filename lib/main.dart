@@ -5,6 +5,10 @@ import 'package:signwriter_easy_app_oficial/views/screens/auth_screen.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/auth_viewmodel.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:signwriter_easy_app_oficial/views/screens/profile_screen.dart';
+import 'package:signwriter_easy_app_oficial/viewmodels/profile_viewmodel.dart';
+import 'package:signwriter_easy_app_oficial/viewmodels/dictionary_viewmodel.dart';
+import 'package:signwriter_easy_app_oficial/viewmodels/favorites_viewmodel.dart';
+import 'package:signwriter_easy_app_oficial/viewmodels/learn_practice_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,14 +56,25 @@ void main() async {
     // 5. Iniciar o aplicativo
     runApp(
       MultiProvider(
-        providers: [
-          ChangeNotifierProvider(
-            create: (_) => AuthViewModel(Supabase.instance.client),
-          ),
-        ],
-        child: const MyApp(),
-      ),
-    );
+  providers: [
+    ChangeNotifierProvider(
+      create: (_) => AuthViewModel(Supabase.instance.client),
+    ),
+    ChangeNotifierProvider(
+      create: (_) => ProfileViewModel(),
+    ),
+    ChangeNotifierProvider(
+      create: (_) => DictionaryViewModel(),
+    ),
+    ChangeNotifierProvider(
+      create: (_) => FavoritesViewModel(),
+    ),
+    ChangeNotifierProvider(
+      create: (_) => LearnPracticeViewModel(),
+    ),
+  ],
+  child: const MyApp(),
+);
     
   } catch (e) {
     print('❌ ERRO CRÍTICO NA INICIALIZAÇÃO: $e');
@@ -92,22 +107,49 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'SignWriter Fácil',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: const Color(0xFF2D78BB),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2D78BB),
-          primary: const Color(0xFF2D78BB),
+Widget build(BuildContext context) {
+  return Consumer<ProfileViewModel>(
+    builder: (context, profileViewModel, child) {
+      final isDark = profileViewModel.darkMode;
+      final fontScale = profileViewModel.fontSize;
+
+      return MaterialApp(
+        title: 'SignWriter Fácil',
+        debugShowCheckedModeBanner: false,
+        themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+        theme: ThemeData(
+          primaryColor: const Color(0xFF2D78BB),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF2D78BB),
+            primary: const Color(0xFF2D78BB),
+            brightness: Brightness.light,
+          ),
+          fontFamily: 'Roboto',
+          useMaterial3: true,
         ),
-        fontFamily: 'Roboto',
-        useMaterial3: true,
-      ),
-      home: const AuthWrapper(),
-    );
-  }
+        darkTheme: ThemeData(
+          primaryColor: const Color(0xFF2D78BB),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF2D78BB),
+            primary: const Color(0xFF2D78BB),
+            brightness: Brightness.dark,
+          ),
+          fontFamily: 'Roboto',
+          useMaterial3: true,
+        ),
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(fontScale),
+            ),
+            child: child!,
+          );
+        },
+        home: const AuthWrapper(),
+      );
+    },
+  );
+}
 }
 
 class AuthWrapper extends StatelessWidget {
