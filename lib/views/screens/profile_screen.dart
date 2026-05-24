@@ -1,13 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../viewmodels/profile_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
-import 'package:image_picker/image_picker.dart';
+import '../accessibility_settings_view.dart';
 
-/// Tela de Perfil do usuário
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -15,1215 +15,471 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _ProfileScreenState extends State<ProfileScreen> {
   late ProfileViewModel _viewModel;
   final HomeViewModel _homeViewModel = HomeViewModel();
-  
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _bioController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    _viewModel = Provider.of<ProfileViewModel>(context, listen: false);
-    _tabController = TabController(length: 3, vsync: this);
-    
-    // Carrega dados do usuário
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadUserData();
-      _viewModel.recoverLostProfileImage();
-    });
-  }
+void initState() {
+  super.initState();
 
-  void _loadUserData() {
-    final userData = _viewModel.userData;
-    if (userData != null) {
-      _nameController.text = userData['name'] ?? '';
-      _emailController.text = userData['email'] ?? '';
-      _bioController.text = userData['bio'] ?? '';
-    }
-  }
+  _viewModel = Provider.of<ProfileViewModel>(
+    context,
+    listen: false,
+  );
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _nameController.dispose();
-    _emailController.dispose();
-    _bioController.dispose();
-    super.dispose();
-  }
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    await _viewModel.loadInitialData();
+    await _viewModel.recoverLostProfileImage();
+  });
+}
+
+  Color _cardColor(BuildContext context) => Theme.of(context).cardColor;
+
+  Color _textColor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? Colors.white
+          : const Color(0xFF333333);
+
+  Color _subtitleColor(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? Colors.grey.shade400
+          : Colors.grey.shade600;
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: const Text(
-            'Meu Perfil',
+            'Perfil',
             style: TextStyle(
-              fontWeight: FontWeight.bold,
               color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
           ),
           backgroundColor: const Color(0xFF2D78BB),
           iconTheme: const IconThemeData(color: Colors.white),
-          bottom: TabBar(
-            controller: _tabController,
-            indicatorColor: Colors.white,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white.withOpacity(0.7),
-            tabs: const [
-              Tab(text: 'Perfil'),
-              Tab(text: 'Configurações'),
-              Tab(text: 'Acessibilidade'),
-            ],
-          ),
         ),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildProfileTab(),
-            _buildSettingsTab(),
-            _buildAccessibilityTab(),
-          ],
+        body: Consumer<ProfileViewModel>(
+          builder: (context, viewModel, child) {
+            if (viewModel.userData == null) {
+              return const Center(
+                child: CircularProgressIndicator(color: Color(0xFF2D78BB)),
+              );
+            }
+
+            return ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                _buildUserCard(context, viewModel),
+                const SizedBox(height: 18),
+                _sectionTitle(context, 'Configurações'),
+                const SizedBox(height: 10),
+                _buildSettingsCard(context, viewModel),
+                const SizedBox(height: 18),
+                _sectionTitle(context, 'Dados da Conta'),
+                const SizedBox(height: 10),
+                _buildAccountCard(context, viewModel),
+                const SizedBox(height: 20),
+                _buildLogoutButton(context, viewModel),
+              ],
+            );
+          },
         ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: 2,
-          onTap: (index) {
-            _homeViewModel.onBottomNavTapped(index, context);
-          },
-          selectedItemColor: const Color(0xFF2D78BB),
-          unselectedItemColor: Colors.grey,
+          onTap: (index) => _homeViewModel.onBottomNavTapped(index, context),
           items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Início',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.favorite),
-              label: 'Favoritos',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Perfil',
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
+            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favoritos'),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProfileTab() {
-    return Consumer<ProfileViewModel>(
-      builder: (context, viewModel, child) {
-        if (viewModel.userData == null) {
-  return const Center(
-    child: CircularProgressIndicator(
-      color: Color(0xFF2D78BB),
-    ),
-  );
-}
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Cabeçalho do perfil
-              _buildProfileHeader(viewModel),
-              const SizedBox(height: 24),
-              
-              // Formulário de edição
-              _buildProfileForm(viewModel),
-            ],
+  Widget _buildUserCard(BuildContext context, ProfileViewModel viewModel) {
+    final userData = viewModel.userData ?? {};
+    final name = userData['name'] as String? ?? 'Usuário';
+    final email = userData['email'] as String? ?? '';
+    final bio = userData['bio'] as String? ?? '';
+    final avatarUrl = userData['avatar_url'] as String?;
+
+    if (avatarUrl != null && avatarUrl.isNotEmpty) {
+      precacheImage(NetworkImage(avatarUrl), context);
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: _cardColor(context),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(
+              Theme.of(context).brightness == Brightness.dark ? 0.25 : 0.08,
+            ),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildProfileHeader(ProfileViewModel viewModel) {
-  final userData = viewModel.userData ?? {};
-  final userName = userData['name'] as String? ?? 'Usuário';
-  final userEmail = userData['email'] as String? ?? '';
-  final userBio = userData['bio'] as String? ?? '';
-  final avatarUrl = userData['avatar_url'] as String?;
-  if (avatarUrl != null && avatarUrl.isNotEmpty) {
-  precacheImage(NetworkImage(avatarUrl), context);
-}
-
-  return Container(
-    padding: const EdgeInsets.all(20),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.1),
-          blurRadius: 10,
-          spreadRadius: 2,
-        ),
-      ],
-    ),
-    child: Column(
-      children: [
-        Center(
-          child: Stack(
+        ],
+      ),
+      child: Row(
+        children: [
+          Stack(
             children: [
-              Container(
-                width: 110,
-                height: 110,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2D78BB),
-                  borderRadius: BorderRadius.circular(55),
-                  image: avatarUrl != null && avatarUrl.isNotEmpty
-                      ? DecorationImage(
-                          image: NetworkImage(avatarUrl),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
+              CircleAvatar(
+                radius: 38,
+                backgroundColor: const Color(0xFF2D78BB),
+                backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
+                    ? NetworkImage(avatarUrl)
+                    : null,
                 child: avatarUrl == null || avatarUrl.isEmpty
-                    ? Center(
-                        child: Text(
-                          userName.isNotEmpty
-                              ? userName.substring(0, 1).toUpperCase()
-                              : 'U',
-                          style: const TextStyle(
-                            fontSize: 42,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                    ? Text(
+                        name.isNotEmpty ? name[0].toUpperCase() : 'U',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
                         ),
                       )
                     : null,
               ),
-
               Positioned(
                 bottom: 0,
                 right: 0,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4EB1F0),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white,
-                      width: 3,
+                child: InkWell(
+                  onTap: () => _showImageSourceSheet(context, viewModel),
+                  child: Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4EB1F0),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
                     ),
-                  ),
-                  child: IconButton(
-                    iconSize: 20,
-                    padding: const EdgeInsets.all(6),
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(
-                      Icons.camera_alt,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                    onPressed: () async {
-  final source = await showModalBottomSheet<ImageSource>(
-    context: context,
-    backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(24),
-      ),
-    ),
-    builder: (context) {
-      return SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 45,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              const Text(
-                'Selecionar Foto',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2D78BB),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              ListTile(
-                leading: const CircleAvatar(
-                  backgroundColor: Color(0xFF2D78BB),
-                  child: Icon(
-                    Icons.photo_library,
-                    color: Colors.white,
-                  ),
-                ),
-                title: const Text('Galeria'),
-                subtitle: const Text(
-                  'Escolher imagem do dispositivo',
-                ),
-                onTap: () => Navigator.pop(
-                  context,
-                  ImageSource.gallery,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              ListTile(
-                leading: const CircleAvatar(
-                  backgroundColor: Color(0xFF4EB1F0),
-                  child: Icon(
-                    Icons.camera_alt,
-                    color: Colors.white,
-                  ),
-                ),
-                title: const Text('Câmera'),
-                subtitle: const Text(
-                  'Tirar foto agora',
-                ),
-                onTap: () => Navigator.pop(
-                  context,
-                  ImageSource.camera,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    },
-  );
-
-  if (source == null) return;
-
-  final success = await viewModel.uploadProfileImage(
-    source: source,
-  );
-
-  if (success && mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Foto de perfil atualizada com sucesso!',
-        ),
-        backgroundColor: Colors.green,
-      ),
-    );
-  } else if (mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          viewModel.errorMessage ??
-              'Erro ao atualizar foto',
-        ),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
-},
+                    child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
                   ),
                 ),
               ),
             ],
           ),
-        ),
-
-        const SizedBox(height: 18),
-
-        Text(
-          userName,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF333333),
-          ),
-        ),
-
-        const SizedBox(height: 4),
-
-        Text(
-          userEmail,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey[600],
-          ),
-        ),
-
-        if (userBio.isNotEmpty) ...[
-          const SizedBox(height: 14),
-
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2D78BB).withOpacity(0.08),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: const Color(0xFF2D78BB).withOpacity(0.15),
-              ),
-            ),
-            child: Text(
-              userBio,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey[700],
-                height: 1.5,
-                fontStyle: FontStyle.italic,
-              ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: _textColor(context),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  email,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: _subtitleColor(context),
+                  ),
+                ),
+                if (bio.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    bio,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: _subtitleColor(context),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ],
-      ],
-    ),
-  );
-}
+      ),
+    );
+  }
 
-  Widget _buildProfileForm(ProfileViewModel viewModel) {
+  Widget _sectionTitle(BuildContext context, String title) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).colorScheme.primary,
+      ),
+    );
+  }
+
+  Widget _buildSettingsCard(BuildContext context, ProfileViewModel viewModel) {
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: _cardColor(context),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            spreadRadius: 2,
+      ),
+      child: Column(
+        children: [
+          _settingsTile(
+            context,
+            icon: Icons.accessibility_new,
+            title: 'Acessibilidade',
+            subtitle: 'Fonte, contraste e espaçamento',
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AccessibilitySettingsView(),
+                ),
+              );
+            },
+          ),
+          const Divider(height: 1),
+          SwitchListTile(
+            secondary: const Icon(Icons.notifications_outlined, color: Color(0xFF2D78BB)),
+            title: Text(
+              'Notificações',
+              style: TextStyle(
+                color: _textColor(context),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            subtitle: Text(
+              'Receber notificações do app',
+              style: TextStyle(color: _subtitleColor(context)),
+            ),
+            value: viewModel.notificationsEnabled,
+            activeColor: const Color(0xFF2D78BB),
+            onChanged: viewModel.toggleNotifications,
+          ),
+          const Divider(height: 1),
+          
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccountCard(BuildContext context, ProfileViewModel viewModel) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _cardColor(context),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          _settingsTile(
+            context,
+            icon: Icons.download_outlined,
+            title: 'Exportar Meus Dados',
+            subtitle: 'Baixe uma cópia dos seus dados',
+            color: const Color(0xFF2D78BB),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _exportUserData(context, viewModel),
+          ),
+          const Divider(height: 1),
+          _settingsTile(
+            context,
+            icon: Icons.delete_outline,
+            title: 'Excluir Minha Conta',
+            subtitle: 'Esta ação é irreversível',
+            color: Colors.red,
+            trailing: const Icon(Icons.chevron_right, color: Colors.red),
+            onTap: () => _confirmDeleteAccount(context, viewModel),
           ),
         ],
       ),
-      child: Form(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Editar Perfil',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2D78BB),
-              ),
-            ),
-            const SizedBox(height: 20),
-            
-            // Campo de nome
-            _buildFormField(
-              label: 'Nome',
-              controller: _nameController,
-              icon: Icons.person_outlined,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor, insira seu nome';
-                }
-                if (value.length < 2) {
-                  return 'O nome deve ter pelo menos 2 caracteres';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            
-            // Campo de email
-            _buildFormField(
-              label: 'Email',
-              controller: _emailController,
-              icon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Por favor, insira seu email';
-                }
-                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                  return 'Por favor, insira um email válido';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            
-            // Campo de bio (opcional)
-            _buildFormField(
-              label: 'Bio (opcional)',
-              controller: _bioController,
-              icon: Icons.info_outlined,
-              maxLines: 3,
-              validator: null,
-            ),
-            const SizedBox(height: 24),
-            
-            // Botão de salvar alterações
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: viewModel.isLoading ? null : () async {
-                  final success = await viewModel.updateProfile(
-                    name: _nameController.text,
-                    email: _emailController.text,
-                    bio: _bioController.text,
-                  );
-                  
-                  if (success && mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Perfil atualizado com sucesso!'),
-                        backgroundColor: Colors.green,
-                      ),
-                    );
-                  } else if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(viewModel.errorMessage ?? 'Erro ao atualizar perfil'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2D78BB),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 2,
-                ),
-                child: viewModel.isLoading
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.save, size: 22),
-                          SizedBox(width: 10),
-                          Text(
-                            'Salvar Alterações',
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
-  Widget _buildFormField({
-    required String label,
-    required TextEditingController controller,
-    required IconData icon,
-    TextInputType? keyboardType,
-    int? maxLines = 1,
-    String? Function(String?)? validator,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey[700],
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          maxLines: maxLines,
-          validator: validator,
-          decoration: InputDecoration(
-            hintText: 'Digite seu $label',
-            prefixIcon: Icon(icon, color: const Color(0xFF2D78BB)),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF2D78BB), width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.red[300]!),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.red[400]!, width: 2),
-            ),
-            filled: true,
-            fillColor: Colors.grey[50],
-            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: maxLines == 1 ? 18 : 16),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSettingsTab() {
-    return Consumer<ProfileViewModel>(
-      builder: (context, viewModel, child) {
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Configurações',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2D78BB),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Personalize as configurações do aplicativo',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 24),
-              
-              // Configurações de Notificações e Tema
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // Notificações
-                    _buildSettingsItem(
-                      icon: Icons.notifications_outlined,
-                      title: 'Notificações',
-                      subtitle: 'Receba alertas sobre atualizações',
-                      trailing: Switch(
-                        value: viewModel.notificationsEnabled,
-                        onChanged: (value) => viewModel.toggleNotifications(value),
-                        activeColor: const Color(0xFF2D78BB),
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Divider(height: 1),
-                    ),
-                    
-                    // Tema escuro
-                    _buildSettingsItem(
-                      icon: Icons.dark_mode_outlined,
-                      title: 'Tema Escuro',
-                      subtitle: 'Utilize o app com cores escuras',
-                      trailing: Switch(
-                        value: viewModel.darkMode,
-                        onChanged: (value) => viewModel.toggleDarkMode(value),
-                        activeColor: const Color(0xFF2D78BB),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 20),
-              
-              // Idioma
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Idioma',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[50],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey[300]!),
-                      ),
-                      child: DropdownButton<String>(
-                        value: viewModel.language,
-                        isExpanded: true,
-                        underline: const SizedBox(),
-                        icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF2D78BB)),
-                        onChanged: (value) {
-                          if (value != null) {
-                            viewModel.setLanguage(value);
-                          }
-                        },
-                        items: viewModel.availableLanguages.map((String language) {
-                          return DropdownMenuItem<String>(
-                            value: language,
-                            child: Text(
-                              language,
-                              style: const TextStyle(fontSize: 16),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 20),
-              
-              // Seção de Dados da Conta
-              const Text(
-                'Dados da Conta',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2D78BB),
-                ),
-              ),
-              const SizedBox(height: 16),
-              
-              // Exportar Dados
-              _buildSettingsCard(
-                icon: Icons.download_outlined,
-                title: 'Exportar Meus Dados',
-                subtitle: 'Baixe uma cópia dos seus dados pessoais',
-                color: const Color(0xFF2D78BB),
-                onTap: () => _exportUserData(context, viewModel),
-              ),
-              
-              const SizedBox(height: 12),
-              
-              // Excluir Conta
-              _buildSettingsCard(
-                icon: Icons.delete_outline,
-                title: 'Excluir Minha Conta',
-                subtitle: 'Esta ação é irreversível',
-                color: Colors.red,
-                onTap: () => _confirmDeleteAccount(context, viewModel),
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // Botão de logout
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Sair da conta'),
-                        content: const Text('Tem certeza que deseja sair?'),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF2D78BB),
-                            ),
-                            child: const Text('Cancelar'),
-                          ),
-                          ElevatedButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: const Text('Sair'),
-                          ),
-                        ],
-                      ),
-                    );
-                    
-                    if (confirmed == true && mounted) {
-                      final success = await viewModel.logout();
-                      if (success && mounted) {
-                        Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-                      } else if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(viewModel.errorMessage ?? 'Erro ao fazer logout'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.logout, size: 22),
-                      SizedBox(width: 10),
-                      Text(
-                        'Sair da Conta',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildAccessibilityTab() {
-    return Consumer<ProfileViewModel>(
-      builder: (context, viewModel, child) {
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Acessibilidade',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2D78BB),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Ajuste as configurações para melhorar sua experiência',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 24),
-              
-              // Tamanho da Fonte
-              _buildAccessibilityCard(
-                icon: Icons.text_fields_outlined,
-                title: 'Tamanho da Fonte',
-                subtitle: '${(viewModel.fontSize * 100).toInt()}%',
-                child: Slider(
-                  value: viewModel.fontSize,
-                  min: 0.8,
-                  max: 2.0,
-                  divisions: 12,
-                  onChanged: (value) => viewModel.updateFontSize(value),
-                  activeColor: const Color(0xFF2D78BB),
-                  inactiveColor: Colors.grey.shade300,
-                ),
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Contraste
-              _buildAccessibilityCard(
-                icon: Icons.contrast_outlined,
-                title: 'Contraste',
-                subtitle: '${(viewModel.contrastLevel * 100).toInt()}%',
-                child: Slider(
-                  value: viewModel.contrastLevel,
-                  min: 0.5,
-                  max: 2.0,
-                  divisions: 15,
-                  onChanged: (value) => viewModel.updateContrast(value),
-                  activeColor: const Color(0xFF2D78BB),
-                  inactiveColor: Colors.grey.shade300,
-                ),
-              ),
-              
-              const SizedBox(height: 16),
-              
-              // Espaçamento
-              _buildAccessibilityCard(
-                icon: Icons.space_dashboard_outlined,
-                title: 'Espaçamento',
-                subtitle: '${(viewModel.spacing * 100).toInt()}%',
-                child: Slider(
-                  value: viewModel.spacing,
-                  min: 0.8,
-                  max: 2.0,
-                  divisions: 12,
-                  onChanged: (value) => viewModel.updateSpacing(value),
-                  activeColor: const Color(0xFF2D78BB),
-                  inactiveColor: Colors.grey.shade300,
-                ),
-              ),
-              
-              const SizedBox(height: 32),
-
-              // Botão para redefinir configurações
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: () {
-                    viewModel.updateFontSize(1.0);
-                    viewModel.updateContrast(1.0);
-                    viewModel.updateSpacing(1.0);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2D78BB),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.restart_alt, size: 22),
-                      SizedBox(width: 10),
-                      Text(
-                        'Redefinir para Padrão',
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSettingsItem({
+  Widget _settingsTile(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String subtitle,
     required Widget trailing,
-  }) {
-    return Row(
-      children: [
-        Icon(icon, color: const Color(0xFF2D78BB), size: 28),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-        trailing,
-      ],
-    );
-  }
-
-  Widget _buildSettingsCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
     required VoidCallback onTap,
+    Color color = const Color(0xFF2D78BB),
   }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+    return ListTile(
+      leading: Icon(icon, color: color),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: color == Colors.red ? Colors.red : _textColor(context),
+          fontWeight: FontWeight.w600,
+        ),
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Icon(icon, color: color, size: 28),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: color,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(color: _subtitleColor(context)),
+      ),
+      trailing: trailing,
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context, ProfileViewModel viewModel) {
+    return SizedBox(
+      height: 54,
+      child: ElevatedButton.icon(
+        onPressed: () async {
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text('Sair da conta'),
+              content: const Text('Tem certeza que deseja sair?'),
+              actions: [
+                TextButton(  
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancelar'),
                 ),
-              ),
-              Icon(Icons.chevron_right, color: color),
-            ],
-          ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  child: const Text('Sair'),
+                ),
+              ],
+            ),
+          );
+
+          if (confirmed == true && mounted) {
+            final success = await viewModel.logout();
+            if (success && mounted) {
+              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+            }
+          }
+        },
+        icon: const Icon(Icons.logout),
+        label: const Text('Sair da Conta'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
     );
   }
 
-  Widget _buildAccessibilityCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Widget child,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ],
+  Future<void> _showImageSourceSheet(
+    BuildContext context,
+    ProfileViewModel viewModel,
+  ) async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      backgroundColor: _cardColor(context),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: const Color(0xFF2D78BB), size: 28),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    color: Colors.black87,
+      builder: (_) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Selecionar Foto',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: _textColor(context),
                   ),
                 ),
-              ),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 14,
+                const SizedBox(height: 16),
+                ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Color(0xFF2D78BB),
+                    child: Icon(Icons.photo_library, color: Colors.white),
+                  ),
+                  title: Text('Galeria', style: TextStyle(color: _textColor(context))),
+                  onTap: () => Navigator.pop(context, ImageSource.gallery),
                 ),
-              ),
-            ],
+                ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Color(0xFF4EB1F0),
+                    child: Icon(Icons.camera_alt, color: Colors.white),
+                  ),
+                  title: Text('Câmera', style: TextStyle(color: _textColor(context))),
+                  onTap: () => Navigator.pop(context, ImageSource.camera),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          child,
-        ],
+        );
+      },
+    );
+
+    if (source == null) return;
+
+    final success = await viewModel.uploadProfileImage(source: source);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'Foto de perfil atualizada com sucesso!'
+              : viewModel.errorMessage ?? 'Erro ao atualizar foto',
+        ),
+        backgroundColor: success ? Colors.green : Colors.red,
       ),
     );
   }
 
-  // Método para exportar dados do usuário
-  Future<void> _exportUserData(BuildContext context, ProfileViewModel viewModel) async {
+  Future<void> _exportUserData(
+    BuildContext context,
+    ProfileViewModel viewModel,
+  ) async {
     try {
-      // Mostrar loading
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(color: Color(0xFF2D78BB)),
-              SizedBox(height: 16),
-              Text('Preparando dados para exportação...'),
-            ],
-          ),
-        ),
-      );
-
-      // Exportar dados
       final jsonData = await viewModel.exportUserData();
-      
-      // Criar arquivo temporário
       final directory = await getTemporaryDirectory();
       final file = File('${directory.path}/meus_dados_signwriter.json');
       await file.writeAsString(jsonData);
-      
-      // Fechar loading
-      if (mounted) Navigator.pop(context);
-      
-      // Compartilhar arquivo
       await Share.shareXFiles(
         [XFile(file.path)],
         text: 'Meus dados do SignWriter Fácil',
         subject: 'Exportação de dados - SignWriter Fácil',
       );
-      
     } catch (e) {
-      if (mounted) Navigator.pop(context);
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Erro ao exportar dados: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro ao exportar dados: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
-  // Diálogo de confirmação para exclusão de conta
   void _confirmDeleteAccount(BuildContext context, ProfileViewModel viewModel) {
     showDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+      builder: (_) => AlertDialog(
         title: const Text('Excluir Conta'),
         content: const Text(
-          'Tem certeza que deseja excluir sua conta? Esta ação é irreversível e todos os seus dados serão perdidos permanentemente.',
+          'Tem certeza que deseja excluir sua conta? Esta ação é irreversível.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF2D78BB),
-            ),
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
             onPressed: () async {
               Navigator.pop(context);
-              
-              // Mostrar loading
-              showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (context) => AlertDialog(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  content: const Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(color: Color(0xFF2D78BB)),
-                      SizedBox(height: 16),
-                      Text('Excluindo conta...'),
-                    ],
-                  ),
-                ),
-              );
-
               final success = await viewModel.deleteAccount();
-              
               if (!mounted) return;
-              
-              Navigator.pop(context); // Fechar loading
-              
               if (success) {
-                // Redirecionar para tela inicial
                 Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-                
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Conta excluída com sucesso'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -1233,7 +489,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 );
               }
             },
-            child: const Text('Excluir Conta'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Excluir'),
           ),
         ],
       ),

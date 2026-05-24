@@ -9,6 +9,7 @@ import 'package:signwriter_easy_app_oficial/viewmodels/profile_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/dictionary_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/favorites_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/learn_practice_viewmodel.dart';
+import 'package:signwriter_easy_app_oficial/views/screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,25 +56,26 @@ void main() async {
     
     // 5. Iniciar o aplicativo
     runApp(
-      MultiProvider(
-  providers: [
-    ChangeNotifierProvider(
-      create: (_) => AuthViewModel(Supabase.instance.client),
-    ),
-    ChangeNotifierProvider(
-      create: (_) => ProfileViewModel(),
-    ),
-    ChangeNotifierProvider(
-      create: (_) => DictionaryViewModel(),
-    ),
-    ChangeNotifierProvider(
-      create: (_) => FavoritesViewModel(),
-    ),
-    ChangeNotifierProvider(
-      create: (_) => LearnPracticeViewModel(),
-    ),
-  ],
-  child: const MyApp(),
+  MultiProvider(
+    providers: [
+      ChangeNotifierProvider(
+        create: (_) => AuthViewModel(Supabase.instance.client),
+      ),
+      ChangeNotifierProvider(
+        create: (_) => ProfileViewModel(),
+      ),
+      ChangeNotifierProvider(
+        create: (_) => DictionaryViewModel(),
+      ),
+      ChangeNotifierProvider(
+        create: (_) => FavoritesViewModel(),
+      ),
+      ChangeNotifierProvider(
+        create: (_) => LearnPracticeViewModel(),
+      ),
+    ],
+    child: const MyApp(),
+  ),
 );
     
   } catch (e) {
@@ -107,37 +109,77 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-Widget build(BuildContext context) {
-  return Consumer<ProfileViewModel>(
-    builder: (context, profileViewModel, child) {
-      final isDark = profileViewModel.darkMode;
-      final fontScale = profileViewModel.fontSize;
+  Widget build(BuildContext context) {
+    return Consumer<ProfileViewModel>(
+      builder: (context, profileViewModel, child) {
+        final themeMode = profileViewModel.flutterThemeMode;
+        final fontScale = profileViewModel.fontSize;
 
-      return MaterialApp(
-        title: 'SignWriter Fácil',
-        debugShowCheckedModeBanner: false,
-        themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
-        theme: ThemeData(
-          primaryColor: const Color(0xFF2D78BB),
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2D78BB),
-            primary: const Color(0xFF2D78BB),
+        return MaterialApp(
+          title: 'SignWriter Fácil',
+          debugShowCheckedModeBanner: false,
+          themeMode: themeMode,
+
+          theme: ThemeData(
             brightness: Brightness.light,
+            scaffoldBackgroundColor: const Color(0xFFF5F6FA),
+            primaryColor: const Color(0xFF2D78BB),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF2D78BB),
+              brightness: Brightness.light,
+              primary: const Color(0xFF2D78BB),
+              surface: Colors.white,
+            ),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF2D78BB),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              backgroundColor: Colors.white,
+              selectedItemColor: Color(0xFF2D78BB),
+              unselectedItemColor: Colors.grey,
+            ),
+            cardTheme: CardThemeData(
+              color: Colors.white,
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            useMaterial3: true,
           ),
-          fontFamily: 'Roboto',
-          useMaterial3: true,
-        ),
-        darkTheme: ThemeData(
-          primaryColor: const Color(0xFF2D78BB),
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2D78BB),
-            primary: const Color(0xFF2D78BB),
+
+          darkTheme: ThemeData(
             brightness: Brightness.dark,
+            scaffoldBackgroundColor: const Color(0xFF0F1419),
+            primaryColor: const Color(0xFF2D78BB),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF2D78BB),
+              brightness: Brightness.dark,
+              primary: const Color(0xFF4EB1F0),
+              surface: const Color(0xFF1A2027),
+            ),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF2D78BB),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              backgroundColor: Color(0xFF111820),
+              selectedItemColor: Color(0xFF4EB1F0),
+              unselectedItemColor: Colors.grey,
+            ),
+            cardTheme: CardThemeData(
+              color: const Color(0xFF1A2027),
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            useMaterial3: true,
           ),
-          fontFamily: 'Roboto',
-          useMaterial3: true,
-        ),
-        builder: (context, child) {
+          builder: (context, child) {
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(
               textScaler: TextScaler.linear(fontScale),
@@ -145,11 +187,12 @@ Widget build(BuildContext context) {
             child: child!,
           );
         },
-        home: const AuthWrapper(),
-      );
-    },
-  );
-}
+
+          home: const AuthWrapper(),
+        );
+      },
+    );
+  }
 }
 
 class AuthWrapper extends StatelessWidget {
@@ -157,11 +200,10 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final session =
-        Supabase.instance.client.auth.currentSession;
+    final session = Supabase.instance.client.auth.currentSession;
 
     if (session != null) {
-      return const ProfileScreen();
+      return const HomeScreen();
     }
 
     return const AuthScreen();

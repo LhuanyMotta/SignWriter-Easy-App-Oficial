@@ -22,106 +22,81 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F6FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: const Text(
             'Aprender e Praticar',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          backgroundColor: const Color(0xFF2D78BB),
-          iconTheme: const IconThemeData(color: Colors.white),
-          elevation: 0,
         ),
-        body: SafeArea(
-          child: Consumer<LearnPracticeViewModel>(
-            builder: (context, viewModel, child) {
-              return SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildProgressCard(viewModel),
-                    const SizedBox(height: 24),
-
-                    const Text(
-                      'Categorias',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2D78BB),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    _buildCategoriesGrid(viewModel),
-
-                    const SizedBox(height: 24),
-
-                    const Text(
-                      'Recomendados para Você',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2D78BB),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    _buildRecommendedExercises(viewModel),
-                  ],
-                ),
+        body: Consumer<LearnPracticeViewModel>(
+          builder: (context, viewModel, child) {
+            if (viewModel.isLoading) {
+              return Center(
+                child: CircularProgressIndicator(color: primary),
               );
-            },
-          ),
+            }
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildProgressCard(context, viewModel),
+                  const SizedBox(height: 24),
+                  _sectionTitle(context, 'Categorias'),
+                  const SizedBox(height: 16),
+                  _buildCategoriesGrid(context, viewModel),
+                  const SizedBox(height: 24),
+                  _sectionTitle(context, 'Recomendados para Você'),
+                  const SizedBox(height: 16),
+                  _buildRecommendedExercises(context, viewModel),
+                ],
+              ),
+            );
+          },
         ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: 0,
-          onTap: (index) {
-            _homeViewModel.onBottomNavTapped(index, context);
-          },
-          selectedItemColor: const Color(0xFF2D78BB),
-          unselectedItemColor: Colors.grey,
+          onTap: (index) => _homeViewModel.onBottomNavTapped(index, context),
           items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Início',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.favorite),
-              label: 'Favoritos',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Perfil',
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
+            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favoritos'),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProgressCard(LearnPracticeViewModel viewModel) {
+  Widget _sectionTitle(BuildContext context, String title) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).colorScheme.primary,
+      ),
+    );
+  }
+
+  Widget _buildProgressCard(
+    BuildContext context,
+    LearnPracticeViewModel viewModel,
+  ) {
     final progress = viewModel.overallProgress;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF2D78BB),
+        color: Theme.of(context).colorScheme.primary,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.15),
-            blurRadius: 8,
-            spreadRadius: 2,
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -155,7 +130,12 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
     );
   }
 
-  Widget _buildCategoriesGrid(LearnPracticeViewModel viewModel) {
+  Widget _buildCategoriesGrid(
+    BuildContext context,
+    LearnPracticeViewModel viewModel,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -176,11 +156,11 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
+                  color: isDark ? Colors.black26 : Colors.grey.withOpacity(0.1),
                   blurRadius: 6,
                   spreadRadius: 1,
                 ),
@@ -191,16 +171,16 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
               children: [
                 Icon(
                   category['icon'] as IconData,
-                  color: category['color'] as Color,
+                  color: Theme.of(context).colorScheme.primary,
                   size: 34,
                 ),
                 const Spacer(),
                 Text(
                   category['title'] as String,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: Color(0xFF333333),
+                    color: isDark ? Colors.white : const Color(0xFF333333),
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -208,9 +188,10 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
                 const SizedBox(height: 8),
                 LinearProgressIndicator(
                   value: progress,
-                  backgroundColor: Colors.grey.shade200,
+                  backgroundColor:
+                      isDark ? Colors.grey[800] : Colors.grey.shade200,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    category['color'] as Color,
+                    Theme.of(context).colorScheme.primary,
                   ),
                   minHeight: 6,
                   borderRadius: BorderRadius.circular(10),
@@ -223,7 +204,13 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
     );
   }
 
-  Widget _buildRecommendedExercises(LearnPracticeViewModel viewModel) {
+  Widget _buildRecommendedExercises(
+    BuildContext context,
+    LearnPracticeViewModel viewModel,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = Theme.of(context).colorScheme.primary;
+
     return Column(
       children: viewModel.recommendedExercises.asMap().entries.map((entry) {
         final index = entry.key;
@@ -233,11 +220,11 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
           margin: const EdgeInsets.only(bottom: 14),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: isDark ? Colors.black26 : Colors.grey.withOpacity(0.1),
                 blurRadius: 6,
                 spreadRadius: 1,
               ),
@@ -245,9 +232,9 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
           ),
           child: Row(
             children: [
-              const CircleAvatar(
-                backgroundColor: Color(0xFF2D78BB),
-                child: Icon(Icons.school, color: Colors.white),
+              CircleAvatar(
+                backgroundColor: primary,
+                child: const Icon(Icons.school, color: Colors.white),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -256,16 +243,17 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
                   children: [
                     Text(
                       exercise['title'] as String,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
+                        color: isDark ? Colors.white : Colors.black87,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       exercise['description'] as String,
                       style: TextStyle(
-                        color: Colors.grey[600],
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
                         fontSize: 13,
                       ),
                     ),
@@ -274,13 +262,6 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
               ),
               ElevatedButton(
                 onPressed: () => viewModel.startExercise(context, index),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2D78BB),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
                 child: const Text('Iniciar'),
               ),
             ],

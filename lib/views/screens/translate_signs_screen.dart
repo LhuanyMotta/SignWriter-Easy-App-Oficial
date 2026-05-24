@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-/// Tela para traduzir texto para a Linguagem Brasileira de Sinais (Libras)
-/// usando o sistema de escrita SignWriting
+import '../../models/sign_model.dart';
+import '../../viewmodels/translate_viewmodel.dart';
+
 class TranslateSignsScreen extends StatefulWidget {
   const TranslateSignsScreen({super.key});
 
@@ -9,29 +11,46 @@ class TranslateSignsScreen extends StatefulWidget {
   State<TranslateSignsScreen> createState() => _TranslateSignsScreenState();
 }
 
-class _TranslateSignsScreenState extends State<TranslateSignsScreen> with SingleTickerProviderStateMixin {
+class _TranslateSignsScreenState extends State<TranslateSignsScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _textController = TextEditingController();
-  String _translatedText = '';
-  bool _isTranslating = false;
-  
-  // Controlador para as abas
+
   late TabController _tabController;
-  
-  // Lista de traduções recentes (seria persistida)
-  final List<String> _recentTranslations = [];
+  late TranslateViewModel _viewModel;
+
+  bool get isDark => Theme.of(context).brightness == Brightness.dark;
+
+  Color get backgroundColor =>
+      isDark ? const Color(0xFF08111F) : const Color(0xFFF5F7FB);
+
+  Color get cardColor =>
+      isDark ? const Color(0xFF121C2B) : Colors.white;
+
+  Color get inputColor =>
+      isDark ? const Color(0xFF1A2636) : Colors.grey.shade100;
+
+  Color get textColor =>
+      isDark ? Colors.white : const Color(0xFF1E1E1E);
+
+  Color get subtitleColor =>
+      isDark ? Colors.white70 : Colors.black54;
 
   @override
   void initState() {
     super.initState();
-    // Inicializar o controlador de abas
+
+    _viewModel = TranslateViewModel();
+    _viewModel.loadRecentTranslations();
+
     _tabController = TabController(length: 2, vsync: this);
+
+    _textController.addListener(() => setState(() {}));
+
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
-        setState(() {
-          // Limpa o resultado quando muda de aba
-          _translatedText = '';
-          _textController.clear();
-        });
+        _textController.clear();
+        _viewModel.clear();
+        setState(() {});
       }
     });
   }
@@ -43,319 +62,340 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen> with Single
     super.dispose();
   }
 
-  // Simula o processo de tradução
   Future<void> _translate() async {
-    if (_textController.text.isEmpty) return;
-    
-    setState(() {
-      _isTranslating = true;
-    });
-
-    // Simulação do tempo de processamento da tradução
-    await Future.delayed(const Duration(milliseconds: 800));
-    
-    // Em uma implementação real, isso chamaria uma API de tradução
-    setState(() {
-      _translatedText = _textController.text;
-      _isTranslating = false;
-      
-      // Adiciona à lista de traduções recentes
-      if (!_recentTranslations.contains(_translatedText)) {
-        _recentTranslations.insert(0, _translatedText);
-        // Limita a 5 traduções recentes
-        if (_recentTranslations.length > 5) {
-          _recentTranslations.removeLast();
-        }
-      }
-    });
+    FocusScope.of(context).unfocus();
+    await _viewModel.translate(_textController.text);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Traduzir Sinais'),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          indicatorWeight: 3,
-          tabs: const [
-            Tab(text: 'Texto → Libras'),
-            Tab(text: 'Libras → Texto'),
-          ],
+    return ChangeNotifierProvider.value(
+      value: _viewModel,
+      child: Scaffold(
+        backgroundColor: backgroundColor,
+        appBar: AppBar(
+          title: const Text(
+            'Traduzir Sinais',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: const Color(0xFF2D78BB),
+          foregroundColor: Colors.white,
+          bottom: TabBar(
+            controller: _tabController,
+            indicatorColor: Colors.white,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white70,
+            tabs: const [
+              Tab(text: 'Texto → Libras'),
+              Tab(text: 'Libras → Texto'),
+            ],
+          ),
         ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Input Section
-            Text(
-              _tabController.index == 0 ? 'Digite o texto' : 'Grave ou desenhe o sinal',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            
-            // Input Field
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
+        body: Consumer<TranslateViewModel>(
+          builder: (context, viewModel, child) {
+            return Padding(
+              padding: const EdgeInsets.all(16),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextField(
-                    controller: _textController,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      hintText: _tabController.index == 0 
-                          ? 'Digite o texto para traduzir para Libras' 
-                          : 'Este recurso será implementado em breve',
-                      contentPadding: const EdgeInsets.all(16),
-                      border: InputBorder.none,
-                    ),
-                    enabled: _tabController.index == 0, // Apenas ativa para texto → Libras
-                  ),
-                  
-                  // Botões de ação (gravar, câmera, etc)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        // Botão de microfone para entrada de voz
-                        IconButton(
-                          icon: const Icon(Icons.mic),
-                          onPressed: _tabController.index == 0 ? () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Reconhecimento de voz em breve')),
-                            );
-                          } : null,
-                          color: _tabController.index == 0 ? Theme.of(context).colorScheme.primary : Colors.grey,
-                        ),
-                        // Botão de câmera (apenas para Libras → Texto)
-                        if (_tabController.index == 1)
-                          IconButton(
-                            icon: const Icon(Icons.camera_alt),
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Captura de sinais em breve')),
-                              );
-                            },
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                      ],
+                  _buildInputTitle(),
+                  const SizedBox(height: 8),
+                  _buildInputBox(viewModel),
+                  const SizedBox(height: 16),
+                  _buildTranslateButton(viewModel),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Resultado',
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  Expanded(child: _buildResultBox(viewModel)),
+                  if (viewModel.recentTranslations.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    _buildRecentTranslations(viewModel),
+                  ],
                 ],
               ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInputTitle() {
+    return Text(
+      _tabController.index == 0
+          ? 'Digite o texto'
+          : 'Capturar Libras para texto',
+      style: TextStyle(
+        color: textColor,
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+
+  Widget _buildInputBox(TranslateViewModel viewModel) {
+    return Container(
+      decoration: BoxDecoration(
+        color: inputColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? Colors.white12 : Colors.grey.shade300,
+        ),
+      ),
+      child: Column(
+        children: [
+          TextField(
+            controller: _textController,
+            maxLines: 4,
+            enabled: _tabController.index == 0,
+            style: TextStyle(color: textColor),
+            decoration: InputDecoration(
+              hintText: _tabController.index == 0
+                  ? 'Digite o texto para traduzir'
+                  : 'Recurso de imagem/câmera será implementado em breve',
+              hintStyle: TextStyle(color: subtitleColor),
+              contentPadding: const EdgeInsets.all(16),
+              border: InputBorder.none,
             ),
-            
-            const SizedBox(height: 16),
-            
-            // Botão de tradução
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _tabController.index == 0 && _textController.text.isNotEmpty 
-                    ? _translate 
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: _isTranslating
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(_tabController.index == 0 ? 'Traduzir para Libras' : 'Traduzir para Texto'),
-              ),
-            ),
-            
-            const SizedBox(height: 24),
-            
-            // Resultado da tradução
-            Text(
-              'Resultado',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: _translatedText.isEmpty
-                    ? Center(
-                        child: Text(
-                          _tabController.index == 0
-                              ? 'A tradução para Libras aparecerá aqui'
-                              : 'A tradução para texto aparecerá aqui',
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 16,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: SingleChildScrollView(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Aqui viria a representação visual em SignWriting
-                                  if (_tabController.index == 0)
-                                    _buildDummySignWriting(),
-                                  
-                                  // Para demonstração, exibimos o texto
-                                  if (_tabController.index == 1)
-                                    Text(
-                                      _translatedText,
-                                      style: const TextStyle(fontSize: 18),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          // Barra de ações para o resultado
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.content_copy),
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Texto copiado')),
-                                  );
-                                },
-                                tooltip: 'Copiar',
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.share),
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Compartilhar em breve')),
-                                  );
-                                },
-                                tooltip: 'Compartilhar',
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.save_alt),
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Tradução salva')),
-                                  );
-                                },
-                                tooltip: 'Salvar',
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-              ),
-            ),
-            
-            // Seção de traduções recentes
-            if (_recentTranslations.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              Text(
-                'Traduções Recentes',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 40,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _recentTranslations.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
-                      child: ActionChip(
-                        label: Text(
-                          _recentTranslations[index].length > 15
-                              ? '${_recentTranslations[index].substring(0, 15)}...'
-                              : _recentTranslations[index],
-                        ),
-                        onPressed: () {
-                          _textController.text = _recentTranslations[index];
-                          _translate();
-                        },
-                        backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                        labelStyle: TextStyle(color: Theme.of(context).colorScheme.primary),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 8, bottom: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  tooltip: 'Áudio',
+                  icon: const Icon(Icons.mic),
+                  color: const Color(0xFF2D78BB),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Reconhecimento por áudio será implementado em breve.'),
                       ),
                     );
                   },
                 ),
-              ),
-            ],
-          ],
-        ),
+                if (_tabController.index == 1)
+                  IconButton(
+                    tooltip: 'Câmera',
+                    icon: const Icon(Icons.camera_alt),
+                    color: const Color(0xFF2D78BB),
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Captura pela câmera será implementada em breve.'),
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
-  
-  // Método para criar uma representação visual fictícia de SignWriting
-  Widget _buildDummySignWriting() {
-    // Esta é apenas uma representação visual para demonstração
-    // Em uma implementação real, isso seria gerado a partir da API de tradução
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            for (int i = 0; i < _translatedText.length.clamp(1, 4); i++)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey.shade400),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      i % 3 == 0 ? Icons.front_hand : 
-                      i % 2 == 0 ? Icons.sign_language : Icons.back_hand,
-                      color: Theme.of(context).colorScheme.primary,
-                      size: 30,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Tradução em SignWriting para: "$_translatedText"',
-          style: const TextStyle(
-            fontSize: 16,
-            fontStyle: FontStyle.italic,
+
+  Widget _buildTranslateButton(TranslateViewModel viewModel) {
+    final canTranslate =
+        _tabController.index == 0 && _textController.text.trim().isNotEmpty;
+
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: ElevatedButton(
+        onPressed:
+            canTranslate && !viewModel.isTranslating ? _translate : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF2D78BB),
+          foregroundColor: Colors.white,
+          disabledBackgroundColor:
+              isDark ? Colors.white12 : Colors.grey.shade300,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
           ),
-          textAlign: TextAlign.center,
         ),
+        child: viewModel.isTranslating
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.5,
+                ),
+              )
+            : Text(
+                _tabController.index == 0
+                    ? 'Traduzir para Libras'
+                    : 'Traduzir para Texto',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildResultBox(TranslateViewModel viewModel) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: inputColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? Colors.white12 : Colors.grey.shade300,
+        ),
+      ),
+      child: _buildResultContent(viewModel),
+    );
+  }
+
+  Widget _buildResultContent(TranslateViewModel viewModel) {
+    if (viewModel.errorMessage != null) {
+      return Center(
+        child: Text(
+          viewModel.errorMessage!,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.red),
+        ),
+      );
+    }
+
+    if (_tabController.index == 1) {
+      return Center(
+        child: Text(
+          'A tradução de Libras para texto será implementada em breve.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: subtitleColor, fontSize: 16),
+        ),
+      );
+    }
+
+    if (viewModel.lastTranslation == null) {
+      return Center(
+        child: Text(
+          'A tradução para Libras aparecerá aqui.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: subtitleColor, fontSize: 16),
+        ),
+      );
+    }
+
+    if (viewModel.signs.isEmpty) {
+      return Center(
+        child: Text(
+          'Nenhum sinal encontrado para esse texto.',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: subtitleColor, fontSize: 16),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: GridView.builder(
+            itemCount: viewModel.signs.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.78,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+            ),
+            itemBuilder: (context, index) {
+              return _buildSignResultCard(viewModel.signs[index]);
+            },
+          ),
+        ),
+        if (viewModel.notFoundWords.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Text(
+            'Não encontrados: ${viewModel.notFoundWords.join(', ')}',
+            style: TextStyle(
+              color: subtitleColor,
+              fontSize: 13,
+            ),
+          ),
+        ],
       ],
     );
   }
-} 
+
+  Widget _buildSignResultCard(SignModel sign) {
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.grey.shade200,
+        ),
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Image.network(
+                sign.signImagePath,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(
+                    Icons.sign_language,
+                    color: subtitleColor,
+                    size: 42,
+                  );
+                },
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 10),
+            child: Text(
+              sign.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: textColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentTranslations(TranslateViewModel viewModel) {
+    return SizedBox(
+      height: 42,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: viewModel.recentTranslations.length,
+        itemBuilder: (context, index) {
+          final translation = viewModel.recentTranslations[index];
+          final text = translation.sourceText.length > 18
+              ? '${translation.sourceText.substring(0, 18)}...'
+              : translation.sourceText;
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ActionChip(
+              label: Text(text),
+              onPressed: () {
+                _textController.text = translation.sourceText;
+                _translate();
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+}

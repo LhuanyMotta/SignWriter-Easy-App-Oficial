@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import 'home_screen.dart';
+import '../widgets/app_logo.dart';
+import '../accessibility_settings_view.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -51,88 +54,79 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       child: Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(
-          child: Column(
-            children: [
-              // Cabeçalho fixo
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 40),
-                    // Logo personalizada
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2D78BB),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Icon(
-                        Icons.sign_language,
-                        size: 60,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'SignWriter Fácil',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+  child: Stack(
+    children: [
+      Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                const AppLogo(
+                              size: 80,
+                              colored: true,
+                              showText: false,
+                            ),
+                const SizedBox(height: 20),
+                Text(
+                  'SignWriter Fácil',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF2D78BB),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Conecte-se para começar',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Conecte-se para começar',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.grey[600],
                       ),
-                    ),
-                    const SizedBox(height: 32),
-                    
-                    // Abas
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: TabBar(
-                        controller: _tabController,
-                        indicator: BoxDecoration(
-                          color: const Color(0xFF2D78BB),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        labelColor: Colors.white,
-                        unselectedLabelColor: Colors.grey[600],
-                        labelStyle: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
-                        tabs: const [
-                          Tab(text: 'Entrar'),
-                          Tab(text: 'Cadastrar'),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
                 ),
-              ),
-              
-              // Formulários
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildLoginTab(),
-                    _buildSignupTab(),
-                  ],
+                const SizedBox(height: 32),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TabBar(
+                            controller: _tabController,
+                            dividerColor: Colors.transparent,
+                            indicator: BoxDecoration(
+                              color: const Color(0xFF2D78BB),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.grey[600],
+                    labelStyle: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                    tabs: const [
+                      Tab(text: 'Entrar'),
+                      Tab(text: 'Cadastrar'),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
-        ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildLoginTab(),
+                _buildSignupTab(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+),
       ),
     );
   }
@@ -413,7 +407,12 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           obscureText: isPassword,
           keyboardType: keyboardType,
           validator: validator,
-          decoration: InputDecoration(
+          style: const TextStyle(
+  color: Color(0xFF333333),
+),
+          decoration: InputDecoration(hintStyle: const TextStyle(
+  color: Color(0xFF666666),
+),
             hintText: hintText,
             prefixIcon: Icon(icon, color: const Color(0xFF2D78BB)),
             border: OutlineInputBorder(
@@ -584,9 +583,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       
       if (success && mounted) {
         // Navega para HomeScreen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
+        await _navigateAfterAuth();
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -609,9 +606,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       
       if (success && mounted) {
         // Navega para HomeScreen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
+        await _navigateAfterAuth();
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -623,4 +618,27 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       }
     }
   }
+  Future<void> _navigateAfterAuth() async {
+  final prefs = await SharedPreferences.getInstance();
+  final hasSeenAccessibility =
+      prefs.getBool('has_seen_accessibility') ?? false;
+
+  if (!mounted) return;
+
+  if (hasSeenAccessibility) {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => const HomeScreen(),
+      ),
+    );
+  } else {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => const AccessibilitySettingsView(
+          isFirstAccess: true,
+        ),
+      ),
+    );
+  }
+}
 }

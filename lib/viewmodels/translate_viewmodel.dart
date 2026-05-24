@@ -1,54 +1,96 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/sign_model.dart';
 import '../models/translation_model.dart';
-import '../services/translation_service.dart';
 
-/// ViewModel da tela de tradução
 class TranslateViewModel extends ChangeNotifier {
-  final TranslationService _translationService = TranslationService();
+  final SupabaseClient _supabase = Supabase.instance.client;
 
   bool _isTranslating = false;
   String? _errorMessage;
   List<SignModel> _signs = [];
   List<String> _notFoundWords = [];
-  String? _signWritingSequence;
   TranslationModel? _lastTranslation;
-  List<TranslationModel> _recentTranslations = [];
+  final List<TranslationModel> _recentTranslations = [];
 
   bool get isTranslating => _isTranslating;
   String? get errorMessage => _errorMessage;
   List<SignModel> get signs => _signs;
   List<String> get notFoundWords => _notFoundWords;
-  String? get signWritingSequence => _signWritingSequence;
   TranslationModel? get lastTranslation => _lastTranslation;
   List<TranslationModel> get recentTranslations => _recentTranslations;
 
-  /// Carrega histórico recente
   Future<void> loadRecentTranslations() async {
-    _recentTranslations = await _translationService.getRecentTranslations();
     notifyListeners();
   }
 
-  /// Executa tradução
   Future<void> translate(String text) async {
-    if (text.trim().isEmpty) return;
+    final cleanText = text.trim();
+
+    if (cleanText.isEmpty) return;
+
     _isTranslating = true;
     _errorMessage = null;
+    _signs = [];
+    _notFoundWords = [];
     notifyListeners();
 
     try {
-      final result = await _translationService.translateTextToSigns(text);
-      _lastTranslation = result.translation;
-      _signs = result.signs;
-      _notFoundWords = result.translation.notFoundWords;
-      _signWritingSequence = result.translation.signWritingSequence;
-      await loadRecentTranslations();
-    } catch (_) {
-      _errorMessage = 'Não foi possível traduzir o texto.';
+      final words = cleanText
+          .toLowerCase()
+          .split(RegExp(r'\s+'))
+          .map((word) => word.replaceAll(RegExp(r'[^\p{L}\p{N}]', unicode: true), ''))
+          .where((word) => word.isNotEmpty)
+          .toSet()
+          .toList();
+
+      final foundSigns = <SignModel>[];
+      final notFound = <String>[];
+
+      for (final word in words) {
+        final response = await _supabase
+            .from('signs_dictionary')
+            .select()
+            .or('title.ilike.%$word%,name.ilike.%$word%,description.ilike.%$word%')
+            .limit(1);
+
+        if (response.isNotEmpty) {
+          foundSigns.add(SignModel.fromMap(response.first));
+        } else {
+          notFound.add(word);
+        }
+      }
+
+      _signs = foundSigns;
+      _notFoundWords = notFound;
+
+      _lastTranslation = TranslationModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        sourceText: cleanText,
+        signIds: foundSigns.map((sign) => sign.id).toList(),
+        notFoundWords: notFound,
+        createdAt: DateTime.now(),
+      );
+
+      _recentTranslations.insert(0, _lastTranslation!);
+
+      if (_recentTranslations.length > 5) {
+        _recentTranslations.removeLast();
+      }
+    } catch (e) {
+      _errorMessage = 'Erro ao traduzir: $e';
     } finally {
       _isTranslating = false;
       notifyListeners();
     }
+  }
+
+  void clear() {
+    _signs = [];
+    _notFoundWords = [];
+    _lastTranslation = null;
+    _errorMessage = null;
+    notifyListeners();
   }
 }

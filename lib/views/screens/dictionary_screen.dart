@@ -36,27 +36,25 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = Theme.of(context).colorScheme.primary;
+    final cardColor = Theme.of(context).cardColor;
+
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF5F6FA),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: const Text(
             'Dicionário',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          backgroundColor: const Color(0xFF2D78BB),
-          iconTheme: const IconThemeData(color: Colors.white),
-          elevation: 0,
         ),
         body: Consumer<DictionaryViewModel>(
           builder: (context, viewModel, child) {
             if (viewModel.isLoading) {
-              return const Center(
-                child: CircularProgressIndicator(),
+              return Center(
+                child: CircularProgressIndicator(color: primary),
               );
             }
 
@@ -64,22 +62,29 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
-                  color: Colors.white,
+                  color: cardColor,
                   child: Column(
                     children: [
-                      // Barra de pesquisa
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
+                          color: isDark
+                              ? const Color(0xFF222A33)
+                              : Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: TextField(
                           controller: _searchController,
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
                           decoration: InputDecoration(
                             hintText: 'Buscar sinais...',
-                            prefixIcon: const Icon(
+                            hintStyle: TextStyle(
+                              color: isDark ? Colors.grey[400] : Colors.grey,
+                            ),
+                            prefixIcon: Icon(
                               Icons.search,
-                              color: Colors.grey,
+                              color: isDark ? Colors.grey[400] : Colors.grey,
                             ),
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.symmetric(
@@ -88,52 +93,48 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                             ),
                             suffixIcon: _searchController.text.isNotEmpty
                                 ? IconButton(
-                                    icon: const Icon(Icons.clear),
-                                    onPressed: () {
-                                      _searchController.clear();
-                                    },
+                                    icon: Icon(
+                                      Icons.clear,
+                                      color: isDark ? Colors.grey[400] : Colors.grey,
+                                    ),
+                                    onPressed: () => _searchController.clear(),
                                   )
                                 : null,
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 16),
-
-                      // Categorias
                       SizedBox(
-                        height: 40,
+                        height: 42,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           itemCount: viewModel.categories.length,
                           itemBuilder: (context, index) {
-                            final category =
-                                viewModel.categories[index];
-
+                            final category = viewModel.categories[index];
                             final isSelected =
                                 category == viewModel.selectedCategory;
 
                             return Padding(
-                              padding: EdgeInsets.only(
-                                right: 8,
-                                left: index == 0 ? 0 : 8,
-                              ),
+                              padding: const EdgeInsets.only(right: 8),
                               child: ChoiceChip(
                                 label: Text(category),
                                 selected: isSelected,
-                                selectedColor:
-                                    const Color(0xFF2D78BB),
+                                selectedColor: primary,
+                                backgroundColor: isDark
+                                    ? const Color(0xFF222A33)
+                                    : Colors.white,
                                 labelStyle: TextStyle(
                                   color: isSelected
                                       ? Colors.white
-                                      : const Color(0xFF666666),
-                                  fontSize: 14,
+                                      : isDark
+                                          ? Colors.grey[300]
+                                          : const Color(0xFF666666),
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
                                 ),
-                                onSelected: (selected) {
-                                  if (selected) {
-                                    viewModel
-                                        .filterByCategory(category);
-                                  }
+                                onSelected: (_) {
+                                  viewModel.filterByCategory(category);
                                 },
                               ),
                             );
@@ -143,10 +144,9 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                     ],
                   ),
                 ),
-
                 Expanded(
                   child: viewModel.signs.isEmpty
-                      ? _buildEmptyState()
+                      ? _buildEmptyState(context)
                       : GridView.builder(
                           padding: const EdgeInsets.all(16),
                           itemCount: viewModel.signs.length,
@@ -158,10 +158,9 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                             mainAxisSpacing: 16,
                           ),
                           itemBuilder: (context, index) {
-                            final sign = viewModel.signs[index];
-
                             return _buildSignCard(
-                              sign,
+                              context,
+                              viewModel.signs[index],
                               viewModel,
                             );
                           },
@@ -173,24 +172,11 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
         ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: 0,
-          onTap: (index) {
-            _homeViewModel.onBottomNavTapped(index, context);
-          },
-          selectedItemColor: const Color(0xFF2D78BB),
-          unselectedItemColor: Colors.grey,
+          onTap: (index) => _homeViewModel.onBottomNavTapped(index, context),
           items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Início',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.favorite),
-              label: 'Favoritos',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Perfil',
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
+            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favoritos'),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
           ],
         ),
       ),
@@ -198,20 +184,24 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
   }
 
   Widget _buildSignCard(
+    BuildContext context,
     SignModel sign,
     DictionaryViewModel viewModel,
   ) {
-    return GestureDetector(
-      onTap: () {
-        viewModel.openSignDetails(context, sign);
-      },
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primary = Theme.of(context).colorScheme.primary;
+    final cardColor = Theme.of(context).cardColor;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () => viewModel.openSignDetails(context, sign),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.08),
+              color: isDark ? Colors.black26 : Colors.grey.withOpacity(0.08),
               blurRadius: 6,
               spreadRadius: 2,
             ),
@@ -220,17 +210,18 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Imagem
             Expanded(
               child: Stack(
                 children: [
                   Container(
                     width: double.infinity,
-                    decoration: const BoxDecoration(
-                      borderRadius: BorderRadius.vertical(
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF222A33)
+                          : const Color(0xFFF7F7F7),
+                      borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(16),
                       ),
-                      color: Color(0xFFF7F7F7),
                     ),
                     child: ClipRRect(
                       borderRadius: const BorderRadius.vertical(
@@ -239,88 +230,68 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                       child: Image.network(
                         sign.signImagePath,
                         fit: BoxFit.contain,
-                        errorBuilder:
-                            (context, error, stackTrace) {
-                          return Center(
-                            child: Icon(
-                              Icons.sign_language,
-                              size: 50,
-                              color: Colors.grey[400],
-                            ),
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(
+                            Icons.sign_language,
+                            size: 50,
+                            color: Colors.grey[400],
                           );
                         },
                       ),
                     ),
                   ),
-
                   Positioned(
-                    top: 10,
-                    right: 10,
+                    top: 8,
+                    right: 8,
                     child: IconButton(
                       icon: Icon(
                         sign.isFavorite
                             ? Icons.favorite
                             : Icons.favorite_border,
-                        color: sign.isFavorite
-                            ? Colors.red
-                            : Colors.grey,
+                        color: sign.isFavorite ? Colors.red : Colors.grey,
                       ),
-                      onPressed: () {
-                        viewModel.toggleFavorite(sign.id);
-                      },
+                      onPressed: () => viewModel.toggleFavorite(sign.id),
                     ),
                   ),
                 ],
               ),
             ),
-
-            // Informações
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     sign.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: Color(0xFF333333),
+                      color: isDark ? Colors.white : const Color(0xFF333333),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-
                   const SizedBox(height: 4),
-
                   Text(
                     sign.description ?? 'Sem descrição',
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.grey[600],
+                      color: isDark ? Colors.grey[400] : Colors.grey[600],
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-
                   const SizedBox(height: 8),
-
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2D78BB)
-                          .withOpacity(0.1),
-                      borderRadius:
-                          BorderRadius.circular(6),
+                      color: primary.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       sign.category,
-                      style: const TextStyle(
-                        color: Color(0xFF2D78BB),
+                      style: TextStyle(
+                        color: primary,
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                       ),
@@ -335,37 +306,16 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.menu_book_outlined,
-              size: 72,
-              color: Colors.grey.shade400,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Nenhum sinal encontrado',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF666666),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Tente pesquisar outro termo',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade500,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+      child: Text(
+        'Nenhum sinal encontrado',
+        style: TextStyle(
+          color: isDark ? Colors.grey[300] : Colors.grey[700],
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

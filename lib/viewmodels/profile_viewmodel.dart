@@ -1,90 +1,210 @@
-import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+enum AppThemeMode {
+  light,
+  dark,
+  system,
+}
+
 class ProfileViewModel extends ChangeNotifier {
   final SupabaseClient _supabase = Supabase.instance.client;
-  
+
   bool _isLoading = false;
   String? _errorMessage;
+
   bool _notificationsEnabled = true;
-  bool _darkMode = false;
+  AppThemeMode _themeMode = AppThemeMode.system;
   double _fontSize = 1.0;
   double _contrastLevel = 1.0;
   double _spacing = 1.0;
   String _language = 'Português';
+
   Map<String, dynamic>? _userData;
-  
+
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   Map<String, dynamic>? get userData => _userData;
-  bool get notificationsEnabled => _notificationsEnabled;
-  bool get darkMode => _darkMode;
-  double get fontSize => _fontSize;
-  double get contrastLevel => _contrastLevel;
-  double get spacing => _spacing;
-  String get language => _language;
-  
+
+ bool get notificationsEnabled => _notificationsEnabled;
+
+AppThemeMode get themeMode => _themeMode;
+
+bool get darkMode => _themeMode == AppThemeMode.dark;
+
+ThemeMode get flutterThemeMode {
+  switch (_themeMode) {
+    case AppThemeMode.light:
+      return ThemeMode.light;
+
+    case AppThemeMode.dark:
+      return ThemeMode.dark;
+
+    case AppThemeMode.system:
+      return ThemeMode.system;
+  }
+}
+
+double get fontSize => _fontSize;
+double get contrastLevel => _contrastLevel;
+double get spacing => _spacing;
+String get language => _language;
+
   final List<String> availableLanguages = [
     'Português',
     'Inglês',
     'Espanhol',
   ];
-  
+
   ProfileViewModel() {
-    _loadUserData();
-    _loadPreferences();
+    loadInitialData();
   }
-  
+
+  Future<void> loadInitialData() async {
+    await _loadPreferences();
+    await _loadUserData();
+  }
+
   Future<void> _loadUserData() async {
-    try {
-      final user = _supabase.auth.currentUser;
-      if (user != null) {
-        final response = await _supabase
-            .from('profiles')
-            .select()
-            .eq('id', user.id)
-            .single();
-        
-        if (response != null) {
-          _userData = Map<String, dynamic>.from(response);
-        }
-      }
+  try {
+    final user = _supabase.auth.currentUser;
+
+    if (user == null) {
+      _userData = null;
       notifyListeners();
-    } catch (e) {
-      _errorMessage = 'Erro ao carregar dados: $e';
-      notifyListeners();
+      return;
     }
+
+    final response = await _supabase
+        .from('profiles')
+        .select()
+        .eq('id', user.id)
+        .maybeSingle();
+
+    if (response == null) {
+      final newProfile = {
+        'id': user.id,
+        'name': user.userMetadata?['name'] ??
+            user.email?.split('@').first ??
+            'Usuário',
+        'email': user.email ?? '',
+        'bio': '',
+        'avatar_url': user.userMetadata?['avatar_url'],
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      await _supabase.from('profiles').insert(newProfile);
+
+      _userData = newProfile;
+    } else {
+      _userData = Map<String, dynamic>.from(response);
+    }
+
+    _errorMessage = null;
+    notifyListeners();
+  } catch (e) {
+    final user = _supabase.auth.currentUser;
+
+    _userData = {
+      'id': user?.id ?? '',
+      'name': user?.userMetadata?['name'] ??
+          user?.email?.split('@').first ??
+          'Usuário',
+      'email': user?.email ?? '',
+      'bio': '',
+      'avatar_url': user?.userMetadata?['avatar_url'],
+    };
+
+    _errorMessage = 'Erro ao carregar dados: $e';
+    notifyListeners();
   }
-  
+}
+
   Future<void> _loadPreferences() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      _notificationsEnabled = prefs.getBool('notifications') ?? true;
-      _darkMode = prefs.getBool('darkMode') ?? false;
-      _fontSize = (prefs.getDouble('fontSize') ?? 1.0).clamp(0.8, 2.0);
-      _contrastLevel = (prefs.getDouble('contrast') ?? 1.0).clamp(0.5, 2.0);
-      _spacing = (prefs.getDouble('spacing') ?? 1.0).clamp(0.8, 2.0);
-      _language = prefs.getString('language') ?? 'Português';
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Erro ao carregar preferências: $e');
-    }
+    final prefs = await SharedPreferences.getInstance();
+
+    _notificationsEnabled =
+        prefs.getBool('notifications_enabled') ?? true;
+    final savedTheme = prefs.getString('theme_mode') ?? 'system';
+    _themeMode = AppThemeMode.values.firstWhere(
+      (e) => e.name == savedTheme,
+      orElse: () => AppThemeMode.system,
+      );
+    _fontSize = (prefs.getDouble('font_size') ?? 1.0).clamp(0.8, 2.0);
+    _contrastLevel =
+        (prefs.getDouble('contrast_level') ?? 1.0).clamp(0.5, 2.0);
+    _spacing = (prefs.getDouble('spacing') ?? 1.0).clamp(0.8, 2.0);
+    _language = prefs.getString('language') ?? 'Português';
+
+    notifyListeners();
   }
-  
+
   Future<void> _savePreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('notifications', _notificationsEnabled);
-    await prefs.setBool('darkMode', _darkMode);
-    await prefs.setDouble('fontSize', _fontSize);
-    await prefs.setDouble('contrast', _contrastLevel);
+
+    await prefs.setBool('notifications_enabled', _notificationsEnabled);
+    await prefs.setString('theme_mode',_themeMode.name,);
+    await prefs.setDouble('font_size', _fontSize);
+    await prefs.setDouble('contrast_level', _contrastLevel);
     await prefs.setDouble('spacing', _spacing);
     await prefs.setString('language', _language);
   }
-  
+
+  Future<void> toggleNotifications(bool value) async {
+    _notificationsEnabled = value;
+    await _savePreferences();
+    notifyListeners();
+  }
+
+Future<void> setThemeMode(
+  AppThemeMode mode,
+) async {
+  _themeMode = mode;
+
+  await _savePreferences();
+
+  notifyListeners();
+}
+
+  Future<void> setLanguage(String value) async {
+    if (!availableLanguages.contains(value)) return;
+
+    _language = value;
+    await _savePreferences();
+    notifyListeners();
+  }
+
+  Future<void> updateFontSize(double value) async {
+    _fontSize = value.clamp(0.8, 2.0);
+    await _savePreferences();
+    notifyListeners();
+  }
+
+  Future<void> updateContrast(double value) async {
+    _contrastLevel = value.clamp(0.5, 2.0);
+    await _savePreferences();
+    notifyListeners();
+  }
+
+  Future<void> updateSpacing(double value) async {
+    _spacing = value.clamp(0.8, 2.0);
+    await _savePreferences();
+    notifyListeners();
+  }
+
+  Future<void> resetAccessibility() async {
+    _fontSize = 1.0;
+    _contrastLevel = 1.0;
+    _spacing = 1.0;
+    await _savePreferences();
+    notifyListeners();
+  }
+
   Future<bool> updateProfile({
     required String name,
     required String email,
@@ -96,6 +216,7 @@ class ProfileViewModel extends ChangeNotifier {
 
     try {
       final user = _supabase.auth.currentUser;
+
       if (user == null) {
         _errorMessage = 'Usuário não autenticado';
         _isLoading = false;
@@ -103,7 +224,6 @@ class ProfileViewModel extends ChangeNotifier {
         return false;
       }
 
-      // Atualiza dados no perfil
       await _supabase.from('profiles').update({
         'name': name,
         'email': email,
@@ -111,9 +231,8 @@ class ProfileViewModel extends ChangeNotifier {
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('id', user.id);
 
-      // Recarrega dados
       await _loadUserData();
-      
+
       _isLoading = false;
       notifyListeners();
       return true;
@@ -124,141 +243,100 @@ class ProfileViewModel extends ChangeNotifier {
       return false;
     }
   }
-  
-  void toggleNotifications(bool value) {
-    _notificationsEnabled = value;
-    _savePreferences();
-    notifyListeners();
-  }
-  
-  void toggleDarkMode(bool value) {
-    _darkMode = value;
-    _savePreferences();
-    notifyListeners();
-  }
-  
-  void setLanguage(String language) {
-    if (availableLanguages.contains(language)) {
-      _language = language;
-      _savePreferences();
-      notifyListeners();
-    }
-  }
-  
-  Future<void> updateFontSize(double value) async {
-    _fontSize = value.clamp(0.8, 2.0);
-    await _savePreferences();
-    notifyListeners();
-  }
-  
-  Future<void> updateContrast(double value) async {
-    _contrastLevel = value.clamp(0.5, 2.0);
-    await _savePreferences();
-    notifyListeners();
-  }
-  
-  Future<void> updateSpacing(double value) async {
-    _spacing = value.clamp(0.8, 2.0);
-    await _savePreferences();
-    notifyListeners();
-  }
-  
+
   Future<bool> uploadProfileImage({
-  required ImageSource source,
-}) async {
-  try {
-    final picker = ImagePicker();
+    required ImageSource source,
+  }) async {
+    try {
+      final picker = ImagePicker();
 
-    final pickedImage = await picker.pickImage(
-      source: source,
-      imageQuality: 70,
-    );
+      final pickedImage = await picker.pickImage(
+        source: source,
+        imageQuality: 70,
+      );
 
-    if (pickedImage == null) {
-      return false;
-    }
+      if (pickedImage == null) return false;
 
-    return await _uploadPickedImage(pickedImage);
-  } catch (e) {
-    _errorMessage = 'Erro ao selecionar imagem: $e';
-    notifyListeners();
-    return false;
-  }
-}
-
-Future<bool> recoverLostProfileImage() async {
-  if (!Platform.isAndroid) return false;
-
-  try {
-    final picker = ImagePicker();
-    final response = await picker.retrieveLostData();
-
-    if (response.isEmpty) return false;
-
-    if (response.exception != null) {
-      _errorMessage = 'Erro ao recuperar imagem: ${response.exception}';
+      return await _uploadPickedImage(pickedImage);
+    } catch (e) {
+      _errorMessage = 'Erro ao selecionar imagem: $e';
       notifyListeners();
       return false;
     }
-
-    final file = response.file;
-
-    if (file == null) return false;
-
-    return await _uploadPickedImage(file);
-  } catch (e) {
-    _errorMessage = 'Erro ao recuperar imagem: $e';
-    notifyListeners();
-    return false;
   }
-}
 
-Future<bool> _uploadPickedImage(XFile pickedImage) async {
-  _isLoading = true;
-  _errorMessage = null;
-  notifyListeners();
+  Future<bool> recoverLostProfileImage() async {
+    if (!Platform.isAndroid) return false;
 
-  try {
-    final user = _supabase.auth.currentUser;
+    try {
+      final picker = ImagePicker();
+      final response = await picker.retrieveLostData();
 
-    if (user == null) {
-      _errorMessage = 'Usuário não autenticado';
+      if (response.isEmpty) return false;
+
+      if (response.exception != null) {
+        _errorMessage = 'Erro ao recuperar imagem: ${response.exception}';
+        notifyListeners();
+        return false;
+      }
+
+      final file = response.file;
+      if (file == null) return false;
+
+      return await _uploadPickedImage(file);
+    } catch (e) {
+      _errorMessage = 'Erro ao recuperar imagem: $e';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> _uploadPickedImage(XFile pickedImage) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final user = _supabase.auth.currentUser;
+
+      if (user == null) {
+        _errorMessage = 'Usuário não autenticado';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      final file = File(pickedImage.path);
+      final fileExt = pickedImage.path.split('.').last;
+      final filePath = 'profiles/${user.id}.$fileExt';
+
+      await _supabase.storage.from('avatars').upload(
+            filePath,
+            file,
+            fileOptions: const FileOptions(upsert: true),
+          );
+
+      final imageUrl =
+          _supabase.storage.from('avatars').getPublicUrl(filePath);
+
+      await _supabase.from('profiles').update({
+        'avatar_url': imageUrl,
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('id', user.id);
+
+      await _loadUserData();
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = 'Erro ao enviar imagem: $e';
       _isLoading = false;
       notifyListeners();
       return false;
     }
-
-    final file = File(pickedImage.path);
-    final fileExt = pickedImage.path.split('.').last;
-    final filePath = 'profiles/${user.id}.$fileExt';
-
-    await _supabase.storage.from('avatars').upload(
-      filePath,
-      file,
-      fileOptions: const FileOptions(upsert: true),
-    );
-
-    final imageUrl =
-        _supabase.storage.from('avatars').getPublicUrl(filePath);
-
-    await _supabase.from('profiles').update({
-      'avatar_url': imageUrl,
-      'updated_at': DateTime.now().toIso8601String(),
-    }).eq('id', user.id);
-
-    await _loadUserData();
-
-    _isLoading = false;
-    notifyListeners();
-    return true;
-  } catch (e) {
-    _errorMessage = 'Erro ao enviar imagem: $e';
-    _isLoading = false;
-    notifyListeners();
-    return false;
   }
-}
-  
+
   Future<bool> logout() async {
     try {
       await _supabase.auth.signOut();
@@ -271,38 +349,41 @@ Future<bool> _uploadPickedImage(XFile pickedImage) async {
       return false;
     }
   }
-  
-  // Método para exportar dados do usuário
+
   Future<String> exportUserData() async {
     try {
       final user = _supabase.auth.currentUser;
+
       if (user == null) {
         throw Exception('Usuário não autenticado');
       }
 
-      // Busca dados do usuário
       final profileData = await _supabase
           .from('profiles')
           .select()
           .eq('id', user.id)
           .single();
 
-      // Busca dados adicionais (futuramente)
       final dataToExport = {
         'profile': profileData,
+        'settings': {
+          'notifications_enabled': _notificationsEnabled,
+          'theme_mode': _themeMode.name,
+          'font_size': _fontSize,
+          'contrast_level': _contrastLevel,
+          'spacing': _spacing,
+          'language': _language,
+        },
         'exported_at': DateTime.now().toIso8601String(),
         'app_version': '1.0.0',
       };
 
-      // Converte para JSON formatado
-      final jsonString = JsonEncoder.withIndent('  ').convert(dataToExport);
-      return jsonString;
+      return const JsonEncoder.withIndent('  ').convert(dataToExport);
     } catch (e) {
       throw Exception('Erro ao exportar dados: $e');
     }
   }
-  
-  // Método para excluir conta do usuário
+
   Future<bool> deleteAccount() async {
     _isLoading = true;
     _errorMessage = null;
@@ -310,6 +391,7 @@ Future<bool> _uploadPickedImage(XFile pickedImage) async {
 
     try {
       final user = _supabase.auth.currentUser;
+
       if (user == null) {
         _errorMessage = 'Usuário não autenticado';
         _isLoading = false;
@@ -317,12 +399,9 @@ Future<bool> _uploadPickedImage(XFile pickedImage) async {
         return false;
       }
 
-      // Primeiro, exclui os dados do perfil
       await _supabase.from('profiles').delete().eq('id', user.id);
-      
-      // Depois, exclui a conta de autenticação
-      await _supabase.auth.admin.deleteUser(user.id);
-      
+      await _supabase.auth.signOut();
+
       _userData = null;
       _isLoading = false;
       notifyListeners();
