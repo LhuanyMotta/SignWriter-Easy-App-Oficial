@@ -1,128 +1,291 @@
 # ✍️ SignWriter Fácil
 
-**Facilitando a comunicação entre surdos e ouvintes com o sistema visual SignWriting.**
+<div align="center">
+
+<img src="assets/images/signwriter_logo.png" width="180" alt="SignWriter Fácil Logo">
+
+# ✍️ SignWriter Fácil
+
+### 🌍 Tecnologia, Inclusão e Acessibilidade através do SignWriting
+
+Aplicativo multiplataforma desenvolvido em Flutter com foco em aprendizado, comunicação visual e acessibilidade para usuários da língua de sinais.
+
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=for-the-badge&logo=dart&logoColor=white)](https://dart.dev)
+[![Supabase](https://img.shields.io/badge/Supabase-Backend-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
+[![Provider](https://img.shields.io/badge/Provider-MVVM-orange?style=for-the-badge)](https://pub.dev/packages/provider)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+
+</div>
 
 ---
 
-## 📌 Sobre o Projeto
+# 📋 Índice
 
-O **SignWriter Fácil** é um aplicativo voltado para aproximar surdos e ouvintes por meio do sistema de escrita visual **SignWriting**. Criado por Valerie Sutton em 1974, o SignWriting permite representar graficamente os movimentos das mãos, expressões faciais e posturas corporais — elementos fundamentais da **língua de sinais**.
-
----
-
-## 🚀 Funcionalidades Principais
-
-- 📘 **Aprender e Praticar**  
-  Módulo educacional interativo para dominar o SignWriting.
-
-- ✍️ **Escrever Sinais**  
-  Ferramenta para criar e editar sinais manualmente.
-
-- 🔁 **Traduzir Sinais**  
-  Conversão entre texto e escrita em SignWriting (em desenvolvimento).
-
-- 💬 **Conversar**  
-  Interface de comunicação utilizando SignWriting em tempo real.
-
-- 📚 **Dicionário de Sinais**  
-  Banco de dados abrangente e pesquisável.
-
-- 📊 **Progresso do Usuário**  
-  Acompanhamento personalizado do aprendizado e uso do app.
+* [📖 Sobre o Projeto](#-sobre-o-projeto)
+* [✨ Funcionalidades](#-funcionalidades)
+* [♿ Sistema de Acessibilidade](#-sistema-de-acessibilidade)
+* [📱 Capturas de Tela](#-capturas-de-tela)
+* [🧠 Arquitetura](#-arquitetura)
+* [🛠️ Tecnologias Utilizadas](#️-tecnologias-utilizadas)
+* [📂 Estrutura do Projeto](#-estrutura-do-projeto)
+* [🚀 Como Executar o Projeto](#-como-executar-o-projeto)
+* [🌍 Roadmap](#-roadmap)
+* [🤝 Contribuições](#-contribuições)
+* [👨‍💻 Desenvolvedores](#-desenvolvedores)
+* [📄 Licença](#-licença)
 
 ---
 
-## ♿ Recursos de Acessibilidade (Em Desenvolvimento)
-
-O aplicativo foca em **inclusão total**, com diversas opções de personalização:
-
-- 🔠 **Tamanho da Fonte Ajustável**  
-  Controle deslizante (80% – 200%) com aplicação instantânea em toda a interface.
-
-- 🎨 **Contraste Configurável**  
-  Escala personalizável (50% – 200%) para diferentes necessidades visuais.
-
-- 📐 **Espaçamento Personalizado**  
-  Ajustes de layout para melhor legibilidade (80% – 200%).
-
-- 💾 **Persistência de Configurações**  
-  Preferências do usuário salvas localmente e aplicadas automaticamente.
+> ⚠️ Projeto educacional focado em inclusão, acessibilidade e comunicação através do sistema visual SignWriting.
 
 ---
 
-## 🧠 Arquitetura
+# 📖 Sobre o Projeto
 
-Utilizamos a arquitetura **MVVM (Model-View-ViewModel)** para garantir modularidade, testabilidade e escalabilidade:
+O **SignWriter Fácil** é um aplicativo desenvolvido para auxiliar no aprendizado e utilização do sistema **SignWriting**, uma escrita visual criada por **Valerie Sutton** para representação gráfica das línguas de sinais.
 
-- 🧩 **Model** — Dados e lógica de negócio  
-- 🖼️ **View** — Interface e layout  
-- 🔄 **ViewModel** — Conector entre View e Model com lógica de apresentação
+O projeto busca aproximar surdos e ouvintes através de uma experiência moderna, intuitiva e acessível.
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+# ✨ Funcionalidades
 
-| Tecnologia         | Descrição                                      |
-|--------------------|-----------------------------------------------|
-| **Flutter**        | Framework multiplataforma                     |
-| **Provider**       | Gerenciamento de estado (padrão MVVM)         |
-| **SharedPreferences** | Persistência local de configurações       |
-| **APIs Externas**  | Tradução e reconhecimento de sinais (futuro)  |
+## 📘 Aprender e Praticar
+
+Sistema interativo com categorias, progresso e exercícios.
 
 ---
 
-## 📂 Estrutura do Projeto
+## ✍️ Escrita de Sinais
 
-```
+Criação e edição de sinais utilizando o padrão visual SignWriting.
+
+---
+
+## 📚 Dicionário de Sinais
+
+Pesquisa organizada de sinais por categorias.
+
+---
+
+## ❤️ Favoritos
+
+Sistema de favoritos para salvar sinais importantes.
+
+---
+
+## 👤 Perfil do Usuário
+
+Gerenciamento de conta e preferências do aplicativo.
+
+---
+
+## 🌙 Temas Dinâmicos
+
+* Tema claro
+* Tema escuro
+* Seguir sistema
+
+---
+
+# ♿ Sistema de Acessibilidade
+
+O aplicativo possui um sistema de acessibilidade integrado em toda a aplicação.
+
+## Recursos disponíveis
+
+* 🔠 Ajuste de fonte (80% – 150%)
+* 📐 Controle de espaçamento
+* 🎨 Ajuste de contraste
+* 🌙 Tema escuro/claro
+* 🌍 Suporte multilíngue
+* 💾 Persistência automática das preferências
+
+---
+
+# 📱 Capturas de Tela
+
+## 🔐 Tela de Login
+
+![Login](assets/screenshots/Tela_Login.png)
+
+---
+
+## 🏠 Tela Inicial
+
+![Home](assets/screenshots/Tela_Home.png)
+
+---
+
+## ♿ Tela de Acessibilidade
+
+![Acessibilidade](assets/screenshots/Tela_Acessibilidade.png)
+
+---
+
+## 📘 Aprender e Praticar
+
+![Aprender](assets/screenshots/Tela_Aprender_Praticar.png)
+
+---
+
+## 📚 Dicionário
+
+![Dicionário](assets/screenshots/Tela_Dicionario.png)
+
+---
+
+## 👤 Perfil
+
+![Perfil](assets/screenshots/Tela_Meu_Perfil.png)
+
+---
+
+# 🧠 Arquitetura
+
+O projeto utiliza a arquitetura **MVVM (Model-View-ViewModel)**.
+
+| Camada | Responsabilidade |
+|---|---|
+| Model | Dados e entidades |
+| View | Interface visual |
+| ViewModel | Estados e lógica de apresentação |
+
+---
+
+# 🛠️ Tecnologias Utilizadas
+
+| Tecnologia | Finalidade |
+|---|---|
+| Flutter | Desenvolvimento multiplataforma |
+| Dart | Linguagem principal |
+| Provider | Gerenciamento de estado |
+| Supabase | Backend e autenticação |
+| SharedPreferences | Persistência local |
+| Material 3 | Design moderno |
+
+---
+
+# 📂 Estrutura do Projeto
+
+```bash
 lib/
-├── models/         # Classes de dados
-├── viewmodels/     # Lógica de apresentação e negócios
+├── models/
+├── routes/
+├── services
+├── theme
+├── viewmodels
 ├── views/
-│   ├── screens/    # Telas do app
-│   └── widgets/    # Componentes reutilizáveis
-├── services/       # Conexões com APIs e serviços
-├── utils/          # Helpers e funções utilitárias
-├── theme/          # Temas e acessibilidade
-└── main.dart       # Ponto de entrada
+│   ├── screens/
+│   └── widgets/
+└── main.dart
 ```
 
 ---
 
-## 🧪 Como Executar
+# 🚀 Como Executar o Projeto
 
-1. Certifique-se de ter o **Flutter** instalado.
-2. Clone este repositório:  
-   `git clone https://github.com/LhuanyMotta/SignWriter-Easy-App`
-3. Instale as dependências:  
-   `flutter pub get`
-4. Execute o aplicativo:  
-   `flutter run`
+## 🔧 Pré-requisitos
 
----
-
-## 🔮 Desenvolvimento Futuro
-
-- 📦 Banco de dados local (offline-first)
-- 📡 Reconhecimento de sinais em tempo real via câmera
-- 🌐 Suporte multilíngue
-- 🌈 Temas personalizados com mais contrastes
-- 🔊 Compatibilidade com leitores de tela
+* Flutter 3.x
+* Dart SDK
+* Android Studio ou VSCode
+* Emulador Android/iOS
 
 ---
 
-## 🤝 Contribuições
+## 1️⃣ Clone o repositório
 
-Contribuições são **muito bem-vindas**!
-
----
-
-## 👨‍💻 Desenvolvedores
-
-- [Bruno Santos](https://github.com/Br2n0)
-- [Lhuany Motta](https://github.com/LhuanyMotta)
+```bash
+git clone https://github.com/LhuanyMotta/SignWriter-Easy-App
+```
 
 ---
 
-## 📝 Licença
+## 2️⃣ Entre na pasta do projeto
 
-Este projeto está licenciado sob a **MIT License**.
+```bash
+cd SignWriter-Easy-App
+```
+
+---
+
+## 3️⃣ Instale as dependências
+
+```bash
+flutter pub get
+```
+
+---
+
+## 4️⃣ Configure o arquivo .env
+
+```env
+SUPABASE_URL=SUA_URL
+SUPABASE_KEY=SUA_CHAVE
+```
+
+---
+
+## 5️⃣ Execute o aplicativo
+
+```bash
+flutter run
+```
+
+---
+
+# 🌍 Roadmap
+
+## 🔜 Próximas funcionalidades
+
+- [ ] Tradução automática de sinais
+- [ ] Reconhecimento de sinais via câmera
+- [ ] Integração com IA
+- [ ] Estatísticas de aprendizado
+- [ ] Mais idiomas
+- [ ] Sistema offline
+- [ ] Gamificação
+
+---
+
+# 🤝 Contribuições
+
+Contribuições são muito bem-vindas.
+
+## Como contribuir
+
+1. Faça um fork do projeto
+2. Crie uma branch
+3. Faça suas alterações
+4. Envie um pull request
+
+---
+
+# 👨‍💻 Desenvolvedores
+
+<div align="center">
+
+| Desenvolvedor | GitHub |
+|---|---|
+| Bruno Santos | https://github.com/Br2n0 |
+| Lhuany Motta | https://github.com/LhuanyMotta |
+
+</div>
+
+---
+
+# 📄 Licença
+
+Este projeto está sob a licença MIT.
+
+---
+
+<div align="center">
+
+# 💙 SignWriter Fácil
+
+### Inclusão, acessibilidade e tecnologia caminhando juntas.
+
+</div>
