@@ -149,10 +149,9 @@ Locale get locale {
       (e) => e.name == savedTheme,
       orElse: () => AppThemeMode.system,
       );
-    _fontSize = (prefs.getDouble('font_size') ?? 1.0).clamp(0.8, 2.0);
-    _contrastLevel =
-        (prefs.getDouble('contrast_level') ?? 1.0).clamp(0.5, 2.0);
-    _spacing = (prefs.getDouble('spacing') ?? 1.0).clamp(0.8, 2.0);
+    _fontSize = (prefs.getDouble('font_size') ?? 1.0).clamp(0.8, 1.5);
+    _contrastLevel =        (prefs.getDouble('contrast_level') ?? 1.0).clamp(0.8, 1.5);
+    _spacing = (prefs.getDouble('spacing') ?? 1.0).clamp(0.8, 1.5);
     _language = prefs.getString('language') ?? 'Português';
 
     notifyListeners();

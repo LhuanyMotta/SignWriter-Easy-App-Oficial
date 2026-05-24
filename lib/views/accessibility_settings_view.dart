@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../viewmodels/profile_viewmodel.dart';
 import 'screens/home_screen.dart';
+import '../theme/app_spacing.dart';
 
 class AccessibilitySettingsView extends StatelessWidget {
   final bool isFirstAccess;
@@ -52,7 +53,7 @@ class AccessibilitySettingsView extends StatelessWidget {
                   color: Theme.of(context).colorScheme.primary,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: AppSpacing.value(context, 8)),
               Text(
                 'Ajuste a experiência visual do aplicativo.',
                 style: TextStyle(
@@ -60,7 +61,7 @@ class AccessibilitySettingsView extends StatelessWidget {
                   color: _subtitleColor(context),
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: AppSpacing.value(context, 24)),
               _buildSettingCard(
                 context,
                 icon: Icons.format_size,
@@ -76,7 +77,7 @@ class AccessibilitySettingsView extends StatelessWidget {
                   onChanged: viewModel.updateFontSize,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: AppSpacing.value(context, 16)),
               _buildSettingCard(
                 context,
                 icon: Icons.contrast,
@@ -92,7 +93,7 @@ class AccessibilitySettingsView extends StatelessWidget {
                   onChanged: viewModel.updateContrast,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: AppSpacing.value(context, 16)),
               _buildSettingCard(
                 context,
                 icon: Icons.space_bar,
@@ -108,7 +109,7 @@ class AccessibilitySettingsView extends StatelessWidget {
                   onChanged: viewModel.updateSpacing,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: AppSpacing.value(context, 16)),
 
 _buildSettingCard(
   context,
@@ -125,7 +126,7 @@ _buildSettingCard(
           onTap: () => viewModel.setThemeMode(AppThemeMode.light),
         ),
       ),
-      const SizedBox(width: 8),
+      SizedBox(width: AppSpacing.value(context, 8)),
       Expanded(
         child: _optionButton(
           context,
@@ -134,7 +135,7 @@ _buildSettingCard(
           onTap: () => viewModel.setThemeMode(AppThemeMode.dark),
         ),
       ),
-      const SizedBox(width: 8),
+      SizedBox(width: AppSpacing.value(context, 8)),
       Expanded(
         child: _optionButton(
           context,
@@ -147,7 +148,7 @@ _buildSettingCard(
   ),
 ),
 
-const SizedBox(height: 16),
+SizedBox(height: AppSpacing.value(context, 16)),
 
 _buildSettingCard(
   context,
@@ -160,7 +161,7 @@ _buildSettingCard(
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+      contentPadding: AppSpacing.symmetric(context, horizontal: 12),
     ),
     items: viewModel.availableLanguages.map((language) {
       return DropdownMenuItem(
@@ -175,7 +176,7 @@ _buildSettingCard(
     },
   ),
 ),
-              const SizedBox(height: 24),
+              SizedBox(height: AppSpacing.value(context, 24)),
 
 if (isFirstAccess) ...[
   SizedBox(
@@ -216,7 +217,7 @@ if (isFirstAccess) ...[
     ),
   ),
 
-  const SizedBox(height: 12),
+  SizedBox(height: AppSpacing.value(context, 12)),
 
   Center(
     child: TextButton(
@@ -243,7 +244,7 @@ if (isFirstAccess) ...[
     ),
   ),
 
-  const SizedBox(height: 24),
+  SizedBox(height: AppSpacing.value(context, 24)),
 ],
 
             ],
@@ -283,7 +284,7 @@ if (isFirstAccess) ...[
           Row(
             children: [
               Icon(icon, size: 30, color: const Color(0xFF2D78BB)),
-              const SizedBox(width: 14),
+              SizedBox(width: AppSpacing.value(context, 14)),
               Expanded(
                 child: Text(
                   title,
@@ -321,7 +322,7 @@ if (isFirstAccess) ...[
     borderRadius: BorderRadius.circular(12),
     onTap: onTap,
     child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: AppSpacing.symmetric(context, vertical: 12),
       decoration: BoxDecoration(
         color: selected ? const Color(0xFF2D78BB) : Colors.transparent,
         borderRadius: BorderRadius.circular(12),

@@ -5,6 +5,7 @@ import '../../viewmodels/create_text_viewmodel.dart';
 import '../../models/sign_model.dart';
 import '../widgets/sign_sequence_widget.dart';
 import 'text_detail_screen.dart';
+import '../../theme/app_spacing.dart';
 
 /// Tela para criar textos em sinais
 class CreateTextScreen extends StatefulWidget {
@@ -41,7 +42,7 @@ class _CreateTextScreenState extends State<CreateTextScreen> {
         ),
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: AppSpacing.all(context, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -52,12 +53,12 @@ class _CreateTextScreenState extends State<CreateTextScreen> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: AppSpacing.value(context, 16)),
                 Text(
                   'Composição',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: AppSpacing.value(context, 8)),
                 Consumer<CreateTextViewModel>(
                   builder: (context, viewModel, _) {
                     final selected = _mapSelectedSigns(viewModel);
@@ -65,7 +66,7 @@ class _CreateTextScreenState extends State<CreateTextScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SignSequenceWidget(signs: selected),
-                        const SizedBox(height: 8),
+                        SizedBox(height: AppSpacing.value(context, 8)),
                         Wrap(
                           spacing: 6,
                           runSpacing: 6,
@@ -81,7 +82,7 @@ class _CreateTextScreenState extends State<CreateTextScreen> {
                     );
                   },
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: AppSpacing.value(context, 16)),
                 Row(
                   children: [
                     Expanded(
@@ -97,12 +98,12 @@ class _CreateTextScreenState extends State<CreateTextScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: AppSpacing.value(context, 16)),
                 Text(
                   'Adicionar sinais',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: AppSpacing.value(context, 8)),
                 Expanded(
                   child: Consumer<CreateTextViewModel>(
                     builder: (context, viewModel, _) {

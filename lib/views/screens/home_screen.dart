@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import 'profile_screen.dart';
+import '../../theme/app_spacing.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -51,6 +52,8 @@ class _HomeScreenState extends State<HomeScreen>
         elevation: 0,
         title: const Text(
           'SignWriter Fácil',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -73,9 +76,9 @@ class _HomeScreenState extends State<HomeScreen>
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           tabs: const [
-            Tab(text: 'Início'),
-            Tab(text: 'Dicionário'),
-            Tab(text: 'Traduzir'),
+            Tab(child: FittedBox(child: Text('Início'))),
+            Tab(child: FittedBox(child: Text('Dicionário'))),
+            Tab(child: FittedBox(child: Text('Traduzir'))),
           ],
         ),
       ),
@@ -96,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen>
           setState(() => _currentBottomIndex = index);
           _viewModel.onBottomNavTapped(index, context);
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Início',
@@ -147,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen>
   ];
 
   return SingleChildScrollView(
-    padding: const EdgeInsets.all(18),
+    padding: AppSpacing.all(context, 18),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -160,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ),
 
-        const SizedBox(height: 6),
+        SizedBox(height: AppSpacing.value(context, 6)),
 
         Text(
           'O que você deseja fazer hoje?',
@@ -170,62 +173,72 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ),
 
-        const SizedBox(height: 26),
+        SizedBox(height: AppSpacing.value(context, 26)),
 
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: features.length,
-          gridDelegate:
-              const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 1,
-          ),
-          itemBuilder: (context, index) {
-            final item = features[index];
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final spacing = AppSpacing.value(context, 16);
+            final cardWidth = (constraints.maxWidth - spacing) / 2;
 
-            return GestureDetector(
-              onTap: item['onTap'],
-              child: Container(
-                decoration: BoxDecoration(
-                  color: item['color'],
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      item['icon'],
-                      size: 44,
-                      color: Colors.white,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        item['title'],
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
+            return Wrap(
+              spacing: spacing,
+              runSpacing: spacing,
+              children: features.map((item) {
+                return SizedBox(
+                  width: cardWidth,
+                  child: Material(
+                    color: item['color'] as Color,
+                    borderRadius: BorderRadius.circular(22),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: item['onTap'] as VoidCallback,
+                      child: Container(
+                        constraints: BoxConstraints(
+                          minHeight: AppSpacing.value(context, 150),
+                        ),
+                        padding: AppSpacing.symmetric(
+                          context,
+                          horizontal: 12,
+                          vertical: 22,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(22),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              item['icon'] as IconData,
+                              size: AppSpacing.value(context, 42),
+                              color: Colors.white,
+                            ),
+                            SizedBox(height: AppSpacing.value(context, 16)),
+                            Text(
+                              item['title'] as String,
+                              textAlign: TextAlign.center,
+                              softWrap: true,
+                              maxLines: 5,
+                              overflow: TextOverflow.visible,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              }).toList(),
             );
           },
         ),
@@ -236,7 +249,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildDictionaryTab() {
     return Padding(
-      padding: const EdgeInsets.all(18),
+      padding: AppSpacing.all(context, 18),
       child: _buildInfoCard(
         icon: Icons.menu_book,
         title: 'Dicionário de Sinais',
@@ -249,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildTranslateTab() {
     return Padding(
-      padding: const EdgeInsets.all(18),
+      padding: AppSpacing.all(context, 18),
       child: _buildInfoCard(
         icon: Icons.translate,
         title: 'Traduzir Sinais',
@@ -273,12 +286,12 @@ class _HomeScreenState extends State<HomeScreen>
         onTap: onTap,
         child: Container(
           height: 135,
-          padding: const EdgeInsets.all(12),
+          padding: AppSpacing.all(context, 12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, color: Colors.white, size: 34),
-              const SizedBox(height: 12),
+              SizedBox(height: AppSpacing.value(context, 12)),
               Text(
                 title,
                 textAlign: TextAlign.center,
@@ -304,7 +317,7 @@ class _HomeScreenState extends State<HomeScreen>
   }) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: AppSpacing.all(context, 20),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(18),
@@ -319,7 +332,7 @@ class _HomeScreenState extends State<HomeScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, size: 42, color: const Color(0xFF2D78BB)),
-          const SizedBox(height: 18),
+          SizedBox(height: AppSpacing.value(context, 18)),
           Text(
             title,
             style: TextStyle(
@@ -328,7 +341,7 @@ class _HomeScreenState extends State<HomeScreen>
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: AppSpacing.value(context, 10)),
           Text(
             description,
             style: TextStyle(
@@ -336,7 +349,7 @@ class _HomeScreenState extends State<HomeScreen>
               fontSize: 15,
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: AppSpacing.value(context, 24)),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -344,7 +357,7 @@ class _HomeScreenState extends State<HomeScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2D78BB),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: AppSpacing.symmetric(context, vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),

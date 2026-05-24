@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/sign_model.dart';
 import '../../viewmodels/translate_viewmodel.dart';
+import '../../theme/app_spacing.dart';
 
 class TranslateSignsScreen extends StatefulWidget {
   const TranslateSignsScreen({super.key});
@@ -94,16 +95,16 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
         body: Consumer<TranslateViewModel>(
           builder: (context, viewModel, child) {
             return Padding(
-              padding: const EdgeInsets.all(16),
+              padding: AppSpacing.all(context, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildInputTitle(),
-                  const SizedBox(height: 8),
+                  SizedBox(height: AppSpacing.value(context, 8)),
                   _buildInputBox(viewModel),
-                  const SizedBox(height: 16),
+                  SizedBox(height: AppSpacing.value(context, 16)),
                   _buildTranslateButton(viewModel),
-                  const SizedBox(height: 24),
+                  SizedBox(height: AppSpacing.value(context, 24)),
                   Text(
                     'Resultado',
                     style: TextStyle(
@@ -112,10 +113,10 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: AppSpacing.value(context, 8)),
                   Expanded(child: _buildResultBox(viewModel)),
                   if (viewModel.recentTranslations.isNotEmpty) ...[
-                    const SizedBox(height: 12),
+                    SizedBox(height: AppSpacing.value(context, 12)),
                     _buildRecentTranslations(viewModel),
                   ],
                 ],
@@ -161,12 +162,12 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
                   ? 'Digite o texto para traduzir'
                   : 'Recurso de imagem/câmera será implementado em breve',
               hintStyle: TextStyle(color: subtitleColor),
-              contentPadding: const EdgeInsets.all(16),
+              contentPadding: AppSpacing.all(context, 16),
               border: InputBorder.none,
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(right: 8, bottom: 4),
+            padding: AppSpacing.only(context, right: 8, bottom: 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -244,7 +245,7 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
   Widget _buildResultBox(TranslateViewModel viewModel) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: AppSpacing.all(context, 16),
       decoration: BoxDecoration(
         color: inputColor,
         borderRadius: BorderRadius.circular(14),
@@ -315,7 +316,7 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
           ),
         ),
         if (viewModel.notFoundWords.isNotEmpty) ...[
-          const SizedBox(height: 10),
+          SizedBox(height: AppSpacing.value(context, 10)),
           Text(
             'Não encontrados: ${viewModel.notFoundWords.join(', ')}',
             style: TextStyle(
@@ -341,7 +342,7 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
         children: [
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(8),
+              padding: AppSpacing.all(context, 8),
               child: Image.network(
                 sign.signImagePath,
                 fit: BoxFit.contain,
@@ -385,7 +386,7 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
               : translation.sourceText;
 
           return Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: AppSpacing.only(context, right: 8),
             child: ActionChip(
               label: Text(text),
               onPressed: () {

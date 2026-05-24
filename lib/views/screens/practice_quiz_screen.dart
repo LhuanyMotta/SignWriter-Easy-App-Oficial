@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/sign_model.dart';
+import '../../theme/app_spacing.dart';
 
 class PracticeQuizScreen extends StatefulWidget {
   final String title;
@@ -139,7 +140,7 @@ class _PracticeQuizScreenState extends State<PracticeQuizScreen> {
         foregroundColor: Colors.white,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.all(context, 16),
         child: Column(
           children: [
             Text(
@@ -149,12 +150,12 @@ class _PracticeQuizScreenState extends State<PracticeQuizScreen> {
                 color: Color(0xFF2D78BB),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppSpacing.value(context, 16)),
 
             Expanded(
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: AppSpacing.all(context, 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(18),
@@ -166,14 +167,14 @@ class _PracticeQuizScreenState extends State<PracticeQuizScreen> {
               ),
             ),
 
-            const SizedBox(height: 20),
+            SizedBox(height: AppSpacing.value(context, 20)),
 
             const Text(
               'Qual é este sinal?',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
-            const SizedBox(height: 16),
+            SizedBox(height: AppSpacing.value(context, 16)),
 
             ...options.map((option) {
               final isSelected = selectedAnswer == option;
@@ -187,13 +188,13 @@ class _PracticeQuizScreenState extends State<PracticeQuizScreen> {
 
               return Container(
                 width: double.infinity,
-                margin: const EdgeInsets.only(bottom: 10),
+                margin: AppSpacing.only(context, bottom: 10),
                 child: ElevatedButton(
                   onPressed: () => _answer(sign, option),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: color,
                     foregroundColor: Colors.black87,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: AppSpacing.symmetric(context, vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -203,7 +204,7 @@ class _PracticeQuizScreenState extends State<PracticeQuizScreen> {
               );
             }),
 
-            const SizedBox(height: 8),
+            SizedBox(height: AppSpacing.value(context, 8)),
 
             ElevatedButton(
               onPressed: selectedAnswer == null ? null : _nextQuestion,

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/dictionary_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../models/sign_model.dart';
+import '../../theme/app_spacing.dart';
 
 class DictionaryScreen extends StatefulWidget {
   const DictionaryScreen({super.key});
@@ -61,7 +62,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
             return Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: AppSpacing.all(context, 16),
                   color: cardColor,
                   child: Column(
                     children: [
@@ -103,7 +104,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: AppSpacing.value(context, 16)),
                       SizedBox(
                         height: 42,
                         child: ListView.builder(
@@ -115,7 +116,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                                 category == viewModel.selectedCategory;
 
                             return Padding(
-                              padding: const EdgeInsets.only(right: 8),
+                              padding: AppSpacing.only(context, right: 8),
                               child: ChoiceChip(
                                 label: Text(category),
                                 selected: isSelected,
@@ -148,7 +149,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                   child: viewModel.signs.isEmpty
                       ? _buildEmptyState(context)
                       : GridView.builder(
-                          padding: const EdgeInsets.all(16),
+                          padding: AppSpacing.all(context, 16),
                           itemCount: viewModel.signs.length,
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
@@ -173,7 +174,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: 0,
           onTap: (index) => _homeViewModel.onBottomNavTapped(index, context),
-          items: const [
+          items: [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
             BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favoritos'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
@@ -257,7 +258,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: AppSpacing.all(context, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -271,7 +272,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: AppSpacing.value(context, 4)),
                   Text(
                     sign.description ?? 'Sem descrição',
                     style: TextStyle(
@@ -281,9 +282,9 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: AppSpacing.value(context, 8)),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: AppSpacing.symmetric(context, horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: primary.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(6),

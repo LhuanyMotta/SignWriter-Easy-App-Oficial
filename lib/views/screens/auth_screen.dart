@@ -6,6 +6,7 @@ import '../../viewmodels/auth_viewmodel.dart';
 import 'home_screen.dart';
 import '../widgets/app_logo.dart';
 import '../accessibility_settings_view.dart';
+import '../../theme/app_spacing.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -59,16 +60,16 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            padding: AppSpacing.symmetric(context, horizontal: 24.0, vertical: 16.0),
             child: Column(
               children: [
-                const SizedBox(height: 40),
+                SizedBox(height: AppSpacing.value(context, 40)),
                 const AppLogo(
                               size: 80,
                               colored: true,
                               showText: false,
                             ),
-                const SizedBox(height: 20),
+                SizedBox(height: AppSpacing.value(context, 20)),
                 Text(
                   'SignWriter Fácil',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -76,14 +77,14 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                         color: const Color(0xFF2D78BB),
                       ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: AppSpacing.value(context, 8)),
                 Text(
                   'Conecte-se para começar',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.grey[600],
                       ),
                 ),
-                const SizedBox(height: 32),
+                SizedBox(height: AppSpacing.value(context, 32)),
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
@@ -109,7 +110,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: AppSpacing.value(context, 24)),
               ],
             ),
           ),
@@ -133,7 +134,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   Widget _buildLoginTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      padding: AppSpacing.symmetric(context, horizontal: 24.0),
       child: Form(
         key: _loginFormKey,
         child: Column(
@@ -154,7 +155,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 return null;
               },
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppSpacing.value(context, 16)),
             
             _buildTextField(
               controller: _loginPasswordController,
@@ -169,7 +170,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 return null;
               },
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: AppSpacing.value(context, 8)),
             
             Align(
               alignment: Alignment.centerRight,
@@ -191,7 +192,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: AppSpacing.value(context, 24)),
             
             Consumer<AuthViewModel>(
               builder: (context, viewModel, child) {
@@ -217,11 +218,11 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
-                        : const Row(
+                        : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.login, size: 22),
-                              SizedBox(width: 10),
+                              SizedBox(width: AppSpacing.value(context, 10)),
                               Text(
                                 'Entrar',
                                 style: TextStyle(
@@ -235,13 +236,13 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 );
               },
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: AppSpacing.value(context, 20)),
             
             _buildDivider(),
-            const SizedBox(height: 20),
+            SizedBox(height: AppSpacing.value(context, 20)),
             
             _buildSocialLoginButtons(),
-            const SizedBox(height: 32),
+            SizedBox(height: AppSpacing.value(context, 32)),
           ],
         ),
       ),
@@ -250,7 +251,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   Widget _buildSignupTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      padding: AppSpacing.symmetric(context, horizontal: 24.0),
       child: Form(
         key: _signupFormKey,
         child: Column(
@@ -270,7 +271,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 return null;
               },
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppSpacing.value(context, 16)),
             
             _buildTextField(
               controller: _signupEmailController,
@@ -288,7 +289,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 return null;
               },
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppSpacing.value(context, 16)),
             
             _buildTextField(
               controller: _signupPasswordController,
@@ -306,7 +307,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 return null;
               },
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppSpacing.value(context, 16)),
             
             _buildTextField(
               controller: _confirmPasswordController,
@@ -324,7 +325,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 return null;
               },
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: AppSpacing.value(context, 32)),
             
             Consumer<AuthViewModel>(
               builder: (context, viewModel, child) {
@@ -350,11 +351,11 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
-                        : const Row(
+                        : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.person_add, size: 22),
-                              SizedBox(width: 10),
+                              SizedBox(width: AppSpacing.value(context, 10)),
                               Text(
                                 'Cadastrar',
                                 style: TextStyle(
@@ -368,13 +369,13 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 );
               },
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: AppSpacing.value(context, 20)),
             
             _buildDivider(),
-            const SizedBox(height: 20),
+            SizedBox(height: AppSpacing.value(context, 20)),
             
             _buildSocialLoginButtons(),
-            const SizedBox(height: 32),
+            SizedBox(height: AppSpacing.value(context, 32)),
           ],
         ),
       ),
@@ -401,7 +402,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             color: Colors.grey[700],
           ),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: AppSpacing.value(context, 6)),
         TextFormField(
           controller: controller,
           obscureText: isPassword,
@@ -437,7 +438,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             ),
             filled: true,
             fillColor: Colors.grey[50],
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+            contentPadding: AppSpacing.symmetric(context, horizontal: 16, vertical: 18),
           ),
         ),
       ],
@@ -454,7 +455,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: AppSpacing.symmetric(context, horizontal: 16),
           child: Text(
             'ou',
             style: TextStyle(
@@ -501,7 +502,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
               ),
               elevation: 2,
             ),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Ícone do Google - apenas o G branco
@@ -513,7 +514,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                     color: Colors.white,
                   ),
                 ),
-                SizedBox(width: 12),
+                SizedBox(width: AppSpacing.value(context, 12)),
                 Text(
                   'Continuar com Google',
                   style: TextStyle(
@@ -526,7 +527,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: AppSpacing.value(context, 12)),
         
         // Botão Apple com fundo AZUL sólido
         SizedBox(
@@ -553,11 +554,11 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
               ),
               elevation: 2,
             ),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.apple, size: 24, color: Colors.white),
-                SizedBox(width: 12),
+                SizedBox(width: AppSpacing.value(context, 12)),
                 Text(
                   'Continuar com Apple',
                   style: TextStyle(

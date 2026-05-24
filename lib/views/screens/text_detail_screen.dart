@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/texts_viewmodel.dart';
 import '../../models/text_document_model.dart';
 import '../widgets/sign_sequence_widget.dart';
+import '../../theme/app_spacing.dart';
 
 /// Tela de detalhes de um texto
 class TextDetailScreen extends StatefulWidget {
@@ -62,7 +63,7 @@ class _TextDetailScreenState extends State<TextDetailScreen> {
                         }
                         final signs = snapshot.data ?? [];
                         return Padding(
-                          padding: const EdgeInsets.all(16),
+                          padding: AppSpacing.all(context, 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -70,7 +71,7 @@ class _TextDetailScreenState extends State<TextDetailScreen> {
                                 _document!.title,
                                 style: Theme.of(context).textTheme.titleLarge,
                               ),
-                              const SizedBox(height: 16),
+                              SizedBox(height: AppSpacing.value(context, 16)),
                               SignSequenceWidget(signs: signs, height: 130),
                             ],
                           ),

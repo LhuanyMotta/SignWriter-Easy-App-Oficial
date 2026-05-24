@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/progress_viewmodel.dart';
+import '../../theme/app_spacing.dart';
 
 class ProgressScreen extends StatelessWidget {
   const ProgressScreen({super.key});
@@ -21,14 +22,14 @@ class ProgressScreen extends StatelessWidget {
         body: Consumer<ProgressViewModel>(
           builder: (context, viewModel, child) {
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+              padding: AppSpacing.all(context, 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Resumo geral
                   _buildProgressSummary(viewModel),
                   
-                  const SizedBox(height: 24),
+                  SizedBox(height: AppSpacing.value(context, 24)),
                   
                   // Estatísticas
                   Text(
@@ -39,11 +40,11 @@ class ProgressScreen extends StatelessWidget {
                       color: Colors.grey[800],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: AppSpacing.value(context, 16)),
                   
                   _buildStudyStatsGrid(viewModel),
                   
-                  const SizedBox(height: 24),
+                  SizedBox(height: AppSpacing.value(context, 24)),
                   
                   // Progresso por categoria
                   Text(
@@ -54,13 +55,13 @@ class ProgressScreen extends StatelessWidget {
                       color: Colors.grey[800],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: AppSpacing.value(context, 16)),
                   
                   ...viewModel.categoryProgress.map((category) {
                     return _buildCategoryCard(category);
                   }).toList(),
                   
-                  const SizedBox(height: 24),
+                  SizedBox(height: AppSpacing.value(context, 24)),
                   
                   // Conquistas
                   Text(
@@ -71,11 +72,11 @@ class ProgressScreen extends StatelessWidget {
                       color: Colors.grey[800],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: AppSpacing.value(context, 16)),
                   
                   _buildAchievementsSection(viewModel),
                   
-                  const SizedBox(height: 32),
+                  SizedBox(height: AppSpacing.value(context, 32)),
                   
                   // Botões de ação
                   _buildActionButtons(context, viewModel),
@@ -95,7 +96,7 @@ class ProgressScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: AppSpacing.all(context, 20),
         child: Column(
           children: [
             const Text(
@@ -106,7 +107,7 @@ class ProgressScreen extends StatelessWidget {
                 color: Color(0xFF2D78BB),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppSpacing.value(context, 16)),
             
             // Barra de progresso
             LinearProgressIndicator(
@@ -116,7 +117,7 @@ class ProgressScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
               minHeight: 20,
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: AppSpacing.value(context, 12)),
             
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -192,12 +193,12 @@ class ProgressScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: AppSpacing.all(context, 12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
+            SizedBox(height: AppSpacing.value(context, 8)),
             Text(
               value,
               style: TextStyle(
@@ -206,7 +207,7 @@ class ProgressScreen extends StatelessWidget {
                 color: color,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: AppSpacing.value(context, 4)),
             Text(
               title,
               textAlign: TextAlign.center,
@@ -227,12 +228,12 @@ class ProgressScreen extends StatelessWidget {
     final Color color = category['color'] as Color;
     
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: AppSpacing.only(context, bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.all(context, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -249,7 +250,7 @@ class ProgressScreen extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: AppSpacing.symmetric(context, horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -264,7 +265,7 @@ class ProgressScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: AppSpacing.value(context, 12)),
             LinearProgressIndicator(
               value: progress,
               backgroundColor: color.withOpacity(0.1),
@@ -287,12 +288,12 @@ class ProgressScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.all(context, 16),
         child: Column(
           children: [
             // Cabeçalho das conquistas
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: AppSpacing.all(context, 16),
               decoration: BoxDecoration(
                 color: const Color(0xFF2D78BB).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
@@ -300,7 +301,7 @@ class ProgressScreen extends StatelessWidget {
               child: Row(
                 children: [
                   const Icon(Icons.emoji_events, color: Color(0xFF2D78BB), size: 32),
-                  const SizedBox(width: 16),
+                  SizedBox(width: AppSpacing.value(context, 16)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,14 +313,14 @@ class ProgressScreen extends StatelessWidget {
                             fontSize: 16,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: AppSpacing.value(context, 4)),
                         Text(
                           '$unlockedCount de $totalCount conquistas',
                           style: const TextStyle(
                             color: Colors.grey,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: AppSpacing.value(context, 8)),
                         LinearProgressIndicator(
                           value: viewModel.achievementsPercentage,
                           backgroundColor: Colors.grey[300],
@@ -334,7 +335,7 @@ class ProgressScreen extends StatelessWidget {
               ),
             ),
             
-            const SizedBox(height: 16),
+            SizedBox(height: AppSpacing.value(context, 16)),
             
             // Lista de conquistas
             ...viewModel.achievements.map((achievement) {
@@ -342,8 +343,8 @@ class ProgressScreen extends StatelessWidget {
               final IconData icon = achievement['icon'] as IconData;
               
               return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(12),
+                margin: AppSpacing.only(context, bottom: 8),
+                padding: AppSpacing.all(context, 12),
                 decoration: BoxDecoration(
                   color: unlocked ? Colors.green[50] : Colors.grey[100],
                   borderRadius: BorderRadius.circular(12),
@@ -358,7 +359,7 @@ class ProgressScreen extends StatelessWidget {
                       color: unlocked ? Colors.green : Colors.grey,
                       size: 24,
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: AppSpacing.value(context, 12)),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,7 +371,7 @@ class ProgressScreen extends StatelessWidget {
                               color: unlocked ? Colors.green[800] : Colors.grey,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: AppSpacing.value(context, 2)),
                           Text(
                             achievement['description'] as String,
                             style: TextStyle(
@@ -380,7 +381,7 @@ class ProgressScreen extends StatelessWidget {
                           ),
                           if (unlocked && achievement['date'] != null)
                             Padding(
-                              padding: const EdgeInsets.only(top: 4),
+                              padding: AppSpacing.only(context, top: 4),
                               child: Text(
                                 'Desbloqueado: ${achievement['date']}',
                                 style: const TextStyle(
@@ -415,7 +416,7 @@ class ProgressScreen extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2D78BB),
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: AppSpacing.symmetric(context, vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -424,14 +425,14 @@ class ProgressScreen extends StatelessWidget {
             label: const Text('Compartilhar Progresso'),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: AppSpacing.value(context, 12)),
         Expanded(
           child: ElevatedButton.icon(
             onPressed: () => viewModel.exportProgressData(context),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: const Color(0xFF2D78BB),
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: AppSpacing.symmetric(context, vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
                 side: const BorderSide(color: Color(0xFF2D78BB)),

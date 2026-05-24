@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_spacing.dart';
 
 /// Widget que representa um card de funcionalidade na tela inicial
 /// 
@@ -40,7 +41,7 @@ class FeatureCard extends StatelessWidget {
         splashColor: Colors.white.withOpacity(0.3),
         highlightColor: Colors.white.withOpacity(0.1),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: AppSpacing.all(context, 16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -50,7 +51,7 @@ class FeatureCard extends StatelessWidget {
                 size: 42,
                 color: Colors.white,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: AppSpacing.value(context, 16)),
               // Texto com estilo definido e alinhamento centralizado
               Text(
                 title,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_spacing.dart';
 
 /// Widget para selecionar categorias no aplicativo
 class CategorySelector extends StatelessWidget {
@@ -28,7 +29,7 @@ class CategorySelector extends StatelessWidget {
           'Categorias',
           style: Theme.of(context).textTheme.displaySmall,
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: AppSpacing.value(context, 8)),
         SizedBox(
           height: 40,
           child: ListView.builder(
@@ -39,7 +40,7 @@ class CategorySelector extends StatelessWidget {
               final isSelected = category == selectedCategory;
               
               return Padding(
-                padding: const EdgeInsets.only(right: 10),
+                padding: AppSpacing.only(context, right: 10),
                 child: InkWell(
                   onTap: () => onCategorySelected(category),
                   borderRadius: BorderRadius.circular(20),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_spacing.dart';
 
 /// Widget para exibir a logo do aplicativo SignWriter Fácil
 class AppLogo extends StatelessWidget {
@@ -30,7 +31,7 @@ class AppLogo extends StatelessWidget {
           height: size,
         ),
         if (showText) ...[
-          const SizedBox(height: 8),
+          SizedBox(height: AppSpacing.value(context, 8)),
           Text(
             'SignWriter Fácil',
             style: TextStyle(

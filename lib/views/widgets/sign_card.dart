@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/sign_model.dart';
+import '../../theme/app_spacing.dart';
 
 /// Widget que mostra um card de sinal
 class SignCard extends StatelessWidget {
@@ -27,7 +28,7 @@ class SignCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: AppSpacing.only(context, bottom: 16),
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
@@ -38,7 +39,7 @@ class SignCard extends StatelessWidget {
           // Aqui no futuro podemos mostrar detalhes do sinal
         },
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: AppSpacing.all(context, 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -46,7 +47,7 @@ class SignCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSignImage(),
-                  const SizedBox(width: 16),
+                  SizedBox(width: AppSpacing.value(context, 16)),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,7 +59,7 @@ class SignCard extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: AppSpacing.value(context, 4)),
                         if (sign.description != null) ...[
                           Text(
                             sign.description!,
@@ -69,7 +70,7 @@ class SignCard extends StatelessWidget {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: AppSpacing.value(context, 4)),
                         ],
                         Row(
                           children: [
@@ -100,7 +101,7 @@ class SignCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: AppSpacing.value(context, 16)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [

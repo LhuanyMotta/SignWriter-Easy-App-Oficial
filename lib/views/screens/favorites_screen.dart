@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/favorites_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../models/sign_model.dart';
+import '../../theme/app_spacing.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -67,7 +68,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             return Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: AppSpacing.all(context, 16),
                   color: cardColor,
                   child: Column(
                     children: [
@@ -109,7 +110,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: AppSpacing.value(context, 16)),
                       SizedBox(
                         height: 42,
                         child: ListView.builder(
@@ -121,7 +122,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                                 category == viewModel.selectedCategory;
 
                             return Padding(
-                              padding: const EdgeInsets.only(right: 8),
+                              padding: AppSpacing.only(context, right: 8),
                               child: ChoiceChip(
                                 label: Text(category),
                                 selected: selected,
@@ -158,7 +159,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: 1,
           onTap: (index) => _homeViewModel.onBottomNavTapped(index, context),
-          items: const [
+          items: [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
             BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favoritos'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
@@ -180,12 +181,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: AppSpacing.all(context, 16),
       itemCount: viewModel.favorites.length,
       itemBuilder: (context, index) {
         final sign = viewModel.favorites[index];
         return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
+          padding: AppSpacing.only(context, bottom: 16),
           child: _buildFavoriteCard(context, sign, viewModel),
         );
       },
@@ -220,7 +221,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             Container(
               width: 82,
               height: 82,
-              margin: const EdgeInsets.all(12),
+              margin: AppSpacing.all(context, 12),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF222A33) : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(10),
@@ -242,7 +243,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: AppSpacing.symmetric(context, vertical: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -256,7 +257,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: AppSpacing.value(context, 4)),
                     Text(
                       sign.description ?? 'Sem descrição',
                       style: TextStyle(
@@ -266,9 +267,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: AppSpacing.value(context, 8)),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: AppSpacing.symmetric(context, horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: primary.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(5),
@@ -301,7 +302,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: AppSpacing.all(context, 32),
         child: Text(
           'Nenhum favorito encontrado',
           style: TextStyle(

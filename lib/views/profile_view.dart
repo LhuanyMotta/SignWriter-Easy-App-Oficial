@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/profile_viewmodel.dart';
 import 'accessibility_settings_view.dart';
+import '../theme/app_spacing.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -15,7 +16,7 @@ class ProfileView extends StatelessWidget {
             title: const Text('Perfil'),
           ),
           body: ListView(
-            padding: const EdgeInsets.all(16.0),
+            padding: AppSpacing.all(context, 16.0),
             children: [
               // Seção de Informações do Usuário
               Card(
@@ -27,7 +28,7 @@ class ProfileView extends StatelessWidget {
                   subtitle: Text(viewModel.userData['email']),
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: AppSpacing.value(context, 16)),
               
               // Seção de Configurações
               const Text(
@@ -37,7 +38,7 @@ class ProfileView extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: AppSpacing.value(context, 8)),
               
               // Acessibilidade
               Card(

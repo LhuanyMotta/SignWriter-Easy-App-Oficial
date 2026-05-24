@@ -4,6 +4,7 @@ import '../../viewmodels/write_signs_viewmodel.dart';
 import '../../models/sign_model.dart';
 import '../widgets/sign_card.dart';
 import '../widgets/category_selector.dart';
+import '../../theme/app_spacing.dart';
 
 class WriteSignsScreen extends StatefulWidget {
   const WriteSignsScreen({super.key});
@@ -55,12 +56,12 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
         ),
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: AppSpacing.all(context, 16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildSearchBar(),
-                const SizedBox(height: 16),
+                SizedBox(height: AppSpacing.value(context, 16)),
                 
                 Consumer<WriteSignsViewModel>(
                   builder: (context, viewModel, child) {
@@ -74,12 +75,12 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
                   },
                 ),
                 
-                const SizedBox(height: 16),
+                SizedBox(height: AppSpacing.value(context, 16)),
                 Text(
                   'Sinais Recentes',
                   style: Theme.of(context).textTheme.displaySmall,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: AppSpacing.value(context, 8)),
                 
                 Consumer<WriteSignsViewModel>(
                   builder: (context, viewModel, child) {
@@ -211,7 +212,7 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Escrever Sinais'),
-        content: const SingleChildScrollView(
+        content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -220,18 +221,18 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
                 'Nesta tela você pode:',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 8),
+              SizedBox(height: AppSpacing.value(context, 8)),
               Text('• Criar novos sinais em SignWriting'),
               Text('• Editar sinais existentes'),
               Text('• Buscar sinais por nome'),
               Text('• Filtrar sinais por categoria'),
               Text('• Marcar sinais como favoritos'),
-              SizedBox(height: 16),
+              SizedBox(height: AppSpacing.value(context, 16)),
               Text(
                 'Como usar:',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 8),
+              SizedBox(height: AppSpacing.value(context, 8)),
               Text('1. Utilize o botão + para criar um novo sinal'),
               Text('2. Toque em um sinal existente para visualizá-lo'),
               Text('3. Use os ícones para editar ou excluir sinais'),

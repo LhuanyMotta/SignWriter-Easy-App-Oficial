@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../viewmodels/profile_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../accessibility_settings_view.dart';
+import '../../theme/app_spacing.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -72,18 +73,18 @@ void initState() {
             }
 
             return ListView(
-              padding: const EdgeInsets.all(16),
+              padding: AppSpacing.all(context, 16),
               children: [
                 _buildUserCard(context, viewModel),
-                const SizedBox(height: 18),
+                SizedBox(height: AppSpacing.value(context, 18)),
                 _sectionTitle(context, 'Configurações'),
-                const SizedBox(height: 10),
+                SizedBox(height: AppSpacing.value(context, 10)),
                 _buildSettingsCard(context, viewModel),
-                const SizedBox(height: 18),
+                SizedBox(height: AppSpacing.value(context, 18)),
                 _sectionTitle(context, 'Dados da Conta'),
-                const SizedBox(height: 10),
+                SizedBox(height: AppSpacing.value(context, 10)),
                 _buildAccountCard(context, viewModel),
-                const SizedBox(height: 20),
+                SizedBox(height: AppSpacing.value(context, 20)),
                 _buildLogoutButton(context, viewModel),
               ],
             );
@@ -92,7 +93,7 @@ void initState() {
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: 2,
           onTap: (index) => _homeViewModel.onBottomNavTapped(index, context),
-          items: const [
+          items: [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
             BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favoritos'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
@@ -114,7 +115,7 @@ void initState() {
     }
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: AppSpacing.all(context, 18),
       decoration: BoxDecoration(
         color: _cardColor(context),
         borderRadius: BorderRadius.circular(18),
@@ -155,7 +156,7 @@ void initState() {
                 child: InkWell(
                   onTap: () => _showImageSourceSheet(context, viewModel),
                   child: Container(
-                    padding: const EdgeInsets.all(7),
+                    padding: AppSpacing.all(context, 7),
                     decoration: BoxDecoration(
                       color: const Color(0xFF4EB1F0),
                       shape: BoxShape.circle,
@@ -167,7 +168,7 @@ void initState() {
               ),
             ],
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: AppSpacing.value(context, 16)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,7 +181,7 @@ void initState() {
                     color: _textColor(context),
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: AppSpacing.value(context, 4)),
                 Text(
                   email,
                   style: TextStyle(
@@ -189,7 +190,7 @@ void initState() {
                   ),
                 ),
                 if (bio.isNotEmpty) ...[
-                  const SizedBox(height: 8),
+                  SizedBox(height: AppSpacing.value(context, 8)),
                   Text(
                     bio,
                     maxLines: 2,
@@ -381,7 +382,7 @@ void initState() {
       builder: (_) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: AppSpacing.all(context, 20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -393,7 +394,7 @@ void initState() {
                     color: _textColor(context),
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: AppSpacing.value(context, 16)),
                 ListTile(
                   leading: const CircleAvatar(
                     backgroundColor: Color(0xFF2D78BB),

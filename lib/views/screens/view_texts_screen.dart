@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/texts_viewmodel.dart';
 import '../widgets/sign_sequence_widget.dart';
 import 'text_detail_screen.dart';
+import '../../theme/app_spacing.dart';
 
 /// Tela para listar textos salvos
 class ViewTextsScreen extends StatefulWidget {
@@ -49,7 +50,7 @@ class _ViewTextsScreenState extends State<ViewTextsScreen> {
                 return const Center(child: Text('Nenhum texto encontrado'));
               }
               return ListView.builder(
-                padding: const EdgeInsets.all(16),
+                padding: AppSpacing.all(context, 16),
                 itemCount: viewModel.documents.length,
                 itemBuilder: (context, index) {
                   final doc = viewModel.documents[index];
@@ -60,7 +61,7 @@ class _ViewTextsScreenState extends State<ViewTextsScreen> {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const SizedBox(height: 8),
+                          SizedBox(height: AppSpacing.value(context, 8)),
                           SignSequenceWidget(signs: preview, height: 90),
                         ],
                       ),
