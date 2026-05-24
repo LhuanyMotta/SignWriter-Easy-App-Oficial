@@ -55,6 +55,20 @@ double get contrastLevel => _contrastLevel;
 double get spacing => _spacing;
 String get language => _language;
 
+Locale get locale {
+  switch (_language) {
+    case 'Inglês':
+      return const Locale('en');
+
+    case 'Espanhol':
+      return const Locale('es');
+
+    case 'Português':
+    default:
+      return const Locale('pt');
+  }
+}
+
   final List<String> availableLanguages = [
     'Português',
     'Inglês',

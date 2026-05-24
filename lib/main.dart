@@ -10,6 +10,8 @@ import 'package:signwriter_easy_app_oficial/viewmodels/dictionary_viewmodel.dart
 import 'package:signwriter_easy_app_oficial/viewmodels/favorites_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/learn_practice_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/views/screens/home_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:signwriter_easy_app_oficial/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -119,74 +121,49 @@ class MyApp extends StatelessWidget {
           title: 'SignWriter Fácil',
           debugShowCheckedModeBanner: false,
           themeMode: themeMode,
+locale: profileViewModel.locale,
 
-          theme: ThemeData(
-            brightness: Brightness.light,
-            scaffoldBackgroundColor: const Color(0xFFF5F6FA),
-            primaryColor: const Color(0xFF2D78BB),
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF2D78BB),
-              brightness: Brightness.light,
-              primary: const Color(0xFF2D78BB),
-              surface: Colors.white,
-            ),
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFF2D78BB),
-              foregroundColor: Colors.white,
-              elevation: 0,
-            ),
-            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-              backgroundColor: Colors.white,
-              selectedItemColor: Color(0xFF2D78BB),
-              unselectedItemColor: Colors.grey,
-            ),
-            cardTheme: CardThemeData(
-              color: Colors.white,
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            useMaterial3: true,
-          ),
+supportedLocales: const [
+  Locale('pt'),
+  Locale('en'),
+  Locale('es'),
+],
 
-          darkTheme: ThemeData(
-            brightness: Brightness.dark,
-            scaffoldBackgroundColor: const Color(0xFF0F1419),
-            primaryColor: const Color(0xFF2D78BB),
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF2D78BB),
-              brightness: Brightness.dark,
-              primary: const Color(0xFF4EB1F0),
-              surface: const Color(0xFF1A2027),
-            ),
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFF2D78BB),
-              foregroundColor: Colors.white,
-              elevation: 0,
-            ),
-            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-              backgroundColor: Color(0xFF111820),
-              selectedItemColor: Color(0xFF4EB1F0),
-              unselectedItemColor: Colors.grey,
-            ),
-            cardTheme: CardThemeData(
-              color: const Color(0xFF1A2027),
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            useMaterial3: true,
-          ),
+localizationsDelegates: const [
+  GlobalMaterialLocalizations.delegate,
+  GlobalWidgetsLocalizations.delegate,
+  GlobalCupertinoLocalizations.delegate,
+],
+          theme: AppTheme.light(
+  fontScale: profileViewModel.fontSize,
+  contrastLevel: profileViewModel.contrastLevel,
+  spacingScale: profileViewModel.spacing,
+),
+
+          darkTheme: AppTheme.dark(
+  fontScale: profileViewModel.fontSize,
+  contrastLevel: profileViewModel.contrastLevel,
+  spacingScale: profileViewModel.spacing,
+),
           builder: (context, child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: TextScaler.linear(fontScale),
-            ),
-            child: child!,
-          );
-        },
+  final spacingValue =
+      ((profileViewModel.spacing - 1.0) * 4).clamp(-1.0, 4.0);
+
+  return MediaQuery(
+    data: MediaQuery.of(context).copyWith(
+      textScaler: TextScaler.linear(profileViewModel.fontSize),
+    ),
+    child: Theme(
+      data: Theme.of(context).copyWith(
+        visualDensity: VisualDensity(
+          horizontal: spacingValue,
+          vertical: spacingValue,
+        ),
+      ),
+      child: child!,
+    ),
+  );
+},
 
           home: const AuthWrapper(),
         );

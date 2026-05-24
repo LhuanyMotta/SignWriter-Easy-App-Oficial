@@ -42,7 +42,7 @@ class AccessibilitySettingsView extends StatelessWidget {
             iconTheme: const IconThemeData(color: Colors.white),
           ),
           body: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16 * viewModel.spacing),
             children: [
               Text(
                 'Configurações de Acessibilidade',
@@ -261,7 +261,9 @@ if (isFirstAccess) ...[
     required Widget child,
   }) {
     return Container(
-      padding: const EdgeInsets.all(18),
+  padding: EdgeInsets.all(
+    18 * context.read<ProfileViewModel>().spacing,
+  ),
       decoration: BoxDecoration(
         color: _cardColor(context),
         borderRadius: BorderRadius.circular(16),
@@ -301,7 +303,9 @@ if (isFirstAccess) ...[
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(
+  height: 16 * context.read<ProfileViewModel>().spacing,
+),
           child,
         ],
       ),
