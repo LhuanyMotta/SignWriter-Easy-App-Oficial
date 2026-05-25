@@ -1,0 +1,439 @@
+{
+  "categories": [
+    {
+      "id": "intro-signwriting",
+      "title": "Introduction to SignWriting",
+      "description": "A starter path to understand what SignWriting is, how to read written signs, and how to practice inside SignWriter Easy.",
+      "icon": "menu_book",
+      "color": "#2D78BB",
+      "lessons": [
+        {
+          "id": "intro-app",
+          "title": "What is SignWriter Easy?",
+          "summary": "Learn the purpose of the app and how this study path helps you progress step by step.",
+          "estimatedMinutes": 4,
+          "difficulty": "Beginner",
+          "objectives": [
+            "Understand the app's learning purpose.",
+            "Recognize how the Learn and Practice path is organized.",
+            "Know what to expect from the first lessons."
+          ],
+          "sections": [
+            {
+              "title": "A starting point for SignWriting",
+              "body": "SignWriter Easy was designed to help you study, review, practice and create written signs with more confidence. The goal is not to throw isolated symbols on the screen, but to guide you through observation, understanding and short practice cycles."
+            },
+            {
+              "title": "How this path is organized",
+              "body": "This area starts with the foundations of the writing system. First you understand what SignWriting is, then you learn to notice hands, movement, facial expression and spatial organization. After that, practice becomes more natural.",
+              "bullets": [
+                "Short and focused lessons.",
+                "Quick review exercises.",
+                "Local progress saved on the device."
+              ]
+            },
+            {
+              "title": "How to study here",
+              "body": "Read the explanation, notice the key visual elements and answer the exercises without rushing. Repeat lessons whenever needed. In SignWriting, recognizing visual patterns matters more than memorizing fixed phrases.",
+              "highlight": "Move in small steps: understanding the structure of a sign is more valuable than rushing to finish the path."
+            }
+          ],
+          "references": [
+            "Valerie Sutton - SignWriting Basics (2022)",
+            "SignWriting Basics Instruction Manual"
+          ],
+          "exercises": [
+            {
+              "id": "intro-app-q1",
+              "type": "multipleChoice",
+              "prompt": "What is the main purpose of this learning path inside the app?",
+              "options": [
+                {
+                  "id": "a",
+                  "label": "To teach only navigation shortcuts."
+                },
+                {
+                  "id": "b",
+                  "label": "To help you understand and practice written signs step by step."
+                },
+                {
+                  "id": "c",
+                  "label": "To replace all sign language study."
+                }
+              ],
+              "correctOptionId": "b",
+              "explanation": "The path introduces the system, supports reading and reinforces practice through short exercises."
+            },
+            {
+              "id": "intro-app-q2",
+              "type": "trueFalse",
+              "prompt": "True or false: this path starts with foundations before moving to broader practice.",
+              "options": [
+                {
+                  "id": "true",
+                  "label": "True"
+                },
+                {
+                  "id": "false",
+                  "label": "False"
+                }
+              ],
+              "correctOptionId": "true",
+              "explanation": "The MVP focuses on building a base first: system, reading and recognition."
+            }
+          ]
+        },
+        {
+          "id": "what-is-signwriting",
+          "title": "What is SignWriting?",
+          "summary": "Understand the writing system created by Valerie Sutton and why it can represent signed languages.",
+          "estimatedMinutes": 6,
+          "difficulty": "Beginner",
+          "objectives": [
+            "Identify SignWriting as a writing system.",
+            "Know its origin and one of its core references.",
+            "Recognize that it records movement, handshape and expression."
+          ],
+          "sections": [
+            {
+              "title": "A writing system for signed languages",
+              "body": "SignWriting is a visual writing system used to write signed languages. Instead of representing sounds, it represents what the body does while signing: handshape, orientation, movement, facial expression and other relevant components."
+            },
+            {
+              "title": "Origin and reference",
+              "body": "According to Valerie Sutton's materials, the system was developed in 1974 and evolved over time to support different signed languages. One of the main international symbol references is ISWA 2008, which organizes symbols for hands, movement, face, head and body."
+            },
+            {
+              "title": "What the system records",
+              "body": "The writing aims to record how the sign is visually produced. That means the reader learns to notice patterns in the sign, instead of only translating word by word.",
+              "bullets": [
+                "Handshape and hand orientation.",
+                "Movement path.",
+                "Facial expressions and body posture.",
+                "Spatial organization of the sign."
+              ]
+            }
+          ],
+          "references": [
+            "Valerie Sutton - SignWriting Basics (2022)",
+            "ISWA 2008 Reference Manual",
+            "A Cross-Linguistic Guide to SignWriting"
+          ],
+          "exercises": [
+            {
+              "id": "what-is-sw-q1",
+              "type": "multipleChoice",
+              "prompt": "In this lesson, SignWriting is presented as:",
+              "options": [
+                {
+                  "id": "a",
+                  "label": "A group of emoji-like shortcuts for signs."
+                },
+                {
+                  "id": "b",
+                  "label": "A visual system for writing signed languages."
+                },
+                {
+                  "id": "c",
+                  "label": "A fixed list of spoken words."
+                }
+              ],
+              "correctOptionId": "b",
+              "explanation": "SignWriting is introduced here as a visual writing system for signed languages."
+            },
+            {
+              "id": "what-is-sw-q2",
+              "type": "trueFalse",
+              "prompt": "True or false: SignWriting was created to record visual aspects of signs such as hands, movement and expression.",
+              "options": [
+                {
+                  "id": "true",
+                  "label": "True"
+                },
+                {
+                  "id": "false",
+                  "label": "False"
+                }
+              ],
+              "correctOptionId": "true",
+              "explanation": "That is one of the main strengths of the system: it writes what is visually produced."
+            },
+            {
+              "id": "what-is-sw-q3",
+              "type": "multipleChoice",
+              "prompt": "Which symbol reference is mentioned in this lesson?",
+              "options": [
+                {
+                  "id": "a",
+                  "label": "ISWA 2008"
+                },
+                {
+                  "id": "b",
+                  "label": "ASCII 95"
+                },
+                {
+                  "id": "c",
+                  "label": "Braille Legacy"
+                }
+              ],
+              "correctOptionId": "a",
+              "explanation": "ISWA 2008 is mentioned as an important reference for SignWriting symbols."
+            }
+          ]
+        },
+        {
+          "id": "read-written-sign",
+          "title": "How to read a written sign",
+          "summary": "Learn to notice hands, movement, expression and the visual arrangement of a sign.",
+          "estimatedMinutes": 7,
+          "difficulty": "Beginner",
+          "objectives": [
+            "Identify central components of a written sign.",
+            "Relate hand, movement and expression symbols.",
+            "Understand that layout matters in reading."
+          ],
+          "sections": [
+            {
+              "title": "Start with the hands",
+              "body": "Hands are often a useful starting point. The reader notices handshape, orientation and the relation between both hands. Hand symbols help clarify shape and palm direction."
+            },
+            {
+              "title": "Then follow the movement",
+              "body": "Arrows and marks can indicate direction, repetition and path. Not every sign is static. In many cases, understanding the correct arrow is what turns isolated posture into a complete sign."
+            },
+            {
+              "title": "Face, body and spatial layout",
+              "body": "Facial expression, head and body can complete the reading. In addition, a sign is read as a visual cluster arranged in space. SignWriting does not depend only on a linear order; relative position also communicates meaning.",
+              "highlight": "Reading SignWriting means observing a visual whole: hands, movement, expression and position work together."
+            }
+          ],
+          "references": [
+            "SignWriting Basics Instruction Manual",
+            "ISWA 2008 Reference Manual"
+          ],
+          "exercises": [
+            {
+              "id": "read-written-sign-q1",
+              "type": "multipleChoice",
+              "prompt": "When starting to read a written sign, what is often helpful to observe first?",
+              "options": [
+                {
+                  "id": "a",
+                  "label": "The app theme color."
+                },
+                {
+                  "id": "b",
+                  "label": "Handshape and hand orientation."
+                },
+                {
+                  "id": "c",
+                  "label": "The number of lesson pages."
+                }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Hands usually provide one of the first strong clues in the structure of the sign."
+            },
+            {
+              "id": "read-written-sign-q2",
+              "type": "trueFalse",
+              "prompt": "True or false: in SignWriting, the relative position of elements can influence how the sign is read.",
+              "options": [
+                {
+                  "id": "true",
+                  "label": "True"
+                },
+                {
+                  "id": "false",
+                  "label": "False"
+                }
+              ],
+              "correctOptionId": "true",
+              "explanation": "The sign is read as a visual arrangement, not only as a linear list of marks."
+            },
+            {
+              "id": "read-written-sign-q3",
+              "type": "matching",
+              "prompt": "Match each component with what it helps show.",
+              "pairs": [
+                {
+                  "left": "Hands",
+                  "right": "Handshape and orientation"
+                },
+                {
+                  "left": "Movement",
+                  "right": "Path and direction"
+                },
+                {
+                  "left": "Face and body",
+                  "right": "Expression and visual support"
+                }
+              ],
+              "explanation": "These components work together when reading a written sign."
+            }
+          ]
+        },
+        {
+          "id": "navigate-app",
+          "title": "How to navigate the app",
+          "summary": "See how to use the app areas to study, review signs and track your progress.",
+          "estimatedMinutes": 5,
+          "difficulty": "Beginner",
+          "objectives": [
+            "Recognize the app's main learning areas.",
+            "Relate each area to a practical task.",
+            "Understand where progress is displayed."
+          ],
+          "sections": [
+            {
+              "title": "Learn and Practice",
+              "body": "This is the learning path area. Here you find categories, lessons and short exercises. When you complete a lesson, your local progress is updated."
+            },
+            {
+              "title": "Other areas that support study",
+              "body": "The app also includes complementary spaces for review and production.",
+              "bullets": [
+                "Dictionary: review registered signs.",
+                "Translate Signs: supports conversion between text and signs.",
+                "Write Signs: create and save your own written signs."
+              ]
+            },
+            {
+              "title": "Tracking progress",
+              "body": "The progress bar in this path shows how many lessons you have completed within a category and overall. Finishing a lesson practice updates the category card and the general summary."
+            }
+          ],
+          "references": [
+            "SignWriter Easy learning flow",
+            "Learn and Practice MVP structure"
+          ],
+          "exercises": [
+            {
+              "id": "navigate-app-q1",
+              "type": "multipleChoice",
+              "prompt": "Where do you find the lessons and exercises added in this implementation?",
+              "options": [
+                {
+                  "id": "a",
+                  "label": "In Learn and Practice."
+                },
+                {
+                  "id": "b",
+                  "label": "Only in the profile screen."
+                },
+                {
+                  "id": "c",
+                  "label": "Only in the sign editor."
+                }
+              ],
+              "correctOptionId": "a",
+              "explanation": "This learning path was implemented inside the Learn and Practice area."
+            },
+            {
+              "id": "navigate-app-q2",
+              "type": "trueFalse",
+              "prompt": "True or false: finishing a lesson practice updates the local progress for the category.",
+              "options": [
+                {
+                  "id": "true",
+                  "label": "True"
+                },
+                {
+                  "id": "false",
+                  "label": "False"
+                }
+              ],
+              "correctOptionId": "true",
+              "explanation": "Lesson practice completion is the event used to mark the lesson as completed."
+            }
+          ]
+        },
+        {
+          "id": "recognition-practice",
+          "title": "First recognition practice",
+          "summary": "Review the main concepts and finish with a short recognition practice.",
+          "estimatedMinutes": 6,
+          "difficulty": "Beginner",
+          "objectives": [
+            "Review the central idea of SignWriting.",
+            "Revisit reading components.",
+            "Complete a recognition practice inside the app."
+          ],
+          "sections": [
+            {
+              "title": "What to review before answering",
+              "body": "Before choosing the answers, mentally revisit three questions: what do the hands show, what does the movement indicate, and how do face and body help reading? This simple sequence helps a lot at the beginning."
+            },
+            {
+              "title": "A short and focused practice",
+              "body": "You do not need a perfect score on the first attempt. The goal is to reinforce observation, reading and navigation. Repeating the practice is part of learning."
+            }
+          ],
+          "references": [
+            "Valerie Sutton - SignWriting Basics (2022)",
+            "ISWA 2008 Reference Manual"
+          ],
+          "exercises": [
+            {
+              "id": "recognition-practice-q1",
+              "type": "multipleChoice",
+              "prompt": "Which set best summarizes the elements highlighted in this path for initial reading?",
+              "options": [
+                {
+                  "id": "a",
+                  "label": "Background color, screen size and file name."
+                },
+                {
+                  "id": "b",
+                  "label": "Hands, movement, expressions and spatial organization."
+                },
+                {
+                  "id": "c",
+                  "label": "Only fingerspelling letters."
+                }
+              ],
+              "correctOptionId": "b",
+              "explanation": "These were the main pillars emphasized throughout the introductory lessons."
+            },
+            {
+              "id": "recognition-practice-q2",
+              "type": "trueFalse",
+              "prompt": "True or false: everyday SignWriting reading depends only on a fixed linear order and not on visual arrangement.",
+              "options": [
+                {
+                  "id": "true",
+                  "label": "True"
+                },
+                {
+                  "id": "false",
+                  "label": "False"
+                }
+              ],
+              "correctOptionId": "false",
+              "explanation": "Visual arrangement is part of how signs are read."
+            },
+            {
+              "id": "recognition-practice-q3",
+              "type": "matching",
+              "prompt": "Match each app area to its most likely use.",
+              "pairs": [
+                {
+                  "left": "Learn and Practice",
+                  "right": "Study lessons and complete exercises"
+                },
+                {
+                  "left": "Dictionary",
+                  "right": "Review registered signs"
+                },
+                {
+                  "left": "Write Signs",
+                  "right": "Create your own signs"
+                }
+              ],
+              "explanation": "Each area supports a different part of study and production."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

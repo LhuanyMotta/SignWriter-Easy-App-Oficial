@@ -24,6 +24,16 @@ class TranslateViewModel extends ChangeNotifier {
   TranslationModel? get lastTranslation => _lastTranslation;
   List<TranslationModel> get recentTranslations => _recentTranslations;
 
+  /// Limpa o resultado atual sem afetar o histórico.
+  void clearResults() {
+    _errorMessage = null;
+    _signs = [];
+    _notFoundWords = [];
+    _signWritingSequence = null;
+    _lastTranslation = null;
+    notifyListeners();
+  }
+
   /// Carrega histórico recente
   Future<void> loadRecentTranslations() async {
     _recentTranslations = await _translationService.getRecentTranslations();
@@ -32,7 +42,10 @@ class TranslateViewModel extends ChangeNotifier {
 
   /// Executa tradução
   Future<void> translate(String text) async {
-    if (text.trim().isEmpty) return;
+    if (text.trim().isEmpty) {
+      clearResults();
+      return;
+    }
     _isTranslating = true;
     _errorMessage = null;
     notifyListeners();

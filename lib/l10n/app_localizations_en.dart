@@ -383,4 +383,92 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noData => 'No data';
+
+  @override
+  String get learningContentUnavailable => 'The content for this learning path could not be loaded right now.';
+
+  @override
+  String get learningTryAgain => 'Try again';
+
+  @override
+  String get learningCategoriesTitle => 'Study categories';
+
+  @override
+  String get learningSummarySubtitle => 'Complete lessons and track your progress in real time.';
+
+  @override
+  String get learningCategoryEmpty => 'There are no lessons available in this category yet.';
+
+  @override
+  String get learningOpenCategory => 'Open category';
+
+  @override
+  String get learningLessonsTitle => 'Lessons';
+
+  @override
+  String get learningLessonsLower => 'lessons';
+
+  @override
+  String get learningLessonCompletedStatus => 'Completed';
+
+  @override
+  String get learningLessonNotStartedStatus => 'Not started';
+
+  @override
+  String get learningLessonInProgressStatus => 'Ready to practice';
+
+  @override
+  String get learningMinutesShort => 'min';
+
+  @override
+  String get learningObjectives => 'Lesson objectives';
+
+  @override
+  String get learningReferences => 'References';
+
+  @override
+  String get learningStartPractice => 'Start practice';
+
+  @override
+  String get learningRetakePractice => 'Retake practice';
+
+  @override
+  String get learningProgressUpdated => 'Lesson completed and progress updated.';
+
+  @override
+  String get learningPracticeTitle => 'Lesson practice';
+
+  @override
+  String get learningMarkLessonComplete => 'Mark lesson as completed';
+
+  @override
+  String learningQuestionProgress(Object current, Object total) {
+    return 'Question $current of $total';
+  }
+
+  @override
+  String get learningPrevious => 'Previous';
+
+  @override
+  String get learningNext => 'Next';
+
+  @override
+  String get learningFinishLesson => 'Finish lesson';
+
+  @override
+  String get learningChooseOptionError => 'Choose an answer before continuing.';
+
+  @override
+  String get learningMatchingIncompleteError => 'Match all items before continuing.';
+
+  @override
+  String get learningResultsTitle => 'Practice results';
+
+  @override
+  String learningCorrectAnswersSummary(Object correct, Object total) {
+    return '$correct out of $total correct answers';
+  }
+
+  @override
+  String get learningReturnToLesson => 'Back to lesson';
 }

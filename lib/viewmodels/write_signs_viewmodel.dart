@@ -1,69 +1,86 @@
 import 'package:flutter/material.dart';
-import '../models/sign_model.dart';
+import '../models/written_sign_model.dart';
+import '../services/database_service.dart';
 
 /// ViewModel para a tela de escrita de sinais
 class WriteSignsViewModel extends ChangeNotifier {
-  List<SignModel> _recentSigns = [];
-
-  bool _isEditMode = false;
+  final DatabaseService _databaseService = DatabaseService();
+  List<WrittenSignModel> _signs = [];
+  String _searchQuery = '';
+  String _selectedStatus = 'all';
   String _statusMessage = '';
   bool _isLoading = false;
 
-  List<SignModel> get recentSigns => List.unmodifiable(_recentSigns);
-  bool get isEditMode => _isEditMode;
+  List<WrittenSignModel> get signs {
+    return _signs.where((sign) {
+      final matchesStatus = _selectedStatus == 'all' || sign.status == _selectedStatus;
+      final query = _searchQuery.trim().toLowerCase();
+      final matchesQuery = query.isEmpty ||
+          sign.title.toLowerCase().contains(query) ||
+          sign.glossPt.toLowerCase().contains(query) ||
+          sign.category.toLowerCase().contains(query) ||
+          sign.tags.any((tag) => tag.toLowerCase().contains(query)) ||
+          (sign.description?.toLowerCase().contains(query) ?? false);
+      return matchesStatus && matchesQuery;
+    }).toList();
+  }
+
+  List<WrittenSignModel> get draftSigns =>
+      _signs.where((sign) => sign.isDraft).toList();
+
+  List<WrittenSignModel> get publishedSigns =>
+      _signs.where((sign) => sign.isPublished).toList();
+
+  String get searchQuery => _searchQuery;
+  String get selectedStatus => _selectedStatus;
   String get statusMessage => _statusMessage;
   bool get isLoading => _isLoading;
 
-  void enableEditMode() {
-    _isEditMode = true;
+  WriteSignsViewModel() {
+    loadSigns();
+  }
+
+  void updateSearchQuery(String value) {
+    _searchQuery = value;
     notifyListeners();
   }
 
-  void disableEditMode() {
-    _isEditMode = false;
+  void updateStatusFilter(String value) {
+    _selectedStatus = value;
     notifyListeners();
   }
 
-  Future<bool> saveSign(SignModel sign) async {
+  Future<void> loadSigns() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _signs = await _databaseService.getWrittenSigns();
+      _statusMessage = '';
+    } catch (e) {
+      _statusMessage = 'Erro ao carregar sinais: ${e.toString()}';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> saveSign(WrittenSignModel sign) async {
     _isLoading = true;
     _statusMessage = 'Salvando sinal...';
     notifyListeners();
 
     try {
-      await Future.delayed(const Duration(seconds: 1));
-      _recentSigns.insert(0, sign);
+      await _databaseService.saveWrittenSign(sign);
+      await loadSigns();
       _statusMessage = 'Sinal salvo com sucesso!';
-      _isLoading = false;
-      notifyListeners();
       return true;
     } catch (e) {
       _statusMessage = 'Erro ao salvar sinal: ${e.toString()}';
-      _isLoading = false;
-      notifyListeners();
       return false;
-    }
-  }
-
-  Future<bool> updateSign(SignModel sign) async {
-    _isLoading = true;
-    _statusMessage = 'Atualizando sinal...';
-    notifyListeners();
-
-    try {
-      await Future.delayed(const Duration(seconds: 1));
-      final index = _recentSigns.indexWhere((s) => s.id == sign.id);
-      if (index >= 0) {
-        _recentSigns[index] = sign;
-      }
-      _statusMessage = 'Sinal atualizado com sucesso!';
+    } finally {
       _isLoading = false;
       notifyListeners();
-      return true;
-    } catch (e) {
-      _statusMessage = 'Erro ao atualizar sinal: ${e.toString()}';
-      _isLoading = false;
-      notifyListeners();
-      return false;
     }
   }
 
@@ -73,39 +90,25 @@ class WriteSignsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await Future.delayed(const Duration(seconds: 1));
-      _recentSigns.removeWhere((sign) => sign.id == signId);
+      await _databaseService.deleteWrittenSign(signId);
+      await loadSigns();
       _statusMessage = 'Sinal excluído com sucesso!';
-      _isLoading = false;
-      notifyListeners();
       return true;
     } catch (e) {
       _statusMessage = 'Erro ao excluir sinal: ${e.toString()}';
+      return false;
+    } finally {
       _isLoading = false;
       notifyListeners();
-      return false;
     }
   }
 
-  void toggleFavorite(String signId) {
-    final index = _recentSigns.indexWhere((sign) => sign.id == signId);
-    if (index >= 0) {
-      _recentSigns[index].isFavorite = !_recentSigns[index].isFavorite;
-      notifyListeners();
-    }
-  }
-
-  List<SignModel> searchSigns(String query) {
-    if (query.isEmpty) {
-      return _recentSigns;
-    }
-    return _recentSigns
-        .where(
-          (sign) =>
-              sign.name.toLowerCase().contains(query.toLowerCase()) ||
-              (sign.description != null &&
-                  sign.description!.toLowerCase().contains(query.toLowerCase())),
-        )
-        .toList();
+  Future<bool> publishSign(WrittenSignModel sign) async {
+    final publishedSign = sign.copyWith(
+      status: WrittenSignModel.statusPublished,
+      updatedAt: DateTime.now(),
+      publishedAt: sign.publishedAt ?? DateTime.now(),
+    );
+    return saveSign(publishedSign);
   }
 }

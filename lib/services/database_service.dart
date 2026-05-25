@@ -1,13 +1,13 @@
-import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../models/sign_model.dart';
 import '../models/text_document_model.dart';
+import '../models/written_sign_model.dart';
 
 /// Serviço para gerenciar o banco de dados local
 class DatabaseService {
   static const String _databaseName = 'signwriter.db';
-  static const int _databaseVersion = 4;
+  static const int _databaseVersion = 5;
   
   // Nomes das tabelas
   static const String tableSign = 'signs';
@@ -43,6 +43,17 @@ class DatabaseService {
   static const String columnTextDocumentCreatedAt = 'created_at';
   static const String columnTextDocumentUpdatedAt = 'updated_at';
   static const String columnTextDocumentIsFavorite = 'is_favorite';
+
+  // Tabela de sinais escritos pelo usuário
+  static const String tableWrittenSign = 'written_signs';
+  static const String columnWrittenSignUserId = 'user_id';
+  static const String columnWrittenSignTitle = 'title';
+  static const String columnWrittenSignGlossPt = 'gloss_pt';
+  static const String columnWrittenSignLayoutJson = 'layout_json';
+  static const String columnWrittenSignPreviewSvg = 'preview_svg';
+  static const String columnWrittenSignStatus = 'status';
+  static const String columnWrittenSignUpdatedAt = 'updated_at';
+  static const String columnWrittenSignPublishedAt = 'published_at';
   
   // Singleton
   static final DatabaseService _instance = DatabaseService._internal();
@@ -63,7 +74,8 @@ class DatabaseService {
   
   /// Inicializa o banco de dados
   Future<Database> _initDatabase() async {
-    final String path = join(await getDatabasesPath(), _databaseName);
+    final databasesPath = await getDatabasesPath();
+    final String path = '$databasesPath/$_databaseName';
     
     return await openDatabase(
       path,
@@ -114,7 +126,27 @@ class DatabaseService {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE $tableWrittenSign (
+        $columnId TEXT PRIMARY KEY,
+        $columnWrittenSignUserId TEXT NOT NULL,
+        $columnWrittenSignTitle TEXT NOT NULL,
+        $columnWrittenSignGlossPt TEXT NOT NULL,
+        $columnDescription TEXT,
+        $columnCategory TEXT NOT NULL,
+        $columnTags TEXT,
+        fsw TEXT,
+        $columnWrittenSignLayoutJson TEXT NOT NULL,
+        $columnWrittenSignPreviewSvg TEXT,
+        $columnWrittenSignStatus TEXT NOT NULL,
+        $columnCreatedAt TEXT NOT NULL,
+        $columnWrittenSignUpdatedAt TEXT NOT NULL,
+        $columnWrittenSignPublishedAt TEXT
+      )
+    ''');
+
     await _createIndexes(db);
+    await _createWrittenSignsIndexes(db);
   }
 
   /// Aplica migrações quando a versão do banco é atualizada
@@ -127,6 +159,9 @@ class DatabaseService {
     }
     if (oldVersion < 4) {
       await _migrateFromV3ToV4(db);
+    }
+    if (oldVersion < 5) {
+      await _migrateFromV4ToV5(db);
     }
   }
 
@@ -167,6 +202,29 @@ class DatabaseService {
     ''');
   }
 
+  /// Migração da versão 4 para a 5
+  Future<void> _migrateFromV4ToV5(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS $tableWrittenSign (
+        $columnId TEXT PRIMARY KEY,
+        $columnWrittenSignUserId TEXT NOT NULL,
+        $columnWrittenSignTitle TEXT NOT NULL,
+        $columnWrittenSignGlossPt TEXT NOT NULL,
+        $columnDescription TEXT,
+        $columnCategory TEXT NOT NULL,
+        $columnTags TEXT,
+        fsw TEXT,
+        $columnWrittenSignLayoutJson TEXT NOT NULL,
+        $columnWrittenSignPreviewSvg TEXT,
+        $columnWrittenSignStatus TEXT NOT NULL,
+        $columnCreatedAt TEXT NOT NULL,
+        $columnWrittenSignUpdatedAt TEXT NOT NULL,
+        $columnWrittenSignPublishedAt TEXT
+      )
+    ''');
+    await _createWrittenSignsIndexes(db);
+  }
+
   /// Cria índices para melhorar performance de busca
   Future<void> _createIndexes(Database db) async {
     await db.execute('CREATE INDEX IF NOT EXISTS idx_signs_category ON $tableSign($columnCategory)');
@@ -174,6 +232,12 @@ class DatabaseService {
     await db.execute('CREATE INDEX IF NOT EXISTS idx_signs_tags ON $tableSign($columnTags)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_translations_created_at ON $tableTranslation($columnTranslationCreatedAt)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_text_documents_created_at ON $tableTextDocument($columnTextDocumentCreatedAt)');
+  }
+
+  Future<void> _createWrittenSignsIndexes(Database db) async {
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_written_signs_status ON $tableWrittenSign($columnWrittenSignStatus)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_written_signs_updated_at ON $tableWrittenSign($columnWrittenSignUpdatedAt)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_written_signs_title ON $tableWrittenSign($columnWrittenSignTitle)');
   }
   
   /// Insere um sinal no banco de dados
@@ -419,6 +483,36 @@ class DatabaseService {
     await db.delete(
       tableTextDocument,
       where: '$columnTextDocumentId = ?',
+      whereArgs: [id],
+    );
+  }
+
+  /// Salva um sinal autoral do usuário.
+  Future<void> saveWrittenSign(WrittenSignModel sign) async {
+    final Database db = await database;
+    await db.insert(
+      tableWrittenSign,
+      sign.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  /// Busca todos os sinais autorais salvos localmente.
+  Future<List<WrittenSignModel>> getWrittenSigns() async {
+    final Database db = await database;
+    final maps = await db.query(
+      tableWrittenSign,
+      orderBy: '$columnWrittenSignUpdatedAt DESC',
+    );
+    return maps.map((map) => WrittenSignModel.fromMap(map)).toList();
+  }
+
+  /// Remove um sinal autoral salvo localmente.
+  Future<void> deleteWrittenSign(String id) async {
+    final Database db = await database;
+    await db.delete(
+      tableWrittenSign,
+      where: '$columnId = ?',
       whereArgs: [id],
     );
   }
