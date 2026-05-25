@@ -168,6 +168,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get spacingTitle => 'Spacing';
 
   @override
+  String get themeTitle => 'Theme';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
+
+  @override
+  String get themeSystem => 'System';
+
+
+  @override
   String get languageTitle => 'Language';
 
   @override

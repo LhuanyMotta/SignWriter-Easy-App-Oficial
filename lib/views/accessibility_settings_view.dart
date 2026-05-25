@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../viewmodels/profile_viewmodel.dart';
 import 'screens/home_screen.dart';
 import '../theme/app_spacing.dart';
+import '../l10n/l10n.dart';
 
 class AccessibilitySettingsView extends StatelessWidget {
   final bool isFirstAccess;
@@ -29,12 +30,14 @@ class AccessibilitySettingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ProfileViewModel>(
       builder: (context, viewModel, child) {
+        final l10n = context.l10n;
+
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: AppBar(
-            title: const Text(
-              'Acessibilidade',
-              style: TextStyle(
+            title: Text(
+              l10n.accessibilityTitle,
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
@@ -46,7 +49,7 @@ class AccessibilitySettingsView extends StatelessWidget {
             padding: EdgeInsets.all(16 * viewModel.spacing),
             children: [
               Text(
-                'Configurações de Acessibilidade',
+                l10n.accessibilityTitle,
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -55,7 +58,7 @@ class AccessibilitySettingsView extends StatelessWidget {
               ),
               SizedBox(height: AppSpacing.value(context, 8)),
               Text(
-                'Ajuste a experiência visual do aplicativo.',
+                l10n.accessibilitySubtitle,
                 style: TextStyle(
                   fontSize: 14,
                   color: _subtitleColor(context),
@@ -65,13 +68,13 @@ class AccessibilitySettingsView extends StatelessWidget {
               _buildSettingCard(
                 context,
                 icon: Icons.format_size,
-                title: 'Tamanho da Fonte',
+                title: l10n.fontSizeTitle,
                 subtitle: '${(viewModel.fontSize * 100).round()}%',
                 child: Slider(
                   value: viewModel.fontSize,
                   min: 0.8,
-                  max: 2.0,
-                  divisions: 12,
+                  max: 1.5,
+                  divisions: 7,
                   label: '${(viewModel.fontSize * 100).round()}%',
                   activeColor: const Color(0xFF2D78BB),
                   onChanged: viewModel.updateFontSize,
@@ -81,13 +84,13 @@ class AccessibilitySettingsView extends StatelessWidget {
               _buildSettingCard(
                 context,
                 icon: Icons.contrast,
-                title: 'Contraste',
+                title: l10n.contrastTitle,
                 subtitle: '${(viewModel.contrastLevel * 100).round()}%',
                 child: Slider(
                   value: viewModel.contrastLevel,
-                  min: 0.5,
-                  max: 2.0,
-                  divisions: 15,
+                  min: 0.8,
+                  max: 1.5,
+                  divisions: 7,
                   label: '${(viewModel.contrastLevel * 100).round()}%',
                   activeColor: const Color(0xFF2D78BB),
                   onChanged: viewModel.updateContrast,
@@ -97,156 +100,157 @@ class AccessibilitySettingsView extends StatelessWidget {
               _buildSettingCard(
                 context,
                 icon: Icons.space_bar,
-                title: 'Espaçamento',
+                title: l10n.spacingTitle,
                 subtitle: '${(viewModel.spacing * 100).round()}%',
                 child: Slider(
                   value: viewModel.spacing,
                   min: 0.8,
-                  max: 2.0,
-                  divisions: 12,
+                  max: 1.5,
+                  divisions: 7,
                   label: '${(viewModel.spacing * 100).round()}%',
                   activeColor: const Color(0xFF2D78BB),
                   onChanged: viewModel.updateSpacing,
                 ),
               ),
               SizedBox(height: AppSpacing.value(context, 16)),
+              _buildSettingCard(
+                context,
+                icon: Icons.brightness_6,
+                title: l10n.themeTitle,
+                subtitle: _themeModeLabel(viewModel.themeMode),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _optionButton(
+                        context,
+                        title: l10n.themeLight,
+                        selected: viewModel.themeMode == AppThemeMode.light,
+                        onTap: () => viewModel.setThemeMode(AppThemeMode.light),
+                      ),
+                    ),
+                    SizedBox(width: AppSpacing.value(context, 8)),
+                    Expanded(
+                      child: _optionButton(
+                        context,
+                        title: l10n.themeDark,
+                        selected: viewModel.themeMode == AppThemeMode.dark,
+                        onTap: () => viewModel.setThemeMode(AppThemeMode.dark),
+                      ),
+                    ),
+                    SizedBox(width: AppSpacing.value(context, 8)),
+                    Expanded(
+                      child: _optionButton(
+                        context,
+                        title: l10n.themeSystem,
+                        selected: viewModel.themeMode == AppThemeMode.system,
+                        onTap: () => viewModel.setThemeMode(AppThemeMode.system),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: AppSpacing.value(context, 16)),
+              _buildSettingCard(
+                context,
+                icon: Icons.language,
+                title: l10n.languageTitle,
+                subtitle: viewModel.language == 'English'
+                    ? l10n.languageEnglish
+                    : l10n.languagePortuguese,
+                child: DropdownButtonFormField<String>(
+                  value: viewModel.language,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    contentPadding: AppSpacing.symmetric(
+                      context,
+                      horizontal: 12,
+                    ),
+                  ),
+                  items: viewModel.availableLanguages.map((language) {
+                    final label = language == 'English'
+                        ? l10n.languageEnglish
+                        : l10n.languagePortuguese;
 
-_buildSettingCard(
-  context,
-  icon: Icons.brightness_6,
-  title: 'Tema',
-  subtitle: viewModel.themeMode.name,
-  child: Row(
-    children: [
-      Expanded(
-        child: _optionButton(
-          context,
-          title: 'Claro',
-          selected: viewModel.themeMode == AppThemeMode.light,
-          onTap: () => viewModel.setThemeMode(AppThemeMode.light),
-        ),
-      ),
-      SizedBox(width: AppSpacing.value(context, 8)),
-      Expanded(
-        child: _optionButton(
-          context,
-          title: 'Escuro',
-          selected: viewModel.themeMode == AppThemeMode.dark,
-          onTap: () => viewModel.setThemeMode(AppThemeMode.dark),
-        ),
-      ),
-      SizedBox(width: AppSpacing.value(context, 8)),
-      Expanded(
-        child: _optionButton(
-          context,
-          title: 'Sistema',
-          selected: viewModel.themeMode == AppThemeMode.system,
-          onTap: () => viewModel.setThemeMode(AppThemeMode.system),
-        ),
-      ),
-    ],
-  ),
-),
-
-SizedBox(height: AppSpacing.value(context, 16)),
-
-_buildSettingCard(
-  context,
-  icon: Icons.language,
-  title: 'Idioma',
-  subtitle: viewModel.language,
-  child: DropdownButtonFormField<String>(
-    value: viewModel.language,
-    decoration: InputDecoration(
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      contentPadding: AppSpacing.symmetric(context, horizontal: 12),
-    ),
-    items: viewModel.availableLanguages.map((language) {
-      return DropdownMenuItem(
-        value: language,
-        child: Text(language),
-      );
-    }).toList(),
-    onChanged: (value) {
-      if (value != null) {
-        viewModel.setLanguage(value);
-      }
-    },
-  ),
-),
+                    return DropdownMenuItem(
+                      value: language,
+                      child: Text(label),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      viewModel.setLanguage(value);
+                    }
+                  },
+                ),
+              ),
               SizedBox(height: AppSpacing.value(context, 24)),
+              if (isFirstAccess) ...[
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final prefs = await SharedPreferences.getInstance();
 
-if (isFirstAccess) ...[
-  SizedBox(
-    width: double.infinity,
-    height: 54,
-    child: ElevatedButton(
-      onPressed: () async {
-        final prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool(
+                        'has_seen_accessibility',
+                        true,
+                      );
 
-        await prefs.setBool(
-          'has_seen_accessibility',
-          true,
-        );
+                      if (context.mounted) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const HomeScreen(),
+                          ),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2D78BB),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: Text(
+                      l10n.save,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: AppSpacing.value(context, 12)),
+                Center(
+                  child: TextButton(
+                    onPressed: () async {
+                      final prefs = await SharedPreferences.getInstance();
 
-        if (context.mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const HomeScreen(),
-            ),
-          );
-        }
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF2D78BB),
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-      ),
-      child: const Text(
-        'Salvar e continuar',
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    ),
-  ),
+                      await prefs.setBool(
+                        'has_seen_accessibility',
+                        true,
+                      );
 
-  SizedBox(height: AppSpacing.value(context, 12)),
-
-  Center(
-    child: TextButton(
-      onPressed: () async {
-        final prefs = await SharedPreferences.getInstance();
-
-        await prefs.setBool(
-          'has_seen_accessibility',
-          true,
-        );
-
-        if (context.mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const HomeScreen(),
-            ),
-          );
-        }
-      },
-      child: const Text(
-        'Pular por enquanto',
-      ),
-    ),
-  ),
-
-  SizedBox(height: AppSpacing.value(context, 24)),
-],
-
+                      if (context.mounted) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const HomeScreen(),
+                          ),
+                        );
+                      }
+                    },
+                    child: Text(
+                      l10n.cancel,
+                    ),
+                  ),
+                ),
+                SizedBox(height: AppSpacing.value(context, 24)),
+              ],
             ],
           ),
         );
@@ -261,10 +265,10 @@ if (isFirstAccess) ...[
     required String subtitle,
     required Widget child,
   }) {
+    final spacing = context.read<ProfileViewModel>().spacing;
+
     return Container(
-  padding: EdgeInsets.all(
-    18 * context.read<ProfileViewModel>().spacing,
-  ),
+      padding: EdgeInsets.all(18 * spacing),
       decoration: BoxDecoration(
         color: _cardColor(context),
         borderRadius: BorderRadius.circular(16),
@@ -304,40 +308,61 @@ if (isFirstAccess) ...[
               ),
             ],
           ),
-          SizedBox(
-  height: 16 * context.read<ProfileViewModel>().spacing,
-),
+          SizedBox(height: 16 * spacing),
           child,
         ],
       ),
     );
   }
+
   Widget _optionButton(
-  BuildContext context, {
-  required String title,
-  required bool selected,
-  required VoidCallback onTap,
-}) {
-  return InkWell(
-    borderRadius: BorderRadius.circular(12),
-    onTap: onTap,
-    child: Container(
-      padding: AppSpacing.symmetric(context, vertical: 12),
-      decoration: BoxDecoration(
-        color: selected ? const Color(0xFF2D78BB) : Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF2D78BB)),
-      ),
-      child: Center(
-        child: Text(
-          title,
-          style: TextStyle(
-            color: selected ? Colors.white : const Color(0xFF2D78BB),
-            fontWeight: FontWeight.w600,
+    BuildContext context, {
+    required String title,
+    required bool selected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Container(
+        padding: AppSpacing.symmetric(context, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF2D78BB) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFF2D78BB)),
+        ),
+        child: Center(
+          child: Text(
+            title,
+            style: TextStyle(
+              color: selected ? Colors.white : const Color(0xFF2D78BB),
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
+    String _themeModeLabel(AppThemeMode mode) {
+  switch (mode) {
+    case AppThemeMode.light:
+      return 'Claro';
+    case AppThemeMode.dark:
+      return 'Escuro';
+    case AppThemeMode.system:
+      return 'Sistema';
+  }
+}
+}
+String _themeModeLabel(AppThemeMode mode) {
+  switch (mode) {
+    case AppThemeMode.light:
+      return 'Claro';
+
+    case AppThemeMode.dark:
+      return 'Escuro';
+
+    case AppThemeMode.system:
+      return 'Sistema';
+  }
 }
 }

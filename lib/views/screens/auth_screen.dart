@@ -7,6 +7,7 @@ import 'home_screen.dart';
 import '../widgets/app_logo.dart';
 import '../accessibility_settings_view.dart';
 import '../../theme/app_spacing.dart';
+import '../../l10n/l10n.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -71,7 +72,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                             ),
                 SizedBox(height: AppSpacing.value(context, 20)),
                 Text(
-                  'SignWriter Fácil',
+                  context.l10n.appTitle,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: const Color(0xFF2D78BB),
@@ -79,7 +80,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 ),
                 SizedBox(height: AppSpacing.value(context, 8)),
                 Text(
-                  'Conecte-se para começar',
+                  context.l10n.authSubtitle,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: Colors.grey[600],
                       ),
@@ -104,9 +105,9 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
                     ),
-                    tabs: const [
-                      Tab(text: 'Entrar'),
-                      Tab(text: 'Cadastrar'),
+                    tabs: [
+                      Tab(text: context.l10n.loginTab),
+                      Tab(text: context.l10n.signupTab),
                     ],
                   ),
                 ),
@@ -141,16 +142,16 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           children: [
             _buildTextField(
               controller: _loginEmailController,
-              label: 'Email',
-              hintText: 'Digite seu email',
+              label: context.l10n.emailLabel,
+              hintText: context.l10n.emailLabel,
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Por favor, insira seu email';
+                  return context.l10n.enterEmailError;
                 }
                 if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                  return 'Por favor, insira um email válido';
+                  return context.l10n.invalidEmailError;
                 }
                 return null;
               },
@@ -159,13 +160,13 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             
             _buildTextField(
               controller: _loginPasswordController,
-              label: 'Senha',
-              hintText: 'Digite sua senha',
+              label: context.l10n.passwordLabel,
+              hintText: context.l10n.passwordLabel,
               icon: Icons.lock_outlined,
               isPassword: true,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Por favor, insira sua senha';
+                  return context.l10n.enterPasswordError;
                 }
                 return null;
               },
@@ -177,14 +178,14 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
               child: TextButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Recuperação de senha será implementada em breve'),
-                      duration: Duration(seconds: 2),
+                    SnackBar(
+                      content: Text(context.l10n.passwordRecoverySoon),
+                      duration: const Duration(seconds: 2),
                     ),
                   );
                 },
                 child: Text(
-                  'Esqueci minha senha',
+                  context.l10n.forgotPassword,
                   style: TextStyle(
                     color: const Color(0xFF2D78BB),
                     fontSize: 14,
@@ -224,7 +225,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                               Icon(Icons.login, size: 22),
                               SizedBox(width: AppSpacing.value(context, 10)),
                               Text(
-                                'Entrar',
+                                context.l10n.loginButton,
                                 style: TextStyle(
                                   fontSize: 17,
                                   fontWeight: FontWeight.w600,
@@ -258,15 +259,15 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           children: [
             _buildTextField(
               controller: _signupNameController,
-              label: 'Nome completo',
-              hintText: 'Digite seu nome completo',
+              label: context.l10n.fullNameLabel,
+              hintText: context.l10n.fullNameLabel,
               icon: Icons.person_outlined,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Por favor, insira seu nome';
+                  return context.l10n.enterNameError;
                 }
                 if (value.length < 2) {
-                  return 'O nome deve ter pelo menos 2 caracteres';
+                  return context.l10n.nameLengthError;
                 }
                 return null;
               },
@@ -275,16 +276,16 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             
             _buildTextField(
               controller: _signupEmailController,
-              label: 'Email',
-              hintText: 'Digite seu email',
+              label: context.l10n.emailLabel,
+              hintText: context.l10n.emailLabel,
               icon: Icons.email_outlined,
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Por favor, insira seu email';
+                  return context.l10n.enterEmailError;
                 }
                 if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                  return 'Por favor, insira um email válido';
+                  return context.l10n.invalidEmailError;
                 }
                 return null;
               },
@@ -293,16 +294,16 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             
             _buildTextField(
               controller: _signupPasswordController,
-              label: 'Senha',
-              hintText: 'Digite sua senha',
+              label: context.l10n.passwordLabel,
+              hintText: context.l10n.passwordLabel,
               icon: Icons.lock_outlined,
               isPassword: true,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Por favor, insira uma senha';
+                  return context.l10n.enterPasswordError;
                 }
                 if (value.length < 6) {
-                  return 'A senha deve ter pelo menos 6 caracteres';
+                  return context.l10n.passwordLengthError;
                 }
                 return null;
               },
@@ -311,16 +312,16 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             
             _buildTextField(
               controller: _confirmPasswordController,
-              label: 'Confirmar senha',
-              hintText: 'Confirme sua senha',
+              label: context.l10n.confirmPasswordLabel,
+              hintText: context.l10n.confirmPasswordLabel,
               icon: Icons.lock_outlined,
               isPassword: true,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Por favor, confirme sua senha';
+                  return context.l10n.confirmPasswordError;
                 }
                 if (value != _signupPasswordController.text) {
-                  return 'As senhas não coincidem';
+                  return context.l10n.passwordMismatchError;
                 }
                 return null;
               },
@@ -357,7 +358,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                               Icon(Icons.person_add, size: 22),
                               SizedBox(width: AppSpacing.value(context, 10)),
                               Text(
-                                'Cadastrar',
+                                context.l10n.signupButton,
                                 style: TextStyle(
                                   fontSize: 17,
                                   fontWeight: FontWeight.w600,
@@ -457,7 +458,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         Padding(
           padding: AppSpacing.symmetric(context, horizontal: 16),
           child: Text(
-            'ou',
+            context.l10n.orLabel,
             style: TextStyle(
               color: Colors.grey[600],
               fontSize: 14,
@@ -516,7 +517,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 ),
                 SizedBox(width: AppSpacing.value(context, 12)),
                 Text(
-                  'Continuar com Google',
+                  context.l10n.continueWithGoogle,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -560,7 +561,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 Icon(Icons.apple, size: 24, color: Colors.white),
                 SizedBox(width: AppSpacing.value(context, 12)),
                 Text(
-                  'Continuar com Apple',
+                  context.l10n.continueWithApple,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,

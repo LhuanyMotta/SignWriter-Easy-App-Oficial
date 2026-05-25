@@ -168,6 +168,19 @@ class AppLocalizationsPt extends AppLocalizations {
   String get spacingTitle => 'Espaçamento';
 
   @override
+  String get themeTitle => 'Tema';
+
+  @override
+  String get themeLight => 'Claro';
+
+  @override
+  String get themeDark => 'Escuro';
+
+  @override
+  String get themeSystem => 'Sistema';
+
+
+  @override
   String get languageTitle => 'Idioma';
 
   @override

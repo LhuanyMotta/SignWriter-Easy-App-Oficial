@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import 'profile_screen.dart';
 import '../../theme/app_spacing.dart';
+import '../../l10n/l10n.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -50,8 +51,8 @@ class _HomeScreenState extends State<HomeScreen>
       appBar: AppBar(
         backgroundColor: const Color(0xFF2D78BB),
         elevation: 0,
-        title: const Text(
-          'SignWriter Fácil',
+        title: Text(
+          context.l10n.appTitle,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
@@ -75,10 +76,10 @@ class _HomeScreenState extends State<HomeScreen>
           indicatorColor: Colors.white,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
-          tabs: const [
-            Tab(child: FittedBox(child: Text('Início'))),
-            Tab(child: FittedBox(child: Text('Dicionário'))),
-            Tab(child: FittedBox(child: Text('Traduzir'))),
+          tabs: [
+            Tab(child: FittedBox(child: Text(context.l10n.bottomHome))),
+            Tab(child: FittedBox(child: Text(context.l10n.featureDictionary))),
+            Tab(child: FittedBox(child: Text(context.l10n.featureTranslateSigns))),
           ],
         ),
       ),
@@ -102,15 +103,15 @@ class _HomeScreenState extends State<HomeScreen>
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Início',
+            label: context.l10n.bottomHome,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite),
-            label: 'Favoritos',
+            label: context.l10n.bottomFavorites,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Perfil',
+            label: context.l10n.bottomProfile,
           ),
         ],
       ),
@@ -120,28 +121,28 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _buildHomeTab() {
   final List<Map<String, dynamic>> features = [
     {
-      'title': 'Aprender e Praticar',
+      'title': context.l10n.featureLearnPractice,
       'icon': Icons.school,
       'color': const Color(0xFF2D78BB),
       'onTap': () =>
           _viewModel.navigateToLearnAndPractice(context),
     },
     {
-      'title': 'Escrever Sinais',
+      'title': context.l10n.featureWriteSigns,
       'icon': Icons.edit_document,
       'color': const Color(0xFF4EB1F0),
       'onTap': () =>
           _viewModel.navigateToWriteSigns(context),
     },
     {
-      'title': 'Traduzir Sinais',
+      'title': context.l10n.featureTranslateSigns,
       'icon': Icons.translate,
       'color': const Color(0xFF2D78BB),
       'onTap': () =>
           _viewModel.navigateToTranslateSigns(context),
     },
     {
-      'title': 'Dicionário',
+      'title': context.l10n.featureDictionary,
       'icon': Icons.book,
       'color': const Color(0xFF4EB1F0),
       'onTap': () =>
@@ -155,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Bem-vindo!',
+          context.l10n.homeWelcome,
           style: TextStyle(
             color: const Color(0xFF2D78BB),
             fontSize: 30,
@@ -166,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen>
         SizedBox(height: AppSpacing.value(context, 6)),
 
         Text(
-          'O que você deseja fazer hoje?',
+          context.l10n.homeQuestion,
           style: TextStyle(
             color: subtitleColor,
             fontSize: 16,
@@ -252,9 +253,9 @@ class _HomeScreenState extends State<HomeScreen>
       padding: AppSpacing.all(context, 18),
       child: _buildInfoCard(
         icon: Icons.menu_book,
-        title: 'Dicionário de Sinais',
+        title: context.l10n.featureDictionary,
         description: 'Consulte sinais cadastrados no Supabase.',
-        buttonText: 'Abrir Dicionário',
+        buttonText: context.l10n.featureDictionary,
         onTap: () => _viewModel.navigateToDictionary(context),
       ),
     );
@@ -265,9 +266,9 @@ class _HomeScreenState extends State<HomeScreen>
       padding: AppSpacing.all(context, 18),
       child: _buildInfoCard(
         icon: Icons.translate,
-        title: 'Traduzir Sinais',
+        title: context.l10n.featureTranslateSigns,
         description: 'Digite uma palavra ou frase para buscar sinais correspondentes.',
-        buttonText: 'Abrir Tradutor',
+        buttonText: context.l10n.featureTranslateSigns,
         onTap: () => _viewModel.navigateToTranslateSigns(context),
       ),
     );

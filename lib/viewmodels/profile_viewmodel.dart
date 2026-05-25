@@ -57,11 +57,9 @@ String get language => _language;
 
 Locale get locale {
   switch (_language) {
+    case 'English':
     case 'Inglês':
       return const Locale('en');
-
-    case 'Espanhol':
-      return const Locale('es');
 
     case 'Português':
     default:
@@ -71,8 +69,7 @@ Locale get locale {
 
   final List<String> availableLanguages = [
     'Português',
-    'Inglês',
-    'Espanhol',
+    'English',
   ];
 
   ProfileViewModel() {
@@ -153,6 +150,8 @@ Locale get locale {
     _contrastLevel =        (prefs.getDouble('contrast_level') ?? 1.0).clamp(0.8, 1.5);
     _spacing = (prefs.getDouble('spacing') ?? 1.0).clamp(0.8, 1.5);
     _language = prefs.getString('language') ?? 'Português';
+    if (_language == 'Inglês') _language = 'English';
+    if (_language == 'Espanhol') _language = 'Português';
 
     notifyListeners();
   }
@@ -193,19 +192,19 @@ Future<void> setThemeMode(
   }
 
   Future<void> updateFontSize(double value) async {
-    _fontSize = value.clamp(0.8, 2.0);
+    _fontSize = value.clamp(0.8, 1.5);
     await _savePreferences();
     notifyListeners();
   }
 
   Future<void> updateContrast(double value) async {
-    _contrastLevel = value.clamp(0.5, 2.0);
+    _contrastLevel = value.clamp(0.8, 1.5);
     await _savePreferences();
     notifyListeners();
   }
 
   Future<void> updateSpacing(double value) async {
-    _spacing = value.clamp(0.8, 2.0);
+    _spacing = value.clamp(0.8, 1.5);
     await _savePreferences();
     notifyListeners();
   }

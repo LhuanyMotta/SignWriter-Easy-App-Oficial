@@ -8,6 +8,7 @@ import '../../viewmodels/profile_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../accessibility_settings_view.dart';
 import '../../theme/app_spacing.dart';
+import '../../l10n/l10n.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -54,8 +55,8 @@ void initState() {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text(
-            'Perfil',
+          title: Text(
+            context.l10n.bottomProfile,
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -77,11 +78,11 @@ void initState() {
               children: [
                 _buildUserCard(context, viewModel),
                 SizedBox(height: AppSpacing.value(context, 18)),
-                _sectionTitle(context, 'Configurações'),
+                _sectionTitle(context, context.l10n.settingsTitle),
                 SizedBox(height: AppSpacing.value(context, 10)),
                 _buildSettingsCard(context, viewModel),
                 SizedBox(height: AppSpacing.value(context, 18)),
-                _sectionTitle(context, 'Dados da Conta'),
+                _sectionTitle(context, context.l10n.accountDataTitle),
                 SizedBox(height: AppSpacing.value(context, 10)),
                 _buildAccountCard(context, viewModel),
                 SizedBox(height: AppSpacing.value(context, 20)),
@@ -94,9 +95,9 @@ void initState() {
           currentIndex: 2,
           onTap: (index) => _homeViewModel.onBottomNavTapped(index, context),
           items: [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
-            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favoritos'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: context.l10n.bottomHome),
+            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: context.l10n.bottomFavorites),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: context.l10n.bottomProfile),
           ],
         ),
       ),
@@ -231,8 +232,8 @@ void initState() {
           _settingsTile(
             context,
             icon: Icons.accessibility_new,
-            title: 'Acessibilidade',
-            subtitle: 'Fonte, contraste e espaçamento',
+            title: context.l10n.accessibilityTitle,
+            subtitle: context.l10n.accessibilitySubtitle,
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.push(
@@ -247,14 +248,14 @@ void initState() {
           SwitchListTile(
             secondary: const Icon(Icons.notifications_outlined, color: Color(0xFF2D78BB)),
             title: Text(
-              'Notificações',
+              context.l10n.notificationsTitle,
               style: TextStyle(
                 color: _textColor(context),
                 fontWeight: FontWeight.w600,
               ),
             ),
             subtitle: Text(
-              'Receber notificações do app',
+              context.l10n.notificationsSubtitle,
               style: TextStyle(color: _subtitleColor(context)),
             ),
             value: viewModel.notificationsEnabled,
@@ -279,8 +280,8 @@ void initState() {
           _settingsTile(
             context,
             icon: Icons.download_outlined,
-            title: 'Exportar Meus Dados',
-            subtitle: 'Baixe uma cópia dos seus dados',
+            title: context.l10n.exportDataTitle,
+            subtitle: context.l10n.exportDataSubtitle,
             color: const Color(0xFF2D78BB),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _exportUserData(context, viewModel),
@@ -289,8 +290,8 @@ void initState() {
           _settingsTile(
             context,
             icon: Icons.delete_outline,
-            title: 'Excluir Minha Conta',
-            subtitle: 'Esta ação é irreversível',
+            title: context.l10n.deleteAccountTitle,
+            subtitle: context.l10n.deleteAccountSubtitle,
             color: Colors.red,
             trailing: const Icon(Icons.chevron_right, color: Colors.red),
             onTap: () => _confirmDeleteAccount(context, viewModel),

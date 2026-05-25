@@ -4,6 +4,8 @@
 
 <img src="assets/images/signwriter_logo.png" width="180" alt="SignWriter Fácil Logo">
 
+# ✍️ SignWriter Fácil
+
 ### 🌍 Tecnologia, Inclusão e Acessibilidade através do SignWriting
 
 Aplicativo multiplataforma desenvolvido em Flutter com foco em aprendizado, comunicação visual e acessibilidade para usuários da língua de sinais.

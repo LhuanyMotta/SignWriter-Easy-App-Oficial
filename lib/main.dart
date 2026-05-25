@@ -12,6 +12,7 @@ import 'package:signwriter_easy_app_oficial/viewmodels/learn_practice_viewmodel.
 import 'package:signwriter_easy_app_oficial/views/screens/home_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:signwriter_easy_app_oficial/theme/app_theme.dart';
+import 'l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -123,14 +124,11 @@ class MyApp extends StatelessWidget {
           themeMode: themeMode,
 locale: profileViewModel.locale,
 
-supportedLocales: const [
-  Locale('pt'),
-  Locale('en'),
-  Locale('es'),
-],
+supportedLocales: AppLocalizations.supportedLocales,
 
 localizationsDelegates: const [
-  GlobalMaterialLocalizations.delegate,
+  AppLocalizations.delegate,
+GlobalMaterialLocalizations.delegate,
   GlobalWidgetsLocalizations.delegate,
   GlobalCupertinoLocalizations.delegate,
 ],
