@@ -1,10 +1,8 @@
-# ✍️ SignWriter Fácil
-
 <div align="center">
 
 <img src="assets/images/signwriter_logo.png" width="180" alt="SignWriter Fácil Logo">
 
-# ✍️ SignWriter Fácil
+# SignWriter Fácil
 
 ### 🌍 Tecnologia, Inclusão e Acessibilidade através do SignWriting
 
