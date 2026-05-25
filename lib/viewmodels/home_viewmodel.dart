@@ -3,8 +3,6 @@ import '../views/screens/write_signs_screen.dart';
 import '../views/screens/translate_signs_screen.dart';
 import '../views/screens/learn_practice_screen.dart';
 import '../views/screens/dictionary_screen.dart';
-import '../views/screens/chat_screen.dart';
-import '../views/screens/progress_screen.dart';
 import '../views/screens/profile_screen.dart';
 import '../views/screens/favorites_screen.dart';
 import '../views/screens/home_screen.dart';
@@ -18,9 +16,6 @@ class HomeViewModel {
       context,
       MaterialPageRoute(builder: (context) => const LearnPracticeScreen()),
     );
-    // Futuramente, também poderia:
-    // - Registrar o acesso no banco de dados
-    // - Carregar dados de progresso do usuário
   }
 
   /// Navega para a tela de Escrever Sinais
@@ -39,14 +34,6 @@ class HomeViewModel {
     );
   }
 
-  /// Navega para a tela de Conversar
-  void navigateToChat(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ChatScreen()),
-    );
-  }
-
   /// Navega para a tela de Dicionário
   void navigateToDictionary(BuildContext context) {
     Navigator.push(
@@ -55,19 +42,6 @@ class HomeViewModel {
         builder: (context) => const DictionaryScreen(),
       ),
     );
-    // Futuramente:
-    // - Carregar dados do dicionário do banco local
-  }
-
-  /// Navega para a tela de Progresso
-  void navigateToProgress(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const ProgressScreen()),
-    );
-    // Futuramente:
-    // - Buscar dados de progresso no banco
-    // - Atualizar estatísticas
   }
 
   /// Navega para a tela de Favoritos
@@ -77,7 +51,7 @@ class HomeViewModel {
       MaterialPageRoute(builder: (context) => const FavoritesScreen()),
     );
   }
-  
+
   /// Navega para a tela de Perfil
   void navigateToProfile(BuildContext context) {
     Navigator.push(
@@ -90,7 +64,6 @@ class HomeViewModel {
   void onBottomNavTapped(int index, BuildContext context) {
     switch (index) {
       case 0:
-        // Navega para a tela inicial
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -105,4 +78,4 @@ class HomeViewModel {
         break;
     }
   }
-} 
+}
