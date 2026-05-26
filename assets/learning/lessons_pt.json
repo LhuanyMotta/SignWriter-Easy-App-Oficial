@@ -1,0 +1,439 @@
+{
+  "categories": [
+    {
+      "id": "intro-signwriting",
+      "title": "Introdução ao SignWriting",
+      "description": "Uma trilha inicial para entender o que é o SignWriting, como ler sinais escritos e como praticar no SignWriter Fácil.",
+      "icon": "menu_book",
+      "color": "#2D78BB",
+      "lessons": [
+        {
+          "id": "intro-app",
+          "title": "O que é o SignWriter Fácil?",
+          "summary": "Conheça a proposta do app e como a trilha foi organizada para você aprender aos poucos.",
+          "estimatedMinutes": 4,
+          "difficulty": "Iniciante",
+          "objectives": [
+            "Entender a proposta do aplicativo.",
+            "Reconhecer a lógica da trilha Aprender e Praticar.",
+            "Saber o que esperar das primeiras lições."
+          ],
+          "sections": [
+            {
+              "title": "Uma porta de entrada para o SignWriting",
+              "body": "O SignWriter Fácil foi pensado para ajudar você a estudar, consultar, praticar e produzir sinais escritos com mais segurança. A ideia do app não é jogar símbolos soltos na tela, mas criar um caminho simples para observar o sinal, entender sua estrutura e praticar aos poucos."
+            },
+            {
+              "title": "Como esta trilha foi organizada",
+              "body": "Nesta área, o conteúdo começa pelos fundamentos do sistema de escrita. Primeiro você entende o que é o SignWriting, depois aprende a observar mãos, movimentos, expressões e organização espacial. Só depois disso a prática fica mais natural.",
+              "bullets": [
+                "Lições curtas e focadas.",
+                "Exercícios rápidos para revisão.",
+                "Progresso salvo localmente no dispositivo."
+              ]
+            },
+            {
+              "title": "Como estudar melhor aqui",
+              "body": "Leia a explicação, observe os elementos principais e responda aos exercícios sem pressa. Se precisar, refaça a lição. No SignWriting, reconhecer padrões visuais é mais importante do que decorar frases prontas.",
+              "highlight": "Avance em pequenas etapas: compreender a estrutura do sinal vale mais do que correr para terminar a trilha."
+            }
+          ],
+          "references": [
+            "Valerie Sutton - SignWriting Basics (2022)",
+            "SignWriting Basics Instruction Manual"
+          ],
+          "exercises": [
+            {
+              "id": "intro-app-q1",
+              "type": "multipleChoice",
+              "prompt": "Qual é a proposta principal desta trilha no app?",
+              "options": [
+                {
+                  "id": "a",
+                  "label": "Ensinar somente atalhos de navegação."
+                },
+                {
+                  "id": "b",
+                  "label": "Ajudar você a entender e praticar a escrita de sinais passo a passo."
+                },
+                {
+                  "id": "c",
+                  "label": "Substituir totalmente o estudo de Libras."
+                }
+              ],
+              "correctOptionId": "b",
+              "explanation": "A trilha foi pensada para apresentar o sistema, apoiar a leitura e reforçar a prática com exercícios curtos."
+            },
+            {
+              "id": "intro-app-q2",
+              "type": "trueFalse",
+              "prompt": "Verdadeiro ou falso: a trilha começa pelos fundamentos do sistema antes de avançar para práticas mais amplas.",
+              "options": [
+                {
+                  "id": "true",
+                  "label": "Verdadeiro"
+                },
+                {
+                  "id": "false",
+                  "label": "Falso"
+                }
+              ],
+              "correctOptionId": "true",
+              "explanation": "O objetivo do MVP é construir base primeiro: sistema, leitura e reconhecimento."
+            }
+          ]
+        },
+        {
+          "id": "what-is-signwriting",
+          "title": "O que é SignWriting?",
+          "summary": "Entenda o sistema criado por Valerie Sutton e por que ele pode registrar línguas de sinais.",
+          "estimatedMinutes": 6,
+          "difficulty": "Iniciante",
+          "objectives": [
+            "Identificar o SignWriting como sistema de escrita.",
+            "Conhecer sua origem e referência principal.",
+            "Perceber que ele registra movimento, configuração e expressão."
+          ],
+          "sections": [
+            {
+              "title": "Um sistema de escrita para línguas de sinais",
+              "body": "SignWriting é um sistema visual usado para escrever línguas de sinais. Em vez de representar sons, ele representa o que o corpo faz ao sinalizar: formato das mãos, orientação, movimento, expressões faciais e outros componentes relevantes."
+            },
+            {
+              "title": "Origem e referência",
+              "body": "Segundo os materiais de Valerie Sutton, o sistema foi desenvolvido em 1974 e evoluiu ao longo dos anos para atender a diferentes línguas de sinais. O conjunto internacional de símbolos mais citado é o ISWA 2008, que organiza símbolos usados para mãos, movimentos, rosto, cabeça e corpo."
+            },
+            {
+              "title": "O que o sistema tenta registrar",
+              "body": "A escrita procura registrar como o sinal é produzido visualmente. Isso significa que o leitor aprende a observar padrões do sinal e não apenas traduzir palavra por palavra.",
+              "bullets": [
+                "Configuração e orientação das mãos.",
+                "Trajetória do movimento.",
+                "Expressões faciais e postura corporal.",
+                "Organização espacial do sinal."
+              ]
+            }
+          ],
+          "references": [
+            "Valerie Sutton - SignWriting Basics (2022)",
+            "ISWA 2008 Reference Manual",
+            "A Cross-Linguistic Guide to SignWriting"
+          ],
+          "exercises": [
+            {
+              "id": "what-is-sw-q1",
+              "type": "multipleChoice",
+              "prompt": "No contexto desta trilha, o SignWriting é apresentado como:",
+              "options": [
+                {
+                  "id": "a",
+                  "label": "Um conjunto de emojis para resumir sinais."
+                },
+                {
+                  "id": "b",
+                  "label": "Um sistema visual para escrever línguas de sinais."
+                },
+                {
+                  "id": "c",
+                  "label": "Uma lista fixa de palavras em português."
+                }
+              ],
+              "correctOptionId": "b",
+              "explanation": "SignWriting é um sistema de escrita visual voltado para línguas de sinais."
+            },
+            {
+              "id": "what-is-sw-q2",
+              "type": "trueFalse",
+              "prompt": "Verdadeiro ou falso: o SignWriting foi criado para registrar aspectos visuais do sinal, como mãos, movimento e expressões.",
+              "options": [
+                {
+                  "id": "true",
+                  "label": "Verdadeiro"
+                },
+                {
+                  "id": "false",
+                  "label": "Falso"
+                }
+              ],
+              "correctOptionId": "true",
+              "explanation": "Essa é justamente a força do sistema: escrever o sinal a partir do que é visto."
+            },
+            {
+              "id": "what-is-sw-q3",
+              "type": "multipleChoice",
+              "prompt": "Qual referência é usada como base internacional para o conjunto de símbolos mencionado nesta lição?",
+              "options": [
+                {
+                  "id": "a",
+                  "label": "ISWA 2008"
+                },
+                {
+                  "id": "b",
+                  "label": "ASCII 95"
+                },
+                {
+                  "id": "c",
+                  "label": "Unicode Braille Legacy"
+                }
+              ],
+              "correctOptionId": "a",
+              "explanation": "O ISWA 2008 é uma referência importante para organizar símbolos do SignWriting."
+            }
+          ]
+        },
+        {
+          "id": "read-written-sign",
+          "title": "Como ler um sinal escrito",
+          "summary": "Aprenda a observar mãos, movimentos, expressões e a organização visual do sinal.",
+          "estimatedMinutes": 7,
+          "difficulty": "Iniciante",
+          "objectives": [
+            "Identificar componentes centrais de um sinal escrito.",
+            "Relacionar símbolos de mão, movimento e expressão.",
+            "Entender que o arranjo visual importa na leitura."
+          ],
+          "sections": [
+            {
+              "title": "Observe as mãos primeiro",
+              "body": "As mãos costumam ser um bom ponto de partida. O leitor observa configuração, orientação e relação entre uma mão e outra. O símbolo da mão ajuda a perceber a forma e a direção da palma."
+            },
+            {
+              "title": "Depois acompanhe o movimento",
+              "body": "Setas e marcas indicam direção, repetição e trajetórias. Nem todo sinal é estático. Muitas vezes, entender a seta correta é o que diferencia um gesto isolado de um sinal completo."
+            },
+            {
+              "title": "Rosto, corpo e arranjo espacial",
+              "body": "Expressões faciais, cabeça e corpo complementam a leitura. Além disso, o sinal é lido como um conjunto visual organizado no espaço. O SignWriting não depende apenas de uma sequência linear; a posição relativa dos elementos também comunica significado.",
+              "highlight": "Ler SignWriting é observar um conjunto visual: mãos, movimento, expressão e posição trabalham juntos."
+            }
+          ],
+          "references": [
+            "SignWriting Basics Instruction Manual",
+            "ISWA 2008 Reference Manual"
+          ],
+          "exercises": [
+            {
+              "id": "read-written-sign-q1",
+              "type": "multipleChoice",
+              "prompt": "Ao começar a leitura de um sinal escrito, qual observação costuma ajudar primeiro?",
+              "options": [
+                {
+                  "id": "a",
+                  "label": "A cor do tema do aplicativo."
+                },
+                {
+                  "id": "b",
+                  "label": "A configuração e a orientação das mãos."
+                },
+                {
+                  "id": "c",
+                  "label": "A quantidade de páginas da lição."
+                }
+              ],
+              "correctOptionId": "b",
+              "explanation": "As mãos oferecem uma primeira pista importante sobre a estrutura do sinal."
+            },
+            {
+              "id": "read-written-sign-q2",
+              "type": "trueFalse",
+              "prompt": "Verdadeiro ou falso: no SignWriting, a posição relativa dos elementos pode influenciar a leitura do sinal.",
+              "options": [
+                {
+                  "id": "true",
+                  "label": "Verdadeiro"
+                },
+                {
+                  "id": "false",
+                  "label": "Falso"
+                }
+              ],
+              "correctOptionId": "true",
+              "explanation": "O sinal é lido como um arranjo visual, não apenas como uma lista linear de marcas."
+            },
+            {
+              "id": "read-written-sign-q3",
+              "type": "matching",
+              "prompt": "Associe cada componente àquilo que ele ajuda a mostrar.",
+              "pairs": [
+                {
+                  "left": "Mãos",
+                  "right": "Configuração e orientação"
+                },
+                {
+                  "left": "Movimento",
+                  "right": "Trajetória e direção"
+                },
+                {
+                  "left": "Rosto e corpo",
+                  "right": "Expressão e apoio visual"
+                }
+              ],
+              "explanation": "Esses elementos trabalham em conjunto na leitura do sinal escrito."
+            }
+          ]
+        },
+        {
+          "id": "navigate-app",
+          "title": "Como navegar no app",
+          "summary": "Veja como usar as áreas do app para estudar, consultar sinais e acompanhar seu avanço.",
+          "estimatedMinutes": 5,
+          "difficulty": "Iniciante",
+          "objectives": [
+            "Reconhecer os módulos principais do app.",
+            "Relacionar cada módulo a uma tarefa prática.",
+            "Entender onde o progresso aparece."
+          ],
+          "sections": [
+            {
+              "title": "Aprender e Praticar",
+              "body": "Esta é a área da trilha pedagógica. Aqui você encontra categorias, lições e exercícios curtos. Quando conclui uma lição, seu progresso local é atualizado."
+            },
+            {
+              "title": "Outras áreas que apoiam o estudo",
+              "body": "O app também reúne recursos complementares para consulta e produção.",
+              "bullets": [
+                "Dicionário: consulta sinais já cadastrados.",
+                "Traduzir Sinais: busca apoiar a conversão entre texto e sinais.",
+                "Escrever Sinais: espaço para criar e salvar sinais autorais."
+              ]
+            },
+            {
+              "title": "Como acompanhar a evolução",
+              "body": "A barra de progresso desta trilha mostra quantas lições você concluiu dentro da categoria e no total. Ao terminar a prática de uma lição, o cartão da categoria e o resumo geral são atualizados."
+            }
+          ],
+          "references": [
+            "Estrutura pedagógica do SignWriter Fácil",
+            "Fluxo do MVP Aprender e Praticar"
+          ],
+          "exercises": [
+            {
+              "id": "navigate-app-q1",
+              "type": "multipleChoice",
+              "prompt": "Onde você encontra a trilha com lições e exercícios desta implementação?",
+              "options": [
+                {
+                  "id": "a",
+                  "label": "Na área Aprender e Praticar."
+                },
+                {
+                  "id": "b",
+                  "label": "Somente na tela de perfil."
+                },
+                {
+                  "id": "c",
+                  "label": "Apenas no editor de sinais."
+                }
+              ],
+              "correctOptionId": "a",
+              "explanation": "A trilha foi implementada dentro da área Aprender e Praticar."
+            },
+            {
+              "id": "navigate-app-q2",
+              "type": "trueFalse",
+              "prompt": "Verdadeiro ou falso: concluir a prática de uma lição atualiza o progresso local da categoria.",
+              "options": [
+                {
+                  "id": "true",
+                  "label": "Verdadeiro"
+                },
+                {
+                  "id": "false",
+                  "label": "Falso"
+                }
+              ],
+              "correctOptionId": "true",
+              "explanation": "A conclusão da prática é o evento usado para salvar a lição como concluída."
+            }
+          ]
+        },
+        {
+          "id": "recognition-practice",
+          "title": "Primeira prática de reconhecimento",
+          "summary": "Revise os conceitos principais e faça uma última prática curta para fixar a base.",
+          "estimatedMinutes": 6,
+          "difficulty": "Iniciante",
+          "objectives": [
+            "Revisar a ideia central do SignWriting.",
+            "Retomar os componentes da leitura.",
+            "Concluir uma prática de reconhecimento no app."
+          ],
+          "sections": [
+            {
+              "title": "O que revisar antes de responder",
+              "body": "Antes de marcar as alternativas, retome mentalmente três perguntas: o que as mãos mostram, o que o movimento indica e como rosto/corpo ajudam a leitura. Essa sequência simples ajuda bastante no começo."
+            },
+            {
+              "title": "Uma prática curta e objetiva",
+              "body": "Você não precisa acertar tudo de primeira. O objetivo é consolidar observação, leitura e navegação. Repetir a prática faz parte do aprendizado."
+            }
+          ],
+          "references": [
+            "Valerie Sutton - SignWriting Basics (2022)",
+            "ISWA 2008 Reference Manual"
+          ],
+          "exercises": [
+            {
+              "id": "recognition-practice-q1",
+              "type": "multipleChoice",
+              "prompt": "Qual conjunto resume melhor os elementos que esta trilha destacou para a leitura inicial?",
+              "options": [
+                {
+                  "id": "a",
+                  "label": "Cor do fundo, tamanho da tela e nome do arquivo."
+                },
+                {
+                  "id": "b",
+                  "label": "Mãos, movimento, expressões e organização espacial."
+                },
+                {
+                  "id": "c",
+                  "label": "Somente letras do alfabeto manual."
+                }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Esses foram os pilares trabalhados nas lições introdutórias."
+            },
+            {
+              "id": "recognition-practice-q2",
+              "type": "trueFalse",
+              "prompt": "Verdadeiro ou falso: no uso cotidiano, a leitura do SignWriting depende só de uma ordem linear fixa, sem considerar o arranjo visual.",
+              "options": [
+                {
+                  "id": "true",
+                  "label": "Verdadeiro"
+                },
+                {
+                  "id": "false",
+                  "label": "Falso"
+                }
+              ],
+              "correctOptionId": "false",
+              "explanation": "O arranjo visual do sinal faz parte da leitura."
+            },
+            {
+              "id": "recognition-practice-q3",
+              "type": "matching",
+              "prompt": "Associe a área do app ao uso mais provável.",
+              "pairs": [
+                {
+                  "left": "Aprender e Praticar",
+                  "right": "Estudar lições e fazer exercícios"
+                },
+                {
+                  "left": "Dicionário",
+                  "right": "Consultar sinais cadastrados"
+                },
+                {
+                  "left": "Escrever Sinais",
+                  "right": "Criar sinais autorais"
+                }
+              ],
+              "explanation": "Cada área cumpre um papel diferente no fluxo de estudo e produção."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -137,5 +137,45 @@
   "fridayShort": "Fri",
   "saturdayShort": "Sat",
   "sundayShort": "Sun",
-  "noData": "No data"
+  "noData": "No data",
+  "learningContentUnavailable": "The content for this learning path could not be loaded right now.",
+  "learningTryAgain": "Try again",
+  "learningCategoriesTitle": "Study categories",
+  "learningSummarySubtitle": "Complete lessons and track your progress in real time.",
+  "learningCategoryEmpty": "There are no lessons available in this category yet.",
+  "learningOpenCategory": "Open category",
+  "learningLessonsTitle": "Lessons",
+  "learningLessonsLower": "lessons",
+  "learningLessonCompletedStatus": "Completed",
+  "learningLessonNotStartedStatus": "Not started",
+  "learningLessonInProgressStatus": "Ready to practice",
+  "learningMinutesShort": "min",
+  "learningObjectives": "Lesson objectives",
+  "learningReferences": "References",
+  "learningStartPractice": "Start practice",
+  "learningRetakePractice": "Retake practice",
+  "learningProgressUpdated": "Lesson completed and progress updated.",
+  "learningPracticeTitle": "Lesson practice",
+  "learningMarkLessonComplete": "Mark lesson as completed",
+  "learningQuestionProgress": "Question {current} of {total}",
+  "@learningQuestionProgress": {
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+  "learningPrevious": "Previous",
+  "learningNext": "Next",
+  "learningFinishLesson": "Finish lesson",
+  "learningChooseOptionError": "Choose an answer before continuing.",
+  "learningMatchingIncompleteError": "Match all items before continuing.",
+  "learningResultsTitle": "Practice results",
+  "learningCorrectAnswersSummary": "{correct} out of {total} correct answers",
+  "@learningCorrectAnswersSummary": {
+    "placeholders": {
+      "correct": {},
+      "total": {}
+    }
+  },
+  "learningReturnToLesson": "Back to lesson"
 }

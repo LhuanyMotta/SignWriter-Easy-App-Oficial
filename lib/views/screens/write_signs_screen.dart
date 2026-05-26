@@ -1,10 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../../models/written_sign_model.dart';
 import '../../viewmodels/write_signs_viewmodel.dart';
-import '../../models/sign_model.dart';
-import '../widgets/sign_card.dart';
-import '../widgets/category_selector.dart';
-import '../../theme/app_spacing.dart';
+import 'write_sign_editor_screen.dart';
 
 class WriteSignsScreen extends StatefulWidget {
   const WriteSignsScreen({super.key});
@@ -14,9 +15,8 @@ class WriteSignsScreen extends StatefulWidget {
 }
 
 class _WriteSignsScreenState extends State<WriteSignsScreen> {
-  final TextEditingController _searchController = TextEditingController();
   late WriteSignsViewModel _viewModel;
-  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -32,222 +32,442 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
     super.dispose();
   }
 
-  void _onSearchChanged() {
-    setState(() {
-      _searchQuery = _searchController.text;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _viewModel,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Escrever Sinais'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.info_outline),
-              onPressed: () {
-                _showInfoDialog(context);
-              },
-            ),
-          ],
-        ),
-        body: SafeArea(
-          child: Padding(
-            padding: AppSpacing.all(context, 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSearchBar(),
-                SizedBox(height: AppSpacing.value(context, 16)),
-                
-                Consumer<WriteSignsViewModel>(
-                  builder: (context, viewModel, child) {
-                    return CategorySelector(
-                      categories: viewModel.categories,
-                      selectedCategory: viewModel.selectedCategory,
-                      onCategorySelected: (category) {
-                        viewModel.setCategory(category);
-                      },
-                    );
-                  },
-                ),
-                
-                SizedBox(height: AppSpacing.value(context, 16)),
-                Text(
-                  'Sinais Recentes',
-                  style: Theme.of(context).textTheme.displaySmall,
-                ),
-                SizedBox(height: AppSpacing.value(context, 8)),
-                
-                Consumer<WriteSignsViewModel>(
-                  builder: (context, viewModel, child) {
-                    final signs = _searchQuery.isEmpty 
-                        ? viewModel.recentSigns 
-                        : viewModel.searchSigns(_searchQuery);
-                    
-                    if (signs.isEmpty) {
-                      return const Expanded(
-                        child: Center(
-                          child: Text(
-                            'Nenhum sinal encontrado. \nCrie um novo sinal!',
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      );
-                    }
-                    
-                    return Expanded(
-                      child: ListView.builder(
-                        itemCount: signs.length,
-                        itemBuilder: (context, index) {
-                          return SignCard(
-                            sign: signs[index],
-                            onEdit: () {
-                              _editSign(context, signs[index]);
-                            },
-                            onDelete: () {
-                              _confirmDeleteSign(context, signs[index]);
-                            },
-                            onFavoriteToggle: () {
-                              viewModel.toggleFavorite(signs[index].id);
-                            },
-                          );
+      child: Consumer<WriteSignsViewModel>(
+        builder: (context, viewModel, child) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Escrever Sinais'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: viewModel.isLoading
+                      ? null
+                      : () {
+                          viewModel.loadSigns();
                         },
-                      ),
-                    );
-                  },
                 ),
               ],
             ),
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _createNewSign(context),
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          child: const Icon(Icons.add),
-        ),
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Meus sinais',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Crie sinais autorais, salve rascunhos locais e acompanhe o que já está publicado.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSummaryRow(viewModel),
+                    const SizedBox(height: 16),
+                    _buildSearchField(),
+                    const SizedBox(height: 12),
+                    _buildStatusFilters(viewModel),
+                    const SizedBox(height: 12),
+                    if (viewModel.statusMessage.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Text(
+                          viewModel.statusMessage,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    Expanded(
+                      child: viewModel.isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : _buildSignsList(viewModel),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            floatingActionButton: FloatingActionButton.extended(
+              onPressed: () => _openEditor(),
+              icon: const Icon(Icons.add),
+              label: const Text('Novo sinal'),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSummaryRow(WriteSignsViewModel viewModel) {
+    return Row(
+      children: [
+        Expanded(
+          child: _SummaryCard(
+            label: 'Rascunhos',
+            value: viewModel.draftSigns.length.toString(),
+            icon: Icons.edit_note,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _SummaryCard(
+            label: 'Publicados',
+            value: viewModel.publishedSigns.length.toString(),
+            icon: Icons.public,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchField() {
     return TextField(
       controller: _searchController,
       decoration: InputDecoration(
-        hintText: 'Buscar sinais...',
+        hintText: 'Buscar por nome, gloss, categoria ou tag',
         prefixIcon: const Icon(Icons.search),
-        filled: true,
-        fillColor: Colors.grey.shade200,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide.none,
-        ),
-        suffixIcon: _searchQuery.isNotEmpty
-            ? IconButton(
+        suffixIcon: _searchController.text.isEmpty
+            ? null
+            : IconButton(
                 icon: const Icon(Icons.clear),
-                onPressed: () {
-                  _searchController.clear();
-                },
-              )
-            : null,
+                onPressed: _searchController.clear,
+              ),
+        border: const OutlineInputBorder(),
       ),
     );
   }
 
-  void _createNewSign(BuildContext context) {
-    // Aqui implementaremos a criação de um novo sinal
-    // No futuro, navegaremos para uma tela de edição
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Funcionalidade de criar novo sinal será implementada em breve'),
+  Widget _buildStatusFilters(WriteSignsViewModel viewModel) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        _buildStatusChip(viewModel, 'all', 'Todos'),
+        _buildStatusChip(viewModel, WrittenSignModel.statusDraft, 'Rascunhos'),
+        _buildStatusChip(
+          viewModel,
+          WrittenSignModel.statusPublished,
+          'Publicados',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusChip(
+    WriteSignsViewModel viewModel,
+    String value,
+    String label,
+  ) {
+    return ChoiceChip(
+      label: Text(label),
+      selected: viewModel.selectedStatus == value,
+      onSelected: (_) => viewModel.updateStatusFilter(value),
+    );
+  }
+
+  Widget _buildSignsList(WriteSignsViewModel viewModel) {
+    final signs = viewModel.signs;
+    if (signs.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.gesture_outlined, size: 56),
+            const SizedBox(height: 16),
+            Text(
+              'Nenhum sinal encontrado.',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Use o botão "Novo sinal" para criar seu primeiro rascunho.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: viewModel.loadSigns,
+      child: ListView.separated(
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: signs.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        itemBuilder: (context, index) => _buildSignCard(signs[index]),
       ),
     );
   }
 
-  void _editSign(BuildContext context, SignModel sign) {
-    // Aqui implementaremos a edição de um sinal existente
-    // No futuro, navegaremos para uma tela de edição com o sinal selecionado
+  Widget _buildSignCard(WrittenSignModel sign) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        sign.title,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Gloss: ${sign.glossPt}',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+                _StatusBadge(
+                  label: sign.isPublished ? 'Publicado' : 'Rascunho',
+                  color: sign.isPublished ? Colors.green : Colors.orange,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text('Categoria: ${sign.category}'),
+            const SizedBox(height: 4),
+            Text('Atualizado em: ${_formatDate(sign.updatedAt)}'),
+            const SizedBox(height: 4),
+            Text('Símbolos: ${_countSymbols(sign.layoutJson)}'),
+            if (sign.tags.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: sign.tags
+                    .map((tag) => Chip(label: Text(tag)))
+                    .toList(),
+              ),
+            ],
+            if (sign.fsw.trim().isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  sign.fsw,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontFamily: 'monospace'),
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () => _openEditor(sign: sign),
+                  icon: const Icon(Icons.edit),
+                  label: const Text('Editar'),
+                ),
+                if (!sign.isPublished)
+                  ElevatedButton.icon(
+                    onPressed: () => _publishSign(sign),
+                    icon: const Icon(Icons.publish),
+                    label: const Text('Publicar'),
+                  ),
+                TextButton.icon(
+                  onPressed: () => _confirmDelete(sign),
+                  icon: const Icon(Icons.delete_outline),
+                  label: const Text('Excluir'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _onSearchChanged() {
+    setState(() {});
+    _viewModel.updateSearchQuery(_searchController.text);
+  }
+
+  Future<void> _openEditor({WrittenSignModel? sign}) async {
+    final result = await Navigator.of(context).push<WrittenSignModel>(
+      MaterialPageRoute(
+        builder: (_) => WriteSignEditorScreen(initialSign: sign),
+      ),
+    );
+
+    if (result == null || !mounted) return;
+
+    final success = await _viewModel.saveSign(result);
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Editar sinal: ${sign.name}'),
+        content: Text(
+          success
+              ? (result.isPublished
+                  ? 'Sinal publicado com sucesso.'
+                  : 'Rascunho salvo com sucesso.')
+              : _viewModel.statusMessage,
+        ),
       ),
     );
   }
 
-  void _confirmDeleteSign(BuildContext context, SignModel sign) {
-    showDialog(
+  Future<void> _publishSign(WrittenSignModel sign) async {
+    final success = await _viewModel.publishSign(sign);
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success ? 'Sinal publicado com sucesso.' : _viewModel.statusMessage,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete(WrittenSignModel sign) async {
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirmar Exclusão'),
-        content: Text('Deseja realmente excluir o sinal "${sign.name}"?'),
+        title: const Text('Excluir sinal'),
+        content: Text('Deseja remover "${sign.title}"?'),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.of(context).pop(false),
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _viewModel.deleteSign(sign.id);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Sinal "${sign.name}" excluído com sucesso'),
-                ),
-              );
-            },
+            onPressed: () => Navigator.of(context).pop(true),
             child: const Text('Excluir'),
           ),
         ],
       ),
     );
+
+    if (confirmed != true) return;
+
+    final success = await _viewModel.deleteSign(sign.id);
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success ? 'Sinal excluído com sucesso.' : _viewModel.statusMessage,
+        ),
+      ),
+    );
   }
 
-  void _showInfoDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Escrever Sinais'),
-        content: SingleChildScrollView(
-          child: Column(
+  String _formatDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final year = date.year.toString();
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    return '$day/$month/$year $hour:$minute';
+  }
+
+  int _countSymbols(String layoutJson) {
+    try {
+      final decoded = json.decode(layoutJson);
+      if (decoded is Map<String, dynamic> && decoded['symbols'] is List) {
+        return (decoded['symbols'] as List).length;
+      }
+      if (decoded is List) return decoded.length;
+    } catch (_) {
+      return 0;
+    }
+    return 0;
+  }
+}
+
+class _SummaryCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _SummaryCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon),
+          const SizedBox(width: 12),
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Nesta tela você pode:',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                value,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
-              SizedBox(height: AppSpacing.value(context, 8)),
-              Text('• Criar novos sinais em SignWriting'),
-              Text('• Editar sinais existentes'),
-              Text('• Buscar sinais por nome'),
-              Text('• Filtrar sinais por categoria'),
-              Text('• Marcar sinais como favoritos'),
-              SizedBox(height: AppSpacing.value(context, 16)),
-              Text(
-                'Como usar:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: AppSpacing.value(context, 8)),
-              Text('1. Utilize o botão + para criar um novo sinal'),
-              Text('2. Toque em um sinal existente para visualizá-lo'),
-              Text('3. Use os ícones para editar ou excluir sinais'),
+              Text(label),
             ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text('Entendi'),
           ),
         ],
       ),
     );
   }
-} 
+}
+
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _StatusBadge({
+    required this.label,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}

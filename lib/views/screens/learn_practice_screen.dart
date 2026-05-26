@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../../l10n/app_localizations.dart';
+import '../../models/lesson_category_model.dart';
 import '../../viewmodels/learn_practice_viewmodel.dart';
-import '../../viewmodels/home_viewmodel.dart';
-import '../../theme/app_spacing.dart';
+import '../../theme/app_theme.dart';
+import 'learning_category_screen.dart';
 
 class LearnPracticeScreen extends StatefulWidget {
   const LearnPracticeScreen({super.key});
@@ -13,284 +16,397 @@ class LearnPracticeScreen extends StatefulWidget {
 
 class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
   late LearnPracticeViewModel _viewModel;
-  final HomeViewModel _homeViewModel = HomeViewModel();
+  String _languageCode = '';
 
   @override
   void initState() {
     super.initState();
-    _viewModel = Provider.of<LearnPracticeViewModel>(context, listen: false);
+    _viewModel = LearnPracticeViewModel();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final locale = Localizations.localeOf(context);
+    if (_languageCode != locale.languageCode) {
+      _languageCode = locale.languageCode;
+      _viewModel.initialize(locale);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
+    final spacing =
+        Theme.of(context).extension<AppThemeTokens>()?.spacingScale ?? 1.0;
+    final l10n = AppLocalizations.of(context)!;
 
     return ChangeNotifierProvider.value(
       value: _viewModel,
-      child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(
-          title: const Text(
-            'Aprender e Praticar',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-        body: Consumer<LearnPracticeViewModel>(
-          builder: (context, viewModel, child) {
-            if (viewModel.isLoading) {
-              return Center(
-                child: CircularProgressIndicator(color: primary),
-              );
-            }
-
-            return SingleChildScrollView(
-              padding: AppSpacing.all(context, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildProgressCard(context, viewModel),
-                  SizedBox(height: AppSpacing.value(context, 24)),
-                  _sectionTitle(context, 'Categorias'),
-                  SizedBox(height: AppSpacing.value(context, 16)),
-                  _buildCategoriesGrid(context, viewModel),
-                  SizedBox(height: AppSpacing.value(context, 24)),
-                  _sectionTitle(context, 'Recomendados para Você'),
-                  SizedBox(height: AppSpacing.value(context, 16)),
-                  _buildRecommendedExercises(context, viewModel),
-                ],
+      child: Consumer<LearnPracticeViewModel>(
+        builder: (context, vm, _) => Scaffold(
+          appBar: AppBar(
+            title: Text(l10n.featureLearnPractice),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded),
+                onPressed: vm.isLoading ? null : vm.reload,
               ),
-            );
-          },
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 0,
-          onTap: (index) => _homeViewModel.onBottomNavTapped(index, context),
-          items: [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
-            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favoritos'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
-          ],
+            ],
+          ),
+          body: SafeArea(
+            child: _buildBody(
+              context: context,
+              spacing: spacing,
+              l10n: l10n,
+              vm: vm,
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _sectionTitle(BuildContext context, String title) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.primary,
-      ),
-    );
-  }
+  Widget _buildBody({
+    required BuildContext context,
+    required double spacing,
+    required AppLocalizations l10n,
+    required LearnPracticeViewModel vm,
+  }) {
+    if (vm.isLoading && vm.categories.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-  Widget _buildProgressCard(
-    BuildContext context,
-    LearnPracticeViewModel viewModel,
-  ) {
-    final progress = viewModel.overallProgress;
+    if (vm.errorMessage.isNotEmpty && vm.categories.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline_rounded, size: 48),
+              const SizedBox(height: 16),
+              Text(
+                l10n.learningContentUnavailable,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: vm.reload,
+                child: Text(l10n.learningTryAgain),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
-    return Container(
-      width: double.infinity,
-      padding: AppSpacing.all(context, 20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return RefreshIndicator(
+      onRefresh: vm.reload,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(16 * spacing),
         children: [
-          const Text(
-            'Seu Progresso',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+          _SummaryCard(
+            completedLessons: vm.completedLessons,
+            totalLessons: vm.totalLessons,
+            totalExercises: vm.totalExercises,
+            progress: vm.overallProgress,
           ),
-          SizedBox(height: AppSpacing.value(context, 16)),
-          LinearProgressIndicator(
-            value: progress,
-            backgroundColor: Colors.white.withOpacity(0.3),
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-            minHeight: 10,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          SizedBox(height: AppSpacing.value(context, 10)),
+          SizedBox(height: 24 * spacing),
           Text(
-            '${(progress * 100).toInt()}% concluído',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
+            l10n.learningCategoriesTitle,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
           ),
+          SizedBox(height: 8 * spacing),
+          Text(
+            l10n.learningSummarySubtitle,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+          ),
+          SizedBox(height: 16 * spacing),
+          if (vm.categories.isEmpty)
+            _EmptyStateCard(message: l10n.learningCategoryEmpty)
+          else
+            ...vm.categories.map(
+              (category) => Padding(
+                padding: EdgeInsets.only(bottom: 12 * spacing),
+                child: _CategoryCard(
+                  category: category,
+                  completedLessons: vm.completedLessonsForCategory(category),
+                  progress: vm.categoryProgress(category),
+                  onTap: () => _openCategory(context, category),
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildCategoriesGrid(
-  BuildContext context,
-  LearnPracticeViewModel viewModel,
-) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-
-  return LayoutBuilder(
-    builder: (context, constraints) {
-      final spacing = AppSpacing.value(context, 16);
-      final cardWidth = (constraints.maxWidth - spacing) / 2;
-
-      return Wrap(
-        spacing: spacing,
-        runSpacing: spacing,
-        children: viewModel.categories.asMap().entries.map((entry) {
-          final index = entry.key;
-          final category = entry.value;
-          final progress = category['progress'] as double;
-
-          return SizedBox(
-            width: cardWidth,
-            child: Material(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(16),
-              clipBehavior: Clip.antiAlias,
-              child: InkWell(
-                onTap: () => viewModel.openCategory(context, index),
-                child: Container(
-                  constraints: BoxConstraints(
-                    minHeight: AppSpacing.value(context, 180),
-                  ),
-                  padding: AppSpacing.all(context, 16),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: isDark
-                            ? Colors.black26
-                            : Colors.grey.withOpacity(0.1),
-                        blurRadius: 6,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        category['icon'] as IconData,
-                        color: Theme.of(context).colorScheme.primary,
-                        size: AppSpacing.value(context, 34),
-                      ),
-
-                      Text(
-                        category['title'] as String,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: isDark
-                              ? Colors.white
-                              : const Color(0xFF333333),
-                        ),
-                        textAlign: TextAlign.left,
-                        softWrap: true,
-                        maxLines: 4,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          backgroundColor: isDark
-                              ? Colors.grey[800]
-                              : Colors.grey.shade200,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Theme.of(context).colorScheme.primary,
-                          ),
-                          minHeight: AppSpacing.value(context, 6),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      );
-    },
-  );
+  void _openCategory(BuildContext context, LessonCategoryModel category) {
+    final vm = context.read<LearnPracticeViewModel>();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider.value(
+          value: vm,
+          child: LearningCategoryScreen(categoryId: category.id),
+        ),
+      ),
+    );
+  }
 }
 
-  Widget _buildRecommendedExercises(
-    BuildContext context,
-    LearnPracticeViewModel viewModel,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primary = Theme.of(context).colorScheme.primary;
+class _SummaryCard extends StatelessWidget {
+  final int completedLessons;
+  final int totalLessons;
+  final int totalExercises;
+  final double progress;
 
-    return Column(
-      children: viewModel.recommendedExercises.asMap().entries.map((entry) {
-        final index = entry.key;
-        final exercise = entry.value;
+  const _SummaryCard({
+    required this.completedLessons,
+    required this.totalLessons,
+    required this.totalExercises,
+    required this.progress,
+  });
 
-        return Container(
-          margin: AppSpacing.only(context, bottom: 14),
-          padding: AppSpacing.all(context, 16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: isDark ? Colors.black26 : Colors.grey.withOpacity(0.1),
-                blurRadius: 6,
-                spreadRadius: 1,
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final percent = (progress * 100).round();
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF2D78BB),
+            Color(0xFF4EB1F0),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.overallProgress,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.learningSummarySubtitle,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.88),
+                ),
+          ),
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              minHeight: 10,
+              value: progress,
+              backgroundColor: Colors.white.withValues(alpha: 0.22),
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$percent%',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              _MetricBadge(
+                label: l10n.completedLessons,
+                value: '$completedLessons/$totalLessons',
+              ),
+              _MetricBadge(
+                label: l10n.learningLessonsTitle,
+                value: totalLessons.toString(),
+              ),
+              _MetricBadge(
+                label: l10n.exercises,
+                value: totalExercises.toString(),
               ),
             ],
           ),
-          child: Row(
+        ],
+      ),
+    );
+  }
+}
+
+class _CategoryCard extends StatelessWidget {
+  final LessonCategoryModel category;
+  final int completedLessons;
+  final double progress;
+  final VoidCallback onTap;
+
+  const _CategoryCard({
+    required this.category,
+    required this.completedLessons,
+    required this.progress,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final percent = (progress * 100).round();
+
+    return Card(
+      elevation: 0,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                backgroundColor: primary,
-                child: const Icon(Icons.school, color: Colors.white),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: category.color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(category.icon, color: category.color),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          category.title,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(category.description),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(width: AppSpacing.value(context, 14)),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      exercise['title'] as String,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
+              const SizedBox(height: 16),
+              Text(
+                '$completedLessons/${category.lessons.length} ${l10n.learningLessonsLower}',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
-                    SizedBox(height: AppSpacing.value(context, 4)),
-                    Text(
-                      exercise['description'] as String,
-                      style: TextStyle(
-                        color: isDark ? Colors.grey[400] : Colors.grey[600],
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: LinearProgressIndicator(
+                  minHeight: 10,
+                  value: progress,
+                  backgroundColor: category.color.withValues(alpha: 0.10),
+                  valueColor: AlwaysStoppedAnimation<Color>(category.color),
                 ),
               ),
-              ElevatedButton(
-                onPressed: () => viewModel.startExercise(context, index),
-                child: const Text('Iniciar'),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Text(
+                    '$percent%',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const Spacer(),
+                  TextButton.icon(
+                    onPressed: onTap,
+                    icon: const Icon(Icons.chevron_right_rounded),
+                    label: Text(l10n.learningOpenCategory),
+                  ),
+                ],
               ),
             ],
           ),
-        );
-      }).toList(),
+        ),
+      ),
+    );
+  }
+}
+
+class _MetricBadge extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _MetricBadge({
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.90),
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyStateCard extends StatelessWidget {
+  final String message;
+
+  const _EmptyStateCard({
+    required this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        message,
+        textAlign: TextAlign.center,
+      ),
     );
   }
 }

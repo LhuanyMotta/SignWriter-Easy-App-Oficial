@@ -1,158 +1,172 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../models/sign_model.dart';
-import '../views/screens/practice_quiz_screen.dart';
+import '../models/learning_progress_model.dart';
+import '../models/lesson_category_model.dart';
+import '../models/lesson_model.dart';
+import '../services/learning_content_service.dart';
+import '../services/learning_progress_service.dart';
 
 class LearnPracticeViewModel extends ChangeNotifier {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  LearnPracticeViewModel({
+    LearningContentService? contentService,
+    LearningProgressService? progressService,
+  })  : _contentService = contentService ?? LearningContentService(),
+        _progressService = progressService ?? LearningProgressService();
 
-  List<SignModel> _allSigns = [];
+  final LearningContentService _contentService;
+  final LearningProgressService _progressService;
 
-  List<Map<String, dynamic>> categories = [];
+  List<LessonCategoryModel> _categories = [];
+  LearningProgressModel _progress = LearningProgressModel.empty();
+  bool _isLoading = false;
+  bool _isSavingProgress = false;
+  String _errorMessage = '';
+  String _loadedLanguageCode = '';
 
-  List<Map<String, dynamic>> recommendedExercises = [];
-
-  bool _isLoading = true;
-
+  List<LessonCategoryModel> get categories => _categories;
+  LearningProgressModel get progress => _progress;
   bool get isLoading => _isLoading;
+  bool get isSavingProgress => _isSavingProgress;
+  String get errorMessage => _errorMessage;
 
-  LearnPracticeViewModel() {
-    loadLearningData();
-  }
-
-  Future<void> loadLearningData() async {
-    try {
-      _isLoading = true;
-      notifyListeners();
-
-      final signsResponse = await _supabase
-          .from('signs_dictionary')
-          .select()
-          .order('created_at', ascending: true);
-
-      _allSigns = signsResponse.map<SignModel>((item) {
-        return SignModel(
-          id: item['id'].toString(),
-          name: item['title'] ?? 'Sem nome',
-          description: item['description'],
-          signImagePath: item['image_url'] ?? '',
-          category: item['category'] ?? 'Sem categoria',
-          createdAt: DateTime.tryParse(
-                  item['created_at'] ?? DateTime.now().toString()) ??
-              DateTime.now(),
-        );
-      }).toList();
-
-      final categoriesMap = <String, List<SignModel>>{};
-
-      for (final sign in _allSigns) {
-        categoriesMap.putIfAbsent(sign.category, () => []);
-        categoriesMap[sign.category]!.add(sign);
-      }
-
-      categories = categoriesMap.entries.map((entry) {
-        return {
-          'title': entry.key,
-          'icon': Icons.school,
-          'color': const Color(0xFF2D78BB),
-          'progress': 0.0,
-          'lessons': entry.value.length,
-          'lessonsCompleted': 0,
-          'signs': entry.value,
-        };
-      }).toList();
-
-      recommendedExercises = categories.take(3).map((category) {
-        return {
-          'title': category['title'],
-          'description':
-              'Pratique sinais da categoria ${category['title']}',
-          'duration': '5 min',
-          'isNew': true,
-          'signs': category['signs'],
-        };
-      }).toList();
-
-      await _loadProgress();
-
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Erro ao carregar aprendizado: $e');
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> _loadProgress() async {
-    final user = _supabase.auth.currentUser;
-
-    if (user == null) return;
-
-    final progressResponse = await _supabase
-        .from('learning_progress')
-        .select()
-        .eq('user_id', user.id);
-
-    final completedIds = progressResponse
-        .where((item) => item['completed'] == true)
-        .map<String>((item) => item['sign_id'].toString())
-        .toSet();
-
-    for (final category in categories) {
-      final signs = category['signs'] as List<SignModel>;
-
-      int completed = signs
-          .where((sign) => completedIds.contains(sign.id))
-          .length;
-
-      category['lessonsCompleted'] = completed;
-
-      category['progress'] =
-          signs.isEmpty ? 0.0 : completed / signs.length;
+  Future<void> initialize(Locale locale) async {
+    final languageCode = locale.languageCode.toLowerCase();
+    if (_loadedLanguageCode == languageCode && _categories.isNotEmpty) {
+      return;
     }
 
+    _loadedLanguageCode = languageCode;
+    await _loadData(Locale(languageCode));
+  }
+
+  Future<void> reload() async {
+    final locale =
+        Locale(_loadedLanguageCode.isEmpty ? 'pt' : _loadedLanguageCode);
+    await _loadData(locale);
+  }
+
+  Future<void> _loadData(Locale locale) async {
+    _isLoading = true;
+    _errorMessage = '';
     notifyListeners();
+
+    try {
+      final categories = await _contentService.loadCategories(locale);
+      final progress = await _progressService.loadProgress();
+      _categories = categories;
+      _progress = progress;
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  LessonCategoryModel? categoryById(String categoryId) {
+    for (final category in _categories) {
+      if (category.id == categoryId) {
+        return category;
+      }
+    }
+    return null;
+  }
+
+  LessonModel? lessonById({
+    required String categoryId,
+    required String lessonId,
+  }) {
+    final category = categoryById(categoryId);
+    if (category == null) return null;
+
+    for (final lesson in category.lessons) {
+      if (lesson.id == lessonId) {
+        return lesson;
+      }
+    }
+    return null;
+  }
+
+  int get totalLessons {
+    return _categories.fold<int>(
+      0,
+      (sum, category) => sum + category.lessons.length,
+    );
+  }
+
+  int get totalExercises {
+    return _categories.fold<int>(
+      0,
+      (sum, category) =>
+          sum +
+          category.lessons.fold<int>(
+            0,
+            (lessonSum, lesson) => lessonSum + lesson.exercises.length,
+          ),
+    );
+  }
+
+  int get completedLessons {
+    return _progress.completedLessonsCount(
+      _allLessonIds,
+    );
   }
 
   double get overallProgress {
-    if (categories.isEmpty) return 0.0;
+    if (totalLessons == 0) return 0;
+    return completedLessons / totalLessons;
+  }
 
-    double total = 0;
+  int completedLessonsForCategory(LessonCategoryModel category) {
+    return _progress.completedLessonsCount(
+      category.lessons.map((lesson) => lesson.id),
+    );
+  }
 
-    for (var category in categories) {
-      total += category['progress'] as double;
+  double categoryProgress(LessonCategoryModel category) {
+    return _progress.completionRate(
+      category.lessons.map((lesson) => lesson.id),
+    );
+  }
+
+  LessonProgressEntry? progressForLesson(String lessonId) {
+    return _progress.lessonProgress(lessonId);
+  }
+
+  bool isLessonCompleted(String lessonId) {
+    return _progress.isLessonCompleted(lessonId);
+  }
+
+  Future<void> completeLesson({
+    required String categoryId,
+    required String lessonId,
+    required int correctAnswers,
+    required int totalQuestions,
+  }) async {
+    _isSavingProgress = true;
+    _errorMessage = '';
+    notifyListeners();
+
+    try {
+      _progress = await _progressService.completeLesson(
+        categoryId: categoryId,
+        lessonId: lessonId,
+        correctAnswers: correctAnswers,
+        totalQuestions: totalQuestions,
+      );
+    } catch (e) {
+      _errorMessage = e.toString();
+      rethrow;
+    } finally {
+      _isSavingProgress = false;
+      notifyListeners();
     }
-
-    return total / categories.length;
   }
 
-  void openCategory(BuildContext context, int index) {
-    final category = categories[index];
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PracticeQuizScreen(
-          title: category['title'],
-          signs: List<SignModel>.from(category['signs']),
-        ),
-      ),
-    );
-  }
-
-  void startExercise(BuildContext context, int index) {
-    final exercise = recommendedExercises[index];
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PracticeQuizScreen(
-          title: exercise['title'],
-          signs: List<SignModel>.from(exercise['signs']),
-        ),
-      ),
-    );
+  List<String> get _allLessonIds {
+    return _categories
+        .expand((category) => category.lessons)
+        .map((lesson) => lesson.id)
+        .toList();
   }
 }

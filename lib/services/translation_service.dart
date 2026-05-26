@@ -105,8 +105,8 @@ class TranslationService {
   String? _buildSignWritingSequence(List<SignModel> signs) {
     final codes = signs
         .map((s) => s.signWritingCode)
-        .where((code) => code != null && code!.isNotEmpty)
-        .map((code) => code!)
+        .whereType<String>()
+        .where((code) => code.isNotEmpty)
         .toList();
     return codes.isEmpty ? null : codes.join(' ');
   }

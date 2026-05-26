@@ -863,6 +863,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No data'**
   String get noData;
+
+  /// No description provided for @learningContentUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The content for this learning path could not be loaded right now.'**
+  String get learningContentUnavailable;
+
+  /// No description provided for @learningTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get learningTryAgain;
+
+  /// No description provided for @learningCategoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Study categories'**
+  String get learningCategoriesTitle;
+
+  /// No description provided for @learningSummarySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete lessons and track your progress in real time.'**
+  String get learningSummarySubtitle;
+
+  /// No description provided for @learningCategoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no lessons available in this category yet.'**
+  String get learningCategoryEmpty;
+
+  /// No description provided for @learningOpenCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Open category'**
+  String get learningOpenCategory;
+
+  /// No description provided for @learningLessonsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lessons'**
+  String get learningLessonsTitle;
+
+  /// No description provided for @learningLessonsLower.
+  ///
+  /// In en, this message translates to:
+  /// **'lessons'**
+  String get learningLessonsLower;
+
+  /// No description provided for @learningLessonCompletedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get learningLessonCompletedStatus;
+
+  /// No description provided for @learningLessonNotStartedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Not started'**
+  String get learningLessonNotStartedStatus;
+
+  /// No description provided for @learningLessonInProgressStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to practice'**
+  String get learningLessonInProgressStatus;
+
+  /// No description provided for @learningMinutesShort.
+  ///
+  /// In en, this message translates to:
+  /// **'min'**
+  String get learningMinutesShort;
+
+  /// No description provided for @learningObjectives.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson objectives'**
+  String get learningObjectives;
+
+  /// No description provided for @learningReferences.
+  ///
+  /// In en, this message translates to:
+  /// **'References'**
+  String get learningReferences;
+
+  /// No description provided for @learningStartPractice.
+  ///
+  /// In en, this message translates to:
+  /// **'Start practice'**
+  String get learningStartPractice;
+
+  /// No description provided for @learningRetakePractice.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake practice'**
+  String get learningRetakePractice;
+
+  /// No description provided for @learningProgressUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson completed and progress updated.'**
+  String get learningProgressUpdated;
+
+  /// No description provided for @learningPracticeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson practice'**
+  String get learningPracticeTitle;
+
+  /// No description provided for @learningMarkLessonComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark lesson as completed'**
+  String get learningMarkLessonComplete;
+
+  /// No description provided for @learningQuestionProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Question {current} of {total}'**
+  String learningQuestionProgress(Object current, Object total);
+
+  /// No description provided for @learningPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get learningPrevious;
+
+  /// No description provided for @learningNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get learningNext;
+
+  /// No description provided for @learningFinishLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish lesson'**
+  String get learningFinishLesson;
+
+  /// No description provided for @learningChooseOptionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an answer before continuing.'**
+  String get learningChooseOptionError;
+
+  /// No description provided for @learningMatchingIncompleteError.
+  ///
+  /// In en, this message translates to:
+  /// **'Match all items before continuing.'**
+  String get learningMatchingIncompleteError;
+
+  /// No description provided for @learningResultsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice results'**
+  String get learningResultsTitle;
+
+  /// No description provided for @learningCorrectAnswersSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{correct} out of {total} correct answers'**
+  String learningCorrectAnswersSummary(Object correct, Object total);
+
+  /// No description provided for @learningReturnToLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to lesson'**
+  String get learningReturnToLesson;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

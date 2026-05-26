@@ -137,5 +137,45 @@
   "fridayShort": "Sex",
   "saturdayShort": "Sáb",
   "sundayShort": "Dom",
-  "noData": "Sem dados"
+  "noData": "Sem dados",
+  "learningContentUnavailable": "Não foi possível carregar o conteúdo desta trilha agora.",
+  "learningTryAgain": "Tentar novamente",
+  "learningCategoriesTitle": "Categorias de estudo",
+  "learningSummarySubtitle": "Conclua lições e acompanhe seu avanço em tempo real.",
+  "learningCategoryEmpty": "Ainda não há lições disponíveis nesta categoria.",
+  "learningOpenCategory": "Abrir categoria",
+  "learningLessonsTitle": "Lições",
+  "learningLessonsLower": "lições",
+  "learningLessonCompletedStatus": "Concluída",
+  "learningLessonNotStartedStatus": "Não iniciada",
+  "learningLessonInProgressStatus": "Pronta para praticar",
+  "learningMinutesShort": "min",
+  "learningObjectives": "Objetivos da lição",
+  "learningReferences": "Referências",
+  "learningStartPractice": "Iniciar prática",
+  "learningRetakePractice": "Refazer prática",
+  "learningProgressUpdated": "Lição concluída e progresso atualizado.",
+  "learningPracticeTitle": "Prática da lição",
+  "learningMarkLessonComplete": "Marcar lição como concluída",
+  "learningQuestionProgress": "Questão {current} de {total}",
+  "@learningQuestionProgress": {
+    "placeholders": {
+      "current": {},
+      "total": {}
+    }
+  },
+  "learningPrevious": "Anterior",
+  "learningNext": "Próxima",
+  "learningFinishLesson": "Finalizar lição",
+  "learningChooseOptionError": "Selecione uma resposta para continuar.",
+  "learningMatchingIncompleteError": "Associe todos os itens antes de continuar.",
+  "learningResultsTitle": "Resultado da prática",
+  "learningCorrectAnswersSummary": "{correct} de {total} respostas corretas",
+  "@learningCorrectAnswersSummary": {
+    "placeholders": {
+      "correct": {},
+      "total": {}
+    }
+  },
+  "learningReturnToLesson": "Voltar para a lição"
 }

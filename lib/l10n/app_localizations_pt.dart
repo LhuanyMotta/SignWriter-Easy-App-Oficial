@@ -396,4 +396,92 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get noData => 'Sem dados';
+
+  @override
+  String get learningContentUnavailable => 'Não foi possível carregar o conteúdo desta trilha agora.';
+
+  @override
+  String get learningTryAgain => 'Tentar novamente';
+
+  @override
+  String get learningCategoriesTitle => 'Categorias de estudo';
+
+  @override
+  String get learningSummarySubtitle => 'Conclua lições e acompanhe seu avanço em tempo real.';
+
+  @override
+  String get learningCategoryEmpty => 'Ainda não há lições disponíveis nesta categoria.';
+
+  @override
+  String get learningOpenCategory => 'Abrir categoria';
+
+  @override
+  String get learningLessonsTitle => 'Lições';
+
+  @override
+  String get learningLessonsLower => 'lições';
+
+  @override
+  String get learningLessonCompletedStatus => 'Concluída';
+
+  @override
+  String get learningLessonNotStartedStatus => 'Não iniciada';
+
+  @override
+  String get learningLessonInProgressStatus => 'Pronta para praticar';
+
+  @override
+  String get learningMinutesShort => 'min';
+
+  @override
+  String get learningObjectives => 'Objetivos da lição';
+
+  @override
+  String get learningReferences => 'Referências';
+
+  @override
+  String get learningStartPractice => 'Iniciar prática';
+
+  @override
+  String get learningRetakePractice => 'Refazer prática';
+
+  @override
+  String get learningProgressUpdated => 'Lição concluída e progresso atualizado.';
+
+  @override
+  String get learningPracticeTitle => 'Prática da lição';
+
+  @override
+  String get learningMarkLessonComplete => 'Marcar lição como concluída';
+
+  @override
+  String learningQuestionProgress(Object current, Object total) {
+    return 'Questão $current de $total';
+  }
+
+  @override
+  String get learningPrevious => 'Anterior';
+
+  @override
+  String get learningNext => 'Próxima';
+
+  @override
+  String get learningFinishLesson => 'Finalizar lição';
+
+  @override
+  String get learningChooseOptionError => 'Selecione uma resposta para continuar.';
+
+  @override
+  String get learningMatchingIncompleteError => 'Associe todos os itens antes de continuar.';
+
+  @override
+  String get learningResultsTitle => 'Resultado da prática';
+
+  @override
+  String learningCorrectAnswersSummary(Object correct, Object total) {
+    return '$correct de $total respostas corretas';
+  }
+
+  @override
+  String get learningReturnToLesson => 'Voltar para a lição';
 }
