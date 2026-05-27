@@ -207,7 +207,6 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final generatedCode = _buildGeneratedCode();
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Editar sinal' : 'Novo sinal'),
@@ -218,7 +217,7 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              _buildPreviewCard(context, generatedCode),
+              _buildPreviewCard(context),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _titleController,
@@ -326,25 +325,13 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
               _buildCanvas(context),
               const SizedBox(height: 12),
               _buildSelectedSymbolActions(),
-              const SizedBox(height: 12),
-              _buildGeneratedCodeCard(generatedCode),
               const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => _submit(publish: false),
-                      child: const Text('Salvar rascunho'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => _submit(publish: true),
-                      child: const Text('Publicar'),
-                    ),
-                  ),
-                ],
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _submit,
+                  child: const Text('Salvar sinal'),
+                ),
               ),
             ],
           ),
@@ -353,7 +340,7 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
     );
   }
 
-  Widget _buildPreviewCard(BuildContext context, String generatedCode) {
+  Widget _buildPreviewCard(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -390,15 +377,6 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
                 symbolSize: 42,
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            generatedCode.isEmpty
-                ? 'Adicione símbolos para gerar o código do layout.'
-                : generatedCode,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontFamily: 'monospace'),
           ),
         ],
       ),
@@ -659,41 +637,6 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
     );
   }
 
-  Widget _buildGeneratedCodeCard(String generatedCode) {
-    final layoutJson = _buildLayoutJson();
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Código e layout gerados automaticamente',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: 8),
-          SelectableText(
-            generatedCode.isEmpty
-                ? 'Nenhum símbolo adicionado ainda.'
-                : generatedCode,
-            style: const TextStyle(fontFamily: 'monospace'),
-          ),
-          const SizedBox(height: 12),
-          SelectableText(
-            layoutJson,
-            maxLines: 6,
-            style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _restorePlacedSymbols(String? layoutJson) {
     if (layoutJson == null || layoutJson.trim().isEmpty) return;
 
@@ -818,7 +761,7 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
     });
   }
 
-  void _submit({required bool publish}) {
+  void _submit() {
     if (!_formKey.currentState!.validate()) return;
 
     if (_placedSymbols.isEmpty) {
@@ -843,12 +786,10 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
       fsw: _buildGeneratedCode(),
       layoutJson: _buildLayoutJson(),
       previewSvg: sign?.previewSvg,
-      status: publish
-          ? WrittenSignModel.statusPublished
-          : WrittenSignModel.statusDraft,
+      status: WrittenSignModel.statusDraft,
       createdAt: sign?.createdAt ?? now,
       updatedAt: now,
-      publishedAt: publish ? (sign?.publishedAt ?? now) : null,
+      publishedAt: null,
     );
 
     Navigator.of(context).pop(result);

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/written_sign_model.dart';
-import '../services/database_service.dart';
+import '../services/written_signs_service.dart';
 
 /// ViewModel para a tela de escrita de sinais
 class WriteSignsViewModel extends ChangeNotifier {
-  final DatabaseService _databaseService = DatabaseService();
+  final WrittenSignsService _writtenSignsService = WrittenSignsService();
   List<WrittenSignModel> _signs = [];
   String _searchQuery = '';
   String _selectedStatus = 'all';
@@ -55,7 +55,7 @@ class WriteSignsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _signs = await _databaseService.getWrittenSigns();
+      _signs = await _writtenSignsService.getWrittenSigns();
       _statusMessage = '';
     } catch (e) {
       _statusMessage = 'Erro ao carregar sinais: ${e.toString()}';
@@ -71,7 +71,7 @@ class WriteSignsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _databaseService.saveWrittenSign(sign);
+      await _writtenSignsService.saveWrittenSign(sign);
       await loadSigns();
       _statusMessage = 'Sinal salvo com sucesso!';
       return true;
@@ -90,7 +90,7 @@ class WriteSignsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _databaseService.deleteWrittenSign(signId);
+      await _writtenSignsService.deleteWrittenSign(signId);
       await loadSigns();
       _statusMessage = 'Sinal excluído com sucesso!';
       return true;

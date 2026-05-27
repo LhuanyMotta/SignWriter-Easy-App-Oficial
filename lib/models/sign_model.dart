@@ -73,18 +73,30 @@ class SignModel {
 
   /// Construtor a partir de um mapa (para uso futuro com banco de dados)
   factory SignModel.fromMap(Map<String, dynamic> map) {
+    final rawCreatedAt = map['created_at'] ?? map['createdAt'];
+    final createdAt = rawCreatedAt is String
+        ? DateTime.tryParse(rawCreatedAt) ?? DateTime.now()
+        : DateTime.now();
+
+    final rawIsFavorite = map['is_favorite'] ?? map['isFavorite'] ?? 0;
+    final isFavorite = rawIsFavorite == true || rawIsFavorite == 1;
+
     return SignModel(
-      id: map['id'],
-      name: map['name'],
-      description: map['description'],
-      signImagePath: map['sign_image_path'] ?? map['signImagePath'],
+      id: map['id'].toString(),
+      name: (map['name'] ?? map['title'] ?? '').toString(),
+      description: map['description']?.toString(),
+      signImagePath: (map['sign_image_path'] ??
+              map['signImagePath'] ??
+              map['image_url'] ??
+              '')
+          .toString(),
       videoPath: map['video_path'] ?? map['videoPath'],
-      category: map['category'],
+      category: (map['category'] ?? 'Sem categoria').toString(),
       tags: _parseTags(map['tags']),
       signWritingCode: map['sign_writing_code'] ?? map['signWritingCode'],
       portugueseText: map['portuguese_text'] ?? map['portugueseText'],
-      createdAt: DateTime.parse(map['created_at'] ?? map['createdAt']),
-      isFavorite: (map['is_favorite'] ?? map['isFavorite'] ?? 0) == 1,
+      createdAt: createdAt,
+      isFavorite: isFavorite,
     );
   }
 

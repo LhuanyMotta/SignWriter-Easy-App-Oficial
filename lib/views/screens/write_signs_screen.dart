@@ -66,7 +66,7 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Crie sinais autorais, salve rascunhos locais e acompanhe o que já está publicado.',
+                      'Crie e salve seus sinais para editar quando quiser.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
@@ -111,7 +111,7 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
       children: [
         Expanded(
           child: _SummaryCard(
-            label: 'Rascunhos',
+            label: 'Sinais',
             value: viewModel.draftSigns.length.toString(),
             icon: Icons.edit_note,
           ),
@@ -151,12 +151,7 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
       runSpacing: 8,
       children: [
         _buildStatusChip(viewModel, 'all', 'Todos'),
-        _buildStatusChip(viewModel, WrittenSignModel.statusDraft, 'Rascunhos'),
-        _buildStatusChip(
-          viewModel,
-          WrittenSignModel.statusPublished,
-          'Publicados',
-        ),
+        _buildStatusChip(viewModel, WrittenSignModel.statusDraft, 'Sinais'),
       ],
     );
   }
@@ -188,7 +183,7 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Use o botão "Novo sinal" para criar seu primeiro rascunho.',
+              'Use o botão "Novo sinal" para criar seu primeiro sinal.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
@@ -237,11 +232,13 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
                   ),
                 ),
                 _StatusBadge(
-                  label: sign.isPublished ? 'Publicado' : 'Rascunho',
-                  color: sign.isPublished ? Colors.green : Colors.orange,
+                  label: 'Sinal',
+                  color: Colors.orange,
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            _SignPreview(layoutJson: sign.layoutJson),
             const SizedBox(height: 12),
             Text('Categoria: ${sign.category}'),
             const SizedBox(height: 4),
@@ -258,23 +255,6 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
                     .toList(),
               ),
             ],
-            if (sign.fsw.trim().isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  sign.fsw,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontFamily: 'monospace'),
-                ),
-              ),
-            ],
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -285,12 +265,6 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
                   icon: const Icon(Icons.edit),
                   label: const Text('Editar'),
                 ),
-                if (!sign.isPublished)
-                  ElevatedButton.icon(
-                    onPressed: () => _publishSign(sign),
-                    icon: const Icon(Icons.publish),
-                    label: const Text('Publicar'),
-                  ),
                 TextButton.icon(
                   onPressed: () => _confirmDelete(sign),
                   icon: const Icon(Icons.delete_outline),
@@ -324,24 +298,7 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success
-              ? (result.isPublished
-                  ? 'Sinal publicado com sucesso.'
-                  : 'Rascunho salvo com sucesso.')
-              : _viewModel.statusMessage,
-        ),
-      ),
-    );
-  }
-
-  Future<void> _publishSign(WrittenSignModel sign) async {
-    final success = await _viewModel.publishSign(sign);
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success ? 'Sinal publicado com sucesso.' : _viewModel.statusMessage,
+          success ? 'Sinal salvo com sucesso.' : _viewModel.statusMessage,
         ),
       ),
     );
@@ -470,4 +427,127 @@ class _StatusBadge extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SignPreview extends StatelessWidget {
+  final String layoutJson;
+
+  const _SignPreview({required this.layoutJson});
+
+  @override
+  Widget build(BuildContext context) {
+    final symbols = _parseSymbols(layoutJson);
+    return Container(
+      width: double.infinity,
+      height: 120,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFCF1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      child: symbols.isEmpty
+          ? const Center(child: Icon(Icons.gesture_outlined, size: 36))
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                final maxLeft = (constraints.maxWidth - 40).clamp(0.0, double.infinity);
+                final maxTop = (constraints.maxHeight - 40).clamp(0.0, double.infinity);
+                return Stack(
+                  children: symbols.map((symbol) {
+                    final left = maxLeft * symbol.x;
+                    final top = maxTop * symbol.y;
+                    return Positioned(
+                      left: left,
+                      top: top,
+                      child: Transform(
+                        alignment: Alignment.center,
+                        transform: Matrix4.diagonal3Values(symbol.mirrored ? -1 : 1, 1, 1),
+                        child: RotatedBox(
+                          quarterTurns: symbol.rotationQuarterTurns,
+                          child: Icon(
+                            _iconForSymbol(symbol.symbolId),
+                            size: 28,
+                            color: const Color(0xFF2D78BB),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+            ),
+    );
+  }
+
+  static List<_PreviewSymbol> _parseSymbols(String rawLayout) {
+    try {
+      final decoded = json.decode(rawLayout);
+      final rawSymbols = decoded is Map<String, dynamic> ? decoded['symbols'] : decoded;
+      if (rawSymbols is! List) return const [];
+      return rawSymbols.whereType<Map>().map((item) {
+        final map = Map<String, dynamic>.from(item);
+        return _PreviewSymbol(
+          symbolId: (map['symbolId'] ?? '').toString(),
+          x: ((map['x'] as num?) ?? 0.5).toDouble().clamp(0.0, 1.0),
+          y: ((map['y'] as num?) ?? 0.5).toDouble().clamp(0.0, 1.0),
+          rotationQuarterTurns: ((map['rotationQuarterTurns'] as num?) ?? 0).toInt() % 4,
+          mirrored: (map['mirrored'] ?? false) == true,
+        );
+      }).toList();
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  static IconData _iconForSymbol(String symbolId) {
+    switch (symbolId) {
+      case 'hand-open':
+        return Icons.back_hand_outlined;
+      case 'hand-point':
+        return Icons.touch_app_outlined;
+      case 'hand-fist':
+        return Icons.front_hand_outlined;
+      case 'move-up':
+        return Icons.arrow_upward;
+      case 'move-down':
+        return Icons.arrow_downward;
+      case 'move-repeat':
+        return Icons.sync;
+      case 'face-neutral':
+        return Icons.sentiment_neutral;
+      case 'face-happy':
+        return Icons.sentiment_satisfied_alt;
+      case 'face-focus':
+        return Icons.visibility_outlined;
+      case 'body-center':
+        return Icons.accessibility_new;
+      case 'body-lean':
+        return Icons.directions_run;
+      case 'body-head':
+        return Icons.emoji_people;
+      case 'mark-contact':
+        return Icons.radio_button_checked;
+      case 'mark-line':
+        return Icons.horizontal_rule;
+      case 'mark-cross':
+        return Icons.close;
+      default:
+        return Icons.help_outline;
+    }
+  }
+}
+
+class _PreviewSymbol {
+  final String symbolId;
+  final double x;
+  final double y;
+  final int rotationQuarterTurns;
+  final bool mirrored;
+
+  const _PreviewSymbol({
+    required this.symbolId,
+    required this.x,
+    required this.y,
+    required this.rotationQuarterTurns,
+    required this.mirrored,
+  });
 }
