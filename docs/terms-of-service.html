@@ -5,115 +5,245 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Termos de Serviço — SignWriter Fácil</title>
   <style>
+    :root {
+      --green: #1D9E75;
+      --green-light: #2DC992;
+      --blue: #2D78BB;
+      --gray-100: #f5f7fb;
+      --gray-200: #e8edf4;
+      --gray-500: #6b7280;
+      --gray-800: #1e1e1e;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f5f7fb;
-      color: #1e1e1e;
+      background: var(--gray-100);
+      color: var(--gray-800);
       line-height: 1.7;
     }
-    header {
-      background: #1D9E75;
-      color: white;
-      padding: 32px 24px;
-      text-align: center;
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 14px 32px;
+      display: flex; align-items: center; justify-content: space-between;
     }
-    header h1 { font-size: 26px; font-weight: 700; }
-    header p { font-size: 14px; opacity: 0.85; margin-top: 6px; }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 18px; color: var(--blue);
+      text-decoration: none;
+    }
+    .nav-back {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 14px; color: var(--gray-500);
+      text-decoration: none; font-weight: 500;
+      padding: 8px 16px; border-radius: 10px;
+      transition: all 0.2s;
+    }
+    .nav-back:hover { background: var(--gray-100); color: var(--green); }
+
+    .hero {
+      background: linear-gradient(135deg, var(--green) 0%, var(--green-light) 100%);
+      padding: 56px 32px;
+      text-align: center;
+      color: white;
+    }
+    .hero-icon {
+      width: 72px; height: 72px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 20px;
+    }
+    .hero h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+    .hero p { font-size: 15px; opacity: 0.88; }
+    .hero-meta {
+      display: flex; gap: 16px; justify-content: center;
+      margin-top: 20px; flex-wrap: wrap;
+    }
+    .meta-badge {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 5px 14px; border-radius: 99px;
+      font-size: 12px; color: white; font-weight: 500;
+    }
+
     main {
       max-width: 780px;
-      margin: 40px auto;
-      padding: 0 24px 60px;
+      margin: 40px auto 60px;
+      padding: 0 24px;
     }
+
+    .toc {
+      background: white;
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .toc h3 {
+      font-size: 14px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--gray-500); margin-bottom: 14px;
+    }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin-bottom: 6px; }
+    .toc a { color: var(--green); text-decoration: none; font-size: 14px; }
+    .toc a:hover { text-decoration: underline; }
+
     section {
       background: white;
       border-radius: 16px;
-      padding: 32px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-    h2 {
-      color: #1D9E75;
-      font-size: 18px;
-      margin-bottom: 14px;
-    }
-    p { margin-bottom: 12px; color: #333; }
-    ul { padding-left: 20px; margin-bottom: 12px; }
-    ul li { margin-bottom: 8px; color: #333; }
-    .badge {
-      display: inline-block;
-      background: #1D9E7515;
-      color: #1D9E75;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 99px;
+      padding: 32px 36px;
       margin-bottom: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      scroll-margin-top: 80px;
     }
-    .updated {
+    .section-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 20px; padding-bottom: 16px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .section-num {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--green), var(--green-light));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 700; color: white;
+      flex-shrink: 0;
+    }
+    h2 { font-size: 19px; font-weight: 700; color: var(--gray-800); }
+    p { margin-bottom: 12px; color: #444; font-size: 15px; }
+    ul, ol { padding-left: 20px; margin-bottom: 12px; }
+    li { margin-bottom: 8px; color: #444; font-size: 15px; }
+    strong { color: var(--gray-800); }
+    a { color: var(--green); }
+
+    .highlight {
+      background: #E8F8F3;
+      border-left: 3px solid var(--green);
+      padding: 14px 18px;
+      border-radius: 0 10px 10px 0;
+      margin: 16px 0;
+      font-size: 14px;
+      color: var(--green);
+      font-weight: 500;
+    }
+
+    .contact-box {
+      background: linear-gradient(135deg, var(--green), var(--green-light));
+      border-radius: 16px;
+      padding: 28px;
+      color: white;
       text-align: center;
-      font-size: 13px;
-      color: #888;
-      margin-top: 40px;
+      margin-top: 32px;
     }
-    a { color: #1D9E75; }
+    .contact-box h3 { font-size: 20px; margin-bottom: 8px; }
+    .contact-box p { color: rgba(255,255,255,0.88); margin-bottom: 16px; }
+    .contact-links { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .contact-link {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: white; text-decoration: none;
+      padding: 10px 20px; border-radius: 10px;
+      font-size: 14px; font-weight: 600;
+      transition: background 0.2s;
+    }
+    .contact-link:hover { background: rgba(255,255,255,0.25); }
+
     footer {
+      background: var(--gray-800);
+      color: rgba(255,255,255,0.5);
       text-align: center;
-      padding: 24px;
+      padding: 28px 24px;
       font-size: 13px;
-      color: #888;
+    }
+    footer strong { color: white; }
+    footer .footer-links { display: flex; gap: 20px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+    footer .footer-links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 12px; }
+    footer .footer-links a:hover { color: white; }
+
+    @media (max-width: 600px) {
+      section { padding: 24px 20px; }
+      .hero h1 { font-size: 24px; }
     }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>🤟 SignWriter Fácil</h1>
-  <p>Termos de Serviço</p>
-</header>
+<nav>
+  <a href="index.html" class="nav-brand">🤟 SignWriter Fácil</a>
+  <a href="index.html" class="nav-back">← Voltar</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-icon">📋</div>
+  <h1>Termos de Serviço</h1>
+  <p>Condições de uso do aplicativo SignWriter Fácil</p>
+  <div class="hero-meta">
+    <span class="meta-badge">Versão 1.0</span>
+    <span class="meta-badge">Junho de 2025</span>
+    <span class="meta-badge">Lei nº 12.965/2014</span>
+  </div>
+</div>
 
 <main>
 
-  <section>
-    <span class="badge">Versão 1.0 — Junho de 2025</span>
-    <p>
-      Bem-vindo ao <strong>SignWriter Fácil</strong>! Ao usar nosso aplicativo,
-      você concorda com os Termos de Serviço descritos abaixo.
-      Leia com atenção antes de utilizar o aplicativo.
-    </p>
-  </section>
+  <div class="toc">
+    <h3>Índice</h3>
+    <ol>
+      <li><a href="#sec1">Aceitação dos termos</a></li>
+      <li><a href="#sec2">Sobre o serviço</a></li>
+      <li><a href="#sec3">Conta de usuário</a></li>
+      <li><a href="#sec4">Uso adequado</a></li>
+      <li><a href="#sec5">Propriedade intelectual</a></li>
+      <li><a href="#sec6">Conteúdo do usuário</a></li>
+      <li><a href="#sec7">Disponibilidade do serviço</a></li>
+      <li><a href="#sec8">Limitação de responsabilidade</a></li>
+      <li><a href="#sec9">Alterações nos termos</a></li>
+      <li><a href="#sec10">Lei aplicável</a></li>
+      <li><a href="#sec11">Contato</a></li>
+    </ol>
+  </div>
 
   <section>
-    <h2>1. Aceitação dos termos</h2>
-    <p>
-      Ao criar uma conta ou usar o SignWriter Fácil, você declara que leu,
-      entendeu e concorda com estes Termos de Serviço e com nossa
-      <a href="privacy-policy.html">Política de Privacidade</a>.
-    </p>
-    <p>
-      Se você não concordar com qualquer parte destes termos, não utilize o aplicativo.
-    </p>
+    <p>Bem-vindo ao <strong>SignWriter Fácil</strong>! Ao usar nosso aplicativo, você concorda com os Termos de Serviço descritos abaixo. Por favor, leia com atenção antes de utilizar o aplicativo.</p>
+    <div class="highlight">Se você não concordar com qualquer parte destes termos, não utilize o aplicativo.</div>
   </section>
 
-  <section>
-    <h2>2. Sobre o serviço</h2>
-    <p>
-      O SignWriter Fácil é um aplicativo educacional e de comunicação que oferece:
-    </p>
+  <section id="sec1">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>Aceitação dos termos</h2>
+    </div>
+    <p>Ao criar uma conta ou usar o SignWriter Fácil, você declara que leu, entendeu e concorda com estes Termos de Serviço e com nossa <a href="privacy-policy.html">Política de Privacidade</a>.</p>
+  </section>
+
+  <section id="sec2">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <h2>Sobre o serviço</h2>
+    </div>
+    <p>O SignWriter Fácil é um aplicativo educacional e de comunicação que oferece:</p>
     <ul>
       <li>Aprendizado do sistema de escrita SignWriting</li>
       <li>Dicionário de sinais em Libras</li>
-      <li>Tradução de texto para sinais</li>
+      <li>Tradução de texto para sinais SignWriting</li>
       <li>Escrita e criação de sinais personalizados</li>
       <li>Acompanhamento de progresso de aprendizado</li>
     </ul>
-    <p>
-      O aplicativo é disponibilizado gratuitamente para fins educacionais e de inclusão social.
-    </p>
+    <div class="highlight">O aplicativo é disponibilizado gratuitamente para fins educacionais e de inclusão social.</div>
   </section>
 
-  <section>
-    <h2>3. Conta de usuário</h2>
+  <section id="sec3">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2>Conta de usuário</h2>
+    </div>
     <p>Para usar o aplicativo, você deve criar uma conta. Você é responsável por:</p>
     <ul>
       <li>Manter a confidencialidade da sua senha</li>
@@ -121,67 +251,56 @@
       <li>Fornecer informações verdadeiras no cadastro</li>
       <li>Notificar-nos imediatamente sobre uso não autorizado</li>
     </ul>
-    <p>
-      Reservamos o direito de encerrar contas que violem estes termos.
-    </p>
+    <p>Reservamos o direito de encerrar contas que violem estes termos.</p>
   </section>
 
-  <section>
-    <h2>4. Uso adequado</h2>
+  <section id="sec4">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <h2>Uso adequado</h2>
+    </div>
     <p>Você concorda em usar o SignWriter Fácil apenas para fins lícitos. É proibido:</p>
     <ul>
       <li>Usar o aplicativo para fins ilegais ou prejudiciais</li>
       <li>Compartilhar conteúdo ofensivo, discriminatório ou inapropriado</li>
-      <li>Tentar acessar dados de outros usuários</li>
+      <li>Tentar acessar dados de outros usuários sem autorização</li>
       <li>Realizar engenharia reversa ou modificar o aplicativo</li>
-      <li>Usar o aplicativo de forma que prejudique outros usuários</li>
+      <li>Usar o aplicativo de forma que prejudique outros usuários ou o serviço</li>
     </ul>
   </section>
 
-  <section>
-    <h2>5. Propriedade intelectual</h2>
-    <p>
-      O SignWriter Fácil, incluindo seu código, design, textos e recursos visuais,
-      é protegido por direitos autorais. O sistema SignWriting é de autoria de
-      <strong>Valerie Sutton</strong> e o aplicativo o utiliza para fins educacionais.
-    </p>
-    <p>
-      Você não pode copiar, distribuir ou modificar o aplicativo sem autorização expressa
-      dos desenvolvedores.
-    </p>
+  <section id="sec5">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>Propriedade intelectual</h2>
+    </div>
+    <p>O SignWriter Fácil, incluindo seu código, design, textos e recursos visuais, é protegido por direitos autorais. O sistema <strong>SignWriting</strong> é de autoria de <strong>Valerie Sutton</strong> e o aplicativo o utiliza para fins educacionais.</p>
+    <p>Você não pode copiar, distribuir ou modificar o aplicativo sem autorização expressa dos desenvolvedores.</p>
   </section>
 
-  <section>
-    <h2>6. Conteúdo do usuário</h2>
-    <p>
-      Sinais criados e salvos por você no aplicativo permanecem de sua propriedade.
-      Ao salvar conteúdo, você nos concede permissão para armazená-lo e exibi-lo
-      para você dentro do aplicativo.
-    </p>
-    <p>
-      Não acessamos, compartilhamos ou utilizamos seu conteúdo pessoal para
-      fins comerciais.
-    </p>
+  <section id="sec6">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <h2>Conteúdo do usuário</h2>
+    </div>
+    <p>Sinais criados e salvos por você no aplicativo permanecem de sua propriedade. Ao salvar conteúdo, você nos concede permissão para armazená-lo e exibi-lo para você dentro do aplicativo.</p>
+    <div class="highlight">Não acessamos, compartilhamos ou utilizamos seu conteúdo pessoal para fins comerciais.</div>
   </section>
 
-  <section>
-    <h2>7. Disponibilidade do serviço</h2>
-    <p>
-      Nos esforçamos para manter o aplicativo disponível continuamente,
-      mas não garantimos disponibilidade ininterrupta. Podem ocorrer
-      períodos de manutenção ou indisponibilidade técnica.
-    </p>
-    <p>
-      Não nos responsabilizamos por perdas causadas por indisponibilidade temporária do serviço.
-    </p>
+  <section id="sec7">
+    <div class="section-header">
+      <div class="section-num">7</div>
+      <h2>Disponibilidade do serviço</h2>
+    </div>
+    <p>Nos esforçamos para manter o aplicativo disponível continuamente, mas não garantimos disponibilidade ininterrupta. Podem ocorrer períodos de manutenção ou indisponibilidade técnica. Não nos responsabilizamos por perdas causadas por indisponibilidade temporária do serviço.</p>
   </section>
 
-  <section>
-    <h2>8. Limitação de responsabilidade</h2>
-    <p>
-      O SignWriter Fácil é fornecido "como está", sem garantias de qualquer tipo.
-      Não nos responsabilizamos por:
-    </p>
+  <section id="sec8">
+    <div class="section-header">
+      <div class="section-num">8</div>
+      <h2>Limitação de responsabilidade</h2>
+    </div>
+    <p>O SignWriter Fácil é fornecido "como está", sem garantias de qualquer tipo. Não nos responsabilizamos por:</p>
     <ul>
       <li>Imprecisões nas traduções ou no dicionário de sinais</li>
       <li>Perdas de dados por falhas técnicas</li>
@@ -189,39 +308,48 @@
     </ul>
   </section>
 
-  <section>
-    <h2>9. Alterações nos termos</h2>
-    <p>
-      Podemos atualizar estes Termos de Serviço a qualquer momento.
-      Alterações significativas serão comunicadas pelo aplicativo.
-      O uso continuado após as alterações implica na aceitação dos novos termos.
-    </p>
+  <section id="sec9">
+    <div class="section-header">
+      <div class="section-num">9</div>
+      <h2>Alterações nos termos</h2>
+    </div>
+    <p>Podemos atualizar estes Termos de Serviço a qualquer momento. Alterações significativas serão comunicadas pelo aplicativo. O uso continuado após as alterações implica na aceitação dos novos termos.</p>
   </section>
 
-  <section>
-    <h2>10. Lei aplicável</h2>
-    <p>
-      Estes termos são regidos pelas leis brasileiras, especialmente a
-      <strong>Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018)</strong>
-      e o <strong>Marco Civil da Internet (Lei nº 12.965/2014)</strong>.
-    </p>
+  <section id="sec10">
+    <div class="section-header">
+      <div class="section-num">10</div>
+      <h2>Lei aplicável</h2>
+    </div>
+    <p>Estes termos são regidos pelas leis brasileiras, especialmente a <strong>Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018)</strong> e o <strong>Marco Civil da Internet (Lei nº 12.965/2014)</strong>.</p>
   </section>
 
-  <section>
-    <h2>11. Contato</h2>
-    <p>Dúvidas sobre estes termos? Entre em contato:</p>
-    <ul>
-      <li><strong>E-mail:</strong> <a href="mailto:lhuany.euzebio@gmail.com">lhuany.euzebio@gmail.com</a></li>
-      <li><strong>GitHub:</strong> <a href="https://github.com/LhuanyMotta/SignWriter-Easy-App" target="_blank">github.com/LhuanyMotta/SignWriter-Easy-App</a></li>
-    </ul>
+  <section id="sec11">
+    <div class="section-header">
+      <div class="section-num">11</div>
+      <h2>Contato</h2>
+    </div>
+    <p>Dúvidas sobre estes Termos de Serviço? Fale conosco:</p>
+    <div class="contact-box">
+      <h3>📬 Entre em contato</h3>
+      <p>Estamos disponíveis para responder suas dúvidas.</p>
+      <div class="contact-links">
+        <a href="mailto:lhuany.euzebio@gmail.com" class="contact-link">✉️ lhuany.euzebio@gmail.com</a>
+        <a href="https://github.com/LhuanyMotta/SignWriter-Easy-App-Oficial" target="_blank" class="contact-link">💻 GitHub</a>
+      </div>
+    </div>
   </section>
-
-  <p class="updated">Última atualização: Junho de 2025</p>
 
 </main>
 
 <footer>
-  © 2025 SignWriter Fácil — Inclusão, acessibilidade e tecnologia caminhando juntas 🤟
+  <strong>© 2025 SignWriter Fácil</strong> — Desenvolvido por Lhuany Motta &amp; Bruno Santos
+  <div class="footer-links">
+    <a href="index.html">Início</a>
+    <a href="privacy-policy.html">Privacidade</a>
+    <a href="terms-of-service.html">Termos</a>
+    <a href="mailto:lhuany.euzebio@gmail.com">Contato</a>
+  </div>
 </footer>
 
 </body>

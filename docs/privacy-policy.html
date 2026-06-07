@@ -5,195 +5,329 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Política de Privacidade — SignWriter Fácil</title>
   <style>
+    :root {
+      --blue: #2D78BB;
+      --blue-light: #4EB1F0;
+      --gray-100: #f5f7fb;
+      --gray-200: #e8edf4;
+      --gray-500: #6b7280;
+      --gray-800: #1e1e1e;
+      --white: #ffffff;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f5f7fb;
-      color: #1e1e1e;
+      background: var(--gray-100);
+      color: var(--gray-800);
       line-height: 1.7;
     }
-    header {
-      background: #2D78BB;
-      color: white;
-      padding: 32px 24px;
-      text-align: center;
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--gray-200);
+      padding: 14px 32px;
+      display: flex; align-items: center; justify-content: space-between;
     }
-    header img { width: 72px; margin-bottom: 12px; }
-    header h1 { font-size: 26px; font-weight: 700; }
-    header p { font-size: 14px; opacity: 0.85; margin-top: 6px; }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 18px; color: var(--blue);
+      text-decoration: none;
+    }
+    .nav-back {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 14px; color: var(--gray-500);
+      text-decoration: none; font-weight: 500;
+      padding: 8px 16px; border-radius: 10px;
+      transition: all 0.2s;
+    }
+    .nav-back:hover { background: var(--gray-100); color: var(--blue); }
+
+    .hero {
+      background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
+      padding: 56px 32px;
+      text-align: center;
+      color: white;
+    }
+    .hero-icon {
+      width: 72px; height: 72px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 20px;
+    }
+    .hero h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+    .hero p { font-size: 15px; opacity: 0.88; }
+    .hero-meta {
+      display: flex; gap: 16px; justify-content: center;
+      margin-top: 20px; flex-wrap: wrap;
+    }
+    .meta-badge {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 5px 14px; border-radius: 99px;
+      font-size: 12px; color: white; font-weight: 500;
+    }
+
     main {
       max-width: 780px;
-      margin: 40px auto;
-      padding: 0 24px 60px;
+      margin: 40px auto 60px;
+      padding: 0 24px;
     }
+
+    .toc {
+      background: white;
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .toc h3 {
+      font-size: 14px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--gray-500); margin-bottom: 14px;
+    }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin-bottom: 6px; }
+    .toc a { color: var(--blue); text-decoration: none; font-size: 14px; }
+    .toc a:hover { text-decoration: underline; }
+
     section {
       background: white;
       border-radius: 16px;
-      padding: 32px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-    h2 {
-      color: #2D78BB;
-      font-size: 18px;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    p { margin-bottom: 12px; color: #333; }
-    ul { padding-left: 20px; margin-bottom: 12px; }
-    ul li { margin-bottom: 8px; color: #333; }
-    .badge {
-      display: inline-block;
-      background: #2D78BB15;
-      color: #2D78BB;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 99px;
+      padding: 32px 36px;
       margin-bottom: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      scroll-margin-top: 80px;
     }
-    .updated {
+    .section-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 20px; padding-bottom: 16px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .section-num {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--blue), var(--blue-light));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 700; color: white;
+      flex-shrink: 0;
+    }
+    h2 { font-size: 19px; font-weight: 700; color: var(--gray-800); }
+    p { margin-bottom: 12px; color: #444; font-size: 15px; }
+    ul, ol { padding-left: 20px; margin-bottom: 12px; }
+    li { margin-bottom: 8px; color: #444; font-size: 15px; }
+    strong { color: var(--gray-800); }
+    a { color: var(--blue); }
+
+    .highlight {
+      background: #EBF4FF;
+      border-left: 3px solid var(--blue);
+      padding: 14px 18px;
+      border-radius: 0 10px 10px 0;
+      margin: 16px 0;
+      font-size: 14px;
+      color: var(--blue);
+      font-weight: 500;
+    }
+
+    .contact-box {
+      background: linear-gradient(135deg, var(--blue), var(--blue-light));
+      border-radius: 16px;
+      padding: 28px;
+      color: white;
       text-align: center;
-      font-size: 13px;
-      color: #888;
-      margin-top: 40px;
+      margin-top: 32px;
     }
-    a { color: #2D78BB; }
+    .contact-box h3 { font-size: 20px; margin-bottom: 8px; }
+    .contact-box p { color: rgba(255,255,255,0.88); margin-bottom: 16px; }
+    .contact-links { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .contact-link {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: white; text-decoration: none;
+      padding: 10px 20px; border-radius: 10px;
+      font-size: 14px; font-weight: 600;
+      transition: background 0.2s;
+    }
+    .contact-link:hover { background: rgba(255,255,255,0.25); }
+
     footer {
+      background: var(--gray-800);
+      color: rgba(255,255,255,0.5);
       text-align: center;
-      padding: 24px;
+      padding: 28px 24px;
       font-size: 13px;
-      color: #888;
+    }
+    footer strong { color: white; }
+    footer .footer-links { display: flex; gap: 20px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+    footer .footer-links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 12px; }
+    footer .footer-links a:hover { color: white; }
+
+    @media (max-width: 600px) {
+      section { padding: 24px 20px; }
+      .hero h1 { font-size: 24px; }
     }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>🤟 SignWriter Fácil</h1>
-  <p>Política de Privacidade</p>
-</header>
+<nav>
+  <a href="index.html" class="nav-brand">🤟 SignWriter Fácil</a>
+  <a href="index.html" class="nav-back">← Voltar</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-icon">🔒</div>
+  <h1>Política de Privacidade</h1>
+  <p>Transparência sobre como seus dados são coletados e protegidos</p>
+  <div class="hero-meta">
+    <span class="meta-badge">Versão 1.0</span>
+    <span class="meta-badge">Junho de 2025</span>
+    <span class="meta-badge">LGPD Compliant</span>
+  </div>
+</div>
 
 <main>
 
-  <section>
-    <span class="badge">Versão 1.0 — Junho de 2025</span>
-    <p>
-      O <strong>SignWriter Fácil</strong> é um aplicativo desenvolvido para facilitar a comunicação
-      entre surdos e ouvintes por meio do sistema de escrita visual SignWriting.
-      Esta Política de Privacidade explica como coletamos, usamos e protegemos suas informações.
-    </p>
-    <p>
-      Ao usar o aplicativo, você concorda com as práticas descritas neste documento.
-    </p>
-  </section>
+  <div class="toc">
+    <h3>Índice</h3>
+    <ol>
+      <li><a href="#sec1">Dados que coletamos</a></li>
+      <li><a href="#sec2">Como usamos seus dados</a></li>
+      <li><a href="#sec3">Segurança dos dados</a></li>
+      <li><a href="#sec4">Serviços de terceiros</a></li>
+      <li><a href="#sec5">Seus direitos</a></li>
+      <li><a href="#sec6">Menores de idade</a></li>
+      <li><a href="#sec7">Alterações nesta política</a></li>
+      <li><a href="#sec8">Contato</a></li>
+    </ol>
+  </div>
 
   <section>
-    <h2>📋 1. Dados que coletamos</h2>
-    <p>Coletamos apenas os dados necessários para o funcionamento do aplicativo:</p>
+    <p>O <strong>SignWriter Fácil</strong> é um aplicativo educacional desenvolvido para facilitar a comunicação entre surdos e ouvintes através do sistema SignWriting. Esta Política de Privacidade descreve como coletamos, usamos e protegemos suas informações pessoais.</p>
+    <div class="highlight">Ao usar o aplicativo, você concorda com as práticas descritas neste documento.</div>
+  </section>
+
+  <section id="sec1">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>Dados que coletamos</h2>
+    </div>
+    <p>Coletamos apenas os dados estritamente necessários para o funcionamento do aplicativo:</p>
     <ul>
-      <li><strong>Nome completo</strong> — para personalizar sua experiência</li>
+      <li><strong>Nome completo</strong> — para personalizar sua experiência no app</li>
       <li><strong>Endereço de e-mail</strong> — para autenticação e comunicação</li>
-      <li><strong>Dados de progresso</strong> — lições concluídas, exercícios realizados</li>
-      <li><strong>Sinais favoritos</strong> — sinais salvos pelo usuário no dicionário</li>
+      <li><strong>Dados de progresso</strong> — lições concluídas e exercícios realizados</li>
+      <li><strong>Sinais favoritos</strong> — sinais salvos no dicionário pelo usuário</li>
       <li><strong>Histórico de traduções</strong> — buscas recentes de sinais</li>
     </ul>
-    <p>
-      Quando você usa o login com Google, recebemos apenas o nome e e-mail
-      fornecidos pela sua conta Google, conforme autorizado por você.
-    </p>
+    <p>Quando você usa o <strong>Login com Google</strong>, recebemos apenas o nome e e-mail fornecidos pela sua conta Google, conforme autorizado por você na tela de consentimento.</p>
   </section>
 
-  <section>
-    <h2>🎯 2. Como usamos seus dados</h2>
+  <section id="sec2">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <h2>Como usamos seus dados</h2>
+    </div>
     <ul>
-      <li>Autenticação e acesso à sua conta</li>
-      <li>Salvar seu progresso de aprendizado</li>
+      <li>Autenticação e acesso seguro à sua conta</li>
+      <li>Salvar e sincronizar seu progresso de aprendizado</li>
       <li>Personalizar a experiência no aplicativo</li>
       <li>Melhorar as funcionalidades com base no uso</li>
-      <li>Enviar comunicações relevantes sobre o app (se autorizado)</li>
+      <li>Enviar comunicações sobre atualizações (se autorizado)</li>
     </ul>
-    <p>
-      <strong>Não vendemos, alugamos ou compartilhamos seus dados pessoais
-      com terceiros para fins comerciais.</strong>
-    </p>
+    <div class="highlight">Não vendemos, alugamos ou compartilhamos seus dados pessoais com terceiros para fins comerciais.</div>
   </section>
 
-  <section>
-    <h2>🔒 3. Segurança dos dados</h2>
-    <p>
-      Utilizamos o <strong>Supabase</strong> como infraestrutura de banco de dados e autenticação,
-      que implementa criptografia em trânsito (TLS) e em repouso para proteger suas informações.
-    </p>
+  <section id="sec3">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2>Segurança dos dados</h2>
+    </div>
+    <p>Utilizamos o <strong>Supabase</strong> como infraestrutura de banco de dados e autenticação, que implementa padrões modernos de segurança:</p>
     <ul>
-      <li>Senhas são armazenadas com hash seguro (nunca em texto puro)</li>
-      <li>Comunicações entre app e servidor usam HTTPS</li>
-      <li>Acesso aos dados é restrito por autenticação</li>
+      <li>Senhas armazenadas com hash seguro (nunca em texto puro)</li>
+      <li>Comunicações entre app e servidor via <strong>HTTPS/TLS</strong></li>
+      <li>Dados criptografados em trânsito e em repouso</li>
+      <li>Acesso restrito por autenticação e controle de permissões</li>
     </ul>
   </section>
 
-  <section>
-    <h2>🌐 4. Serviços de terceiros</h2>
-    <p>O aplicativo utiliza os seguintes serviços externos:</p>
+  <section id="sec4">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <h2>Serviços de terceiros</h2>
+    </div>
+    <p>O aplicativo utiliza os seguintes serviços externos, cada um com sua própria política de privacidade:</p>
     <ul>
-      <li><strong>Supabase</strong> — banco de dados e autenticação (<a href="https://supabase.com/privacy" target="_blank">política de privacidade</a>)</li>
-      <li><strong>Google Sign-In</strong> — login com conta Google (<a href="https://policies.google.com/privacy" target="_blank">política de privacidade</a>)</li>
+      <li><strong>Supabase</strong> — banco de dados e autenticação (<a href="https://supabase.com/privacy" target="_blank">ver política</a>)</li>
+      <li><strong>Google Sign-In</strong> — login social (<a href="https://policies.google.com/privacy" target="_blank">ver política</a>)</li>
     </ul>
-    <p>
-      Cada serviço possui sua própria política de privacidade, que recomendamos que você leia.
-    </p>
   </section>
 
-  <section>
-    <h2>👤 5. Seus direitos</h2>
-    <p>Você tem direito a:</p>
+  <section id="sec5">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>Seus direitos</h2>
+    </div>
+    <p>Em conformidade com a <strong>LGPD (Lei nº 13.709/2018)</strong>, você tem direito a:</p>
     <ul>
       <li>Acessar os dados que temos sobre você</li>
-      <li>Corrigir informações incorretas</li>
-      <li>Solicitar a exclusão da sua conta e dados</li>
-      <li>Revogar o acesso do Google a qualquer momento</li>
+      <li>Corrigir informações incorretas ou desatualizadas</li>
+      <li>Solicitar a exclusão da sua conta e todos os seus dados</li>
+      <li>Revogar o acesso do Google a qualquer momento nas configurações da sua conta Google</li>
+      <li>Obter informações sobre o compartilhamento dos seus dados</li>
     </ul>
-    <p>
-      Para exercer seus direitos, entre em contato pelo e-mail:
-      <a href="mailto:lhuany.euzebio@gmail.com">lhuany.euzebio@gmail.com</a>
-    </p>
+    <p>Para exercer qualquer direito, entre em contato pelo e-mail abaixo.</p>
   </section>
 
-  <section>
-    <h2>👶 6. Menores de idade</h2>
-    <p>
-      O SignWriter Fácil pode ser usado por pessoas de todas as idades.
-      Para usuários menores de 13 anos, recomendamos o uso com supervisão de um responsável.
-      Não coletamos intencionalmente dados de crianças sem consentimento dos pais.
-    </p>
+  <section id="sec6">
+    <div class="section-header">
+      <div class="section-num">6</div>
+      <h2>Menores de idade</h2>
+    </div>
+    <p>O SignWriter Fácil pode ser usado por pessoas de todas as idades. Para usuários menores de 13 anos, recomendamos o uso com supervisão de um responsável. Não coletamos intencionalmente dados de crianças sem consentimento dos pais ou responsáveis.</p>
   </section>
 
-  <section>
-    <h2>📝 7. Alterações nesta política</h2>
-    <p>
-      Podemos atualizar esta Política de Privacidade periodicamente.
-      Quando isso ocorrer, notificaremos você pelo aplicativo.
-      A data da última atualização está sempre indicada no topo deste documento.
-    </p>
+  <section id="sec7">
+    <div class="section-header">
+      <div class="section-num">7</div>
+      <h2>Alterações nesta política</h2>
+    </div>
+    <p>Podemos atualizar esta Política de Privacidade periodicamente. Quando isso ocorrer, notificaremos você pelo aplicativo e atualizaremos a data de vigência no topo deste documento. O uso continuado do aplicativo após as alterações implica na aceitação da nova versão.</p>
   </section>
 
-  <section>
-    <h2>📬 8. Contato</h2>
-    <p>Dúvidas sobre esta política? Entre em contato:</p>
-    <ul>
-      <li><strong>E-mail:</strong> <a href="mailto:lhuany.euzebio@gmail.com">lhuany.euzebio@gmail.com</a></li>
-      <li><strong>GitHub:</strong> <a href="https://github.com/LhuanyMotta/SignWriter-Easy-App" target="_blank">github.com/LhuanyMotta/SignWriter-Easy-App</a></li>
-    </ul>
-  </section>
+  <section id="sec8">
+    <div class="section-header">
+      <div class="section-num">8</div>
+      <h2>Contato</h2>
+    </div>
+    <p>Dúvidas, solicitações ou reclamações sobre esta Política de Privacidade? Fale conosco:</p>
 
-  <p class="updated">Última atualização: Junho de 2025</p>
+    <div class="contact-box">
+      <h3>📬 Entre em contato</h3>
+      <p>Estamos disponíveis para responder suas dúvidas sobre privacidade.</p>
+      <div class="contact-links">
+        <a href="mailto:lhuany.euzebio@gmail.com" class="contact-link">✉️ lhuany.euzebio@gmail.com</a>
+        <a href="https://github.com/LhuanyMotta/SignWriter-Easy-App-Oficial" target="_blank" class="contact-link">💻 GitHub</a>
+      </div>
+    </div>
+  </section>
 
 </main>
 
 <footer>
-  © 2025 SignWriter Fácil — Inclusão, acessibilidade e tecnologia caminhando juntas 🤟
+  <strong>© 2025 SignWriter Fácil</strong> — Desenvolvido por Lhuany Motta &amp; Bruno Santos
+  <div class="footer-links">
+    <a href="index.html">Início</a>
+    <a href="privacy-policy.html">Privacidade</a>
+    <a href="terms-of-service.html">Termos</a>
+    <a href="mailto:lhuany.euzebio@gmail.com">Contato</a>
+  </div>
 </footer>
 
 </body>
