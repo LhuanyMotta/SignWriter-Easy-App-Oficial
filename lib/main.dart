@@ -9,9 +9,11 @@ import 'package:signwriter_easy_app_oficial/viewmodels/profile_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/dictionary_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/favorites_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/learn_practice_viewmodel.dart';
+import 'package:signwriter_easy_app_oficial/viewmodels/translate_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/views/screens/home_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:signwriter_easy_app_oficial/theme/app_theme.dart';
+import 'package:signwriter_easy_app_oficial/routes/app_routes.dart';
 import 'l10n/app_localizations.dart';
 
 void main() async {
@@ -76,6 +78,9 @@ void main() async {
       ChangeNotifierProvider(
         create: (_) => LearnPracticeViewModel(),
       ),
+      ChangeNotifierProvider(
+        create: (_) => TranslateViewModel(),
+      ),
     ],
     child: const MyApp(),
   ),
@@ -121,6 +126,7 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'SignWriter Fácil',
           debugShowCheckedModeBanner: false,
+          routes: AppRoutes.routes,
           themeMode: themeMode,
 locale: profileViewModel.locale,
 

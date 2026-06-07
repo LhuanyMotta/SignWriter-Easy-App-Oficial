@@ -484,4 +484,37 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get learningReturnToLesson => 'Voltar para a lição';
+
+  @override
+  String get authErrorInvalidCredentials => 'Email ou senha incorretos';
+
+  @override
+  String get authErrorEmailExists => 'Email já cadastrado';
+
+  @override
+  String get authErrorWeakPassword => 'A senha deve ter pelo menos 6 caracteres';
+
+  @override
+  String get authErrorEmailSignupsDisabled => 'Cadastro por email desabilitado';
+
+  @override
+  String get authErrorEmailLoginsDisabled => 'Login por email desabilitado';
+
+  @override
+  String get authErrorEmailNotConfirmed => 'Email não confirmado. Verifique sua caixa de entrada.';
+
+  @override
+  String get authErrorOAuthNotEnabled => 'Provedor social não habilitado. Contate o suporte.';
+
+  @override
+  String get authOAuthContinueInBrowser => 'Continue o login no navegador e retorne ao app quando finalizar.';
+
+  @override
+  String get authErrorLogin => 'Erro ao entrar. Tente novamente.';
+
+  @override
+  String get authErrorSignup => 'Erro ao cadastrar. Tente novamente.';
+
+  @override
+  String get authErrorCreateAccount => 'Erro ao criar conta. Tente novamente.';
 }

@@ -9,6 +9,7 @@ import '../../viewmodels/home_viewmodel.dart';
 import '../accessibility_settings_view.dart';
 import '../../theme/app_spacing.dart';
 import '../../l10n/l10n.dart';
+import '../../routes/app_routes.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -355,7 +356,10 @@ void initState() {
           if (confirmed == true && mounted) {
             final success = await viewModel.logout();
             if (success && mounted) {
-              Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                        AppRoutes.auth,
+                        (route) => false,
+                      );
             }
           }
         },
@@ -481,7 +485,10 @@ void initState() {
               final success = await viewModel.deleteAccount();
               if (!mounted) return;
               if (success) {
-                Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    AppRoutes.auth,
+                    (route) => false,
+                  );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(

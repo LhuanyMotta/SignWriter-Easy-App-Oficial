@@ -1031,6 +1031,19 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back to lesson'**
   String get learningReturnToLesson;
+
+  // Auth errors & messages
+  String get authErrorInvalidCredentials;
+  String get authErrorEmailExists;
+  String get authErrorWeakPassword;
+  String get authErrorEmailSignupsDisabled;
+  String get authErrorEmailLoginsDisabled;
+  String get authErrorEmailNotConfirmed;
+  String get authErrorOAuthNotEnabled;
+  String get authOAuthContinueInBrowser;
+  String get authErrorLogin;
+  String get authErrorSignup;
+  String get authErrorCreateAccount;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

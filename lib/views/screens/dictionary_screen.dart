@@ -4,6 +4,7 @@ import '../../viewmodels/dictionary_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../models/sign_model.dart';
 import '../../theme/app_spacing.dart';
+import '../../l10n/l10n.dart';
 
 class DictionaryScreen extends StatefulWidget {
   const DictionaryScreen({super.key});
@@ -46,9 +47,9 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text(
-            'Dicionário',
-            style: TextStyle(fontWeight: FontWeight.bold),
+          title: Text(
+            context.l10n.featureDictionary,
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
         body: Consumer<DictionaryViewModel>(
@@ -175,9 +176,9 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
           currentIndex: 0,
           onTap: (index) => _homeViewModel.onBottomNavTapped(index, context),
           items: [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
-            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favoritos'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: context.l10n.bottomHome),
+            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: context.l10n.bottomFavorites),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: context.l10n.bottomProfile),
           ],
         ),
       ),

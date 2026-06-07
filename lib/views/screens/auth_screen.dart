@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -19,6 +21,8 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateMixin {
   late AuthViewModel _viewModel;
   late TabController _tabController;
+  late StreamSubscription<AuthState> _authStateSubscription;
+  bool _hasNavigatedAfterAuth = false;
   final _loginFormKey = GlobalKey<FormState>();
   final _signupFormKey = GlobalKey<FormState>();
   
@@ -35,10 +39,21 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     super.initState();
     _viewModel = AuthViewModel(Supabase.instance.client);
     _tabController = TabController(length: 2, vsync: this);
+    _authStateSubscription = Supabase.instance.client.auth.onAuthStateChange.listen(
+      (data) async {
+        if (data.event == AuthChangeEvent.signedIn && mounted) {
+          if (!_hasNavigatedAfterAuth) {
+            _hasNavigatedAfterAuth = true;
+            await _navigateAfterAuth();
+          }
+        }
+      },
+    );
   }
 
   @override
   void dispose() {
+    _authStateSubscription.cancel();
     _tabController.dispose();
     _loginEmailController.dispose();
     _loginPasswordController.dispose();
@@ -485,8 +500,22 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           child: ElevatedButton(
             onPressed: () async {
               final success = await _viewModel.signInWithGoogle();
-              if (!success && _viewModel.error != null && mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
+              if (!mounted) return;
+              final messenger = ScaffoldMessenger.of(context);
+
+              if (success) {
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(context.l10n.authOAuthContinueInBrowser),
+                    backgroundColor: Colors.green,
+                    duration: const Duration(seconds: 4),
+                  ),
+                );
+                return;
+              }
+
+              if (_viewModel.error != null) {
+                messenger.showSnackBar(
                   SnackBar(
                     content: Text(_viewModel.error!),
                     backgroundColor: Colors.red,
@@ -530,66 +559,85 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         ),
         SizedBox(height: AppSpacing.value(context, 12)),
         
-        // Botão Apple com fundo AZUL sólido
-        SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed: () async {
-              final success = await _viewModel.signInWithApple();
-              if (!success && _viewModel.error != null && mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(_viewModel.error!),
-                    backgroundColor: Colors.red,
-                    duration: const Duration(seconds: 3),
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2D78BB),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              elevation: 2,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.apple, size: 24, color: Colors.white),
-                SizedBox(width: AppSpacing.value(context, 12)),
-                Text(
-                  context.l10n.continueWithApple,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
+        if (!kIsWeb) ...[
+          // Botão Apple com fundo AZUL sólido
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: () async {
+                final success = await _viewModel.signInWithApple();
+                if (!mounted) return;
+                final messenger = ScaffoldMessenger.of(context);
+
+                if (success) {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(context.l10n.authOAuthContinueInBrowser),
+                      backgroundColor: Colors.green,
+                      duration: const Duration(seconds: 4),
+                    ),
+                  );
+                  return;
+                }
+
+                if (_viewModel.error != null) {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(_viewModel.error!),
+                      backgroundColor: Colors.red,
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2D78BB),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              ],
+                elevation: 2,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.apple, size: 24, color: Colors.white),
+                  SizedBox(width: AppSpacing.value(context, 12)),
+                  Text(
+                    context.l10n.continueWithApple,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }
 
   void _handleLogin(AuthViewModel viewModel, BuildContext context) async {
     if (_loginFormKey.currentState!.validate()) {
+      final messenger = ScaffoldMessenger.of(context);
       final success = await viewModel.signInWithEmail(
         email: _loginEmailController.text,
         password: _loginPasswordController.text,
       );
       
-      if (success && mounted) {
-        // Navega para HomeScreen
+      if (success) {
+        if (!mounted) return;
         await _navigateAfterAuth();
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      } else {
+        if (!mounted) return;
+        final msg = _localizedAuthError(viewModel.errorType, context);
+        messenger.showSnackBar(
           SnackBar(
-            content: Text(viewModel.error ?? 'Erro no login'),
+            content: Text(msg),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
@@ -600,19 +648,22 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   void _handleSignup(AuthViewModel viewModel, BuildContext context) async {
     if (_signupFormKey.currentState!.validate()) {
+      final messenger = ScaffoldMessenger.of(context);
       final success = await viewModel.signUpWithEmail(
         name: _signupNameController.text,
         email: _signupEmailController.text,
         password: _signupPasswordController.text,
       );
       
-      if (success && mounted) {
-        // Navega para HomeScreen
+      if (success) {
+        if (!mounted) return;
         await _navigateAfterAuth();
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      } else {
+        if (!mounted) return;
+        final msg = _localizedAuthError(viewModel.errorType, context, isSignup: true);
+        messenger.showSnackBar(
           SnackBar(
-            content: Text(viewModel.error ?? 'Erro no cadastro'),
+            content: Text(msg),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 3),
           ),
@@ -643,4 +694,29 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     );
   }
 }
+
+  String _localizedAuthError(AuthErrorType? type, BuildContext context, {bool isSignup = false}) {
+    final l = context.l10n;
+    switch (type) {
+      case AuthErrorType.invalidCredentials:
+        return l.authErrorInvalidCredentials;
+      case AuthErrorType.emailExists:
+        return l.authErrorEmailExists;
+      case AuthErrorType.weakPassword:
+        return l.authErrorWeakPassword;
+      case AuthErrorType.emailSignupsDisabled:
+        return l.authErrorEmailSignupsDisabled;
+      case AuthErrorType.emailLoginsDisabled:
+        return l.authErrorEmailLoginsDisabled;
+      case AuthErrorType.emailNotConfirmed:
+        return l.authErrorEmailNotConfirmed;
+      case AuthErrorType.oauthNotEnabled:
+        return l.authErrorOAuthNotEnabled;
+      case AuthErrorType.createAccount:
+        return l.authErrorCreateAccount;
+      case AuthErrorType.unknown:
+      case null:
+        return isSignup ? l.authErrorSignup : l.authErrorLogin;
+    }
+  }
 }

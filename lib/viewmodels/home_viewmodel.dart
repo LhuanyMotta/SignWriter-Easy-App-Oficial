@@ -1,64 +1,36 @@
 import 'package:flutter/material.dart';
 
-import '../views/screens/home_screen.dart';
-import '../views/screens/learn_practice_screen.dart';
-import '../views/screens/dictionary_screen.dart';
-import '../views/screens/write_signs_screen.dart';
-import '../views/screens/translate_signs_screen.dart';
-import '../views/screens/favorites_screen.dart';
-import '../views/screens/profile_screen.dart';
+import '../routes/app_routes.dart';
 
 class HomeViewModel {
   void navigateToLearnAndPractice(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const LearnPracticeScreen()),
-    );
+    AppRoutes.navigateTo(context, AppRoutes.learnPractice);
   }
 
   void navigateToDictionary(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const DictionaryScreen()),
-    );
+    AppRoutes.navigateTo(context, AppRoutes.dictionary);
   }
 
   void navigateToWriteSigns(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const WriteSignsScreen()),
-    );
+    AppRoutes.navigateTo(context, AppRoutes.writeSigns);
   }
 
   void navigateToTranslateSigns(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const TranslateSignsScreen()),
-    );
+    AppRoutes.navigateTo(context, AppRoutes.translateSigns);
   }
 
   void navigateToFavorites(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const FavoritesScreen()),
-    );
+    AppRoutes.navigateTo(context, AppRoutes.favorites);
   }
 
   void navigateToProfile(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const ProfileScreen()),
-    );
+    AppRoutes.navigateTo(context, AppRoutes.profile);
   }
 
   void onBottomNavTapped(int index, BuildContext context) {
     switch (index) {
       case 0:
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-          (route) => false,
-        );
+        AppRoutes.navigateReplacement(context, AppRoutes.home);
         break;
       case 1:
         navigateToFavorites(context);

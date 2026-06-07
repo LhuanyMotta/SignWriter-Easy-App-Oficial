@@ -484,4 +484,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get learningReturnToLesson => 'Back to lesson';
+
+  @override
+  String get authErrorInvalidCredentials => 'Invalid email or password';
+
+  @override
+  String get authErrorEmailExists => 'Email already registered';
+
+  @override
+  String get authErrorWeakPassword => 'Password must be at least 6 characters';
+
+  @override
+  String get authErrorEmailSignupsDisabled => 'Email sign-ups are disabled';
+
+  @override
+  String get authErrorEmailLoginsDisabled => 'Email login is disabled';
+
+  @override
+  String get authErrorEmailNotConfirmed => 'Email not confirmed. Check your inbox.';
+
+  @override
+  String get authErrorOAuthNotEnabled => 'Social provider not enabled. Contact support.';
+
+  @override
+  String get authOAuthContinueInBrowser => 'Continue the login in your browser and return to the app when done.';
+
+  @override
+  String get authErrorLogin => 'Sign in failed. Please try again.';
+
+  @override
+  String get authErrorSignup => 'Sign up failed. Please try again.';
+
+  @override
+  String get authErrorCreateAccount => 'Failed to create account. Please try again.';
 }

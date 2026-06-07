@@ -4,6 +4,7 @@ import '../../viewmodels/favorites_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../models/sign_model.dart';
 import '../../theme/app_spacing.dart';
+import '../../l10n/l10n.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({super.key});
@@ -46,9 +47,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: const Text(
-            'Meus Favoritos',
-            style: TextStyle(fontWeight: FontWeight.bold),
+          title: Text(
+            context.l10n.bottomFavorites,
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           actions: [
             Consumer<FavoritesViewModel>(
@@ -160,9 +161,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           currentIndex: 1,
           onTap: (index) => _homeViewModel.onBottomNavTapped(index, context),
           items: [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Início'),
-            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favoritos'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: context.l10n.bottomHome),
+            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: context.l10n.bottomFavorites),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: context.l10n.bottomProfile),
           ],
         ),
       ),

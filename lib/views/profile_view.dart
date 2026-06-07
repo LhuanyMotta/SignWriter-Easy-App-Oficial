@@ -24,8 +24,8 @@ class ProfileView extends StatelessWidget {
                   leading: const CircleAvatar(
                     child: Icon(Icons.person),
                   ),
-                  title: Text(viewModel.userData['nome']),
-                  subtitle: Text(viewModel.userData['email']),
+                  title: Text(viewModel.userData?['name']?.toString() ?? ''),
+                  subtitle: Text(viewModel.userData?['email']?.toString() ?? ''),
                 ),
               ),
               SizedBox(height: AppSpacing.value(context, 16)),

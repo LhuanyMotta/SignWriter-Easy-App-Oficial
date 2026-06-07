@@ -191,6 +191,12 @@ Future<void> setThemeMode(
     notifyListeners();
   }
 
+  Future<void> toggleDarkMode(bool value) async {
+    _themeMode = value ? AppThemeMode.dark : AppThemeMode.light;
+    await _savePreferences();
+    notifyListeners();
+  }
+
   Future<void> updateFontSize(double value) async {
     _fontSize = value.clamp(0.8, 1.5);
     await _savePreferences();
