@@ -4,330 +4,250 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Política de Privacidade — SignWriter Fácil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --blue: #2D78BB;
-      --blue-light: #4EB1F0;
-      --gray-100: #f5f7fb;
-      --gray-200: #e8edf4;
-      --gray-500: #6b7280;
-      --gray-800: #1e1e1e;
-      --white: #ffffff;
+      --brand: #2D78BB;
+      --brand-dark: #1a5a96;
+      --brand-light: #4EB1F0;
+      --surface: #F8FAFC;
+      --surface-2: #F1F5F9;
+      --border: #E2E8F0;
+      --text: #1F2937;
+      --text-muted: #6B7280;
+      --dark: #0f172a;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--gray-100);
-      color: var(--gray-800);
-      line-height: 1.7;
-    }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--surface); color: var(--text); -webkit-font-smoothing: antialiased; }
 
+    /* NAV */
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--gray-200);
-      padding: 14px 32px;
+      background: rgba(255,255,255,0.96); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      height: 64px; padding: 0 48px;
       display: flex; align-items: center; justify-content: space-between;
     }
-    .nav-brand {
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 700; font-size: 18px; color: var(--blue);
-      text-decoration: none;
-    }
-    .nav-back {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 14px; color: var(--gray-500);
-      text-decoration: none; font-weight: 500;
-      padding: 8px 16px; border-radius: 10px;
-      transition: all 0.2s;
-    }
-    .nav-back:hover { background: var(--gray-100); color: var(--blue); }
+    .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo { width: 32px; height: 32px; background: var(--brand); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .nav-logo svg { width: 18px; height: 18px; }
+    .nav-name { font-size: 15px; font-weight: 700; color: var(--text); }
+    .nav-back { font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; padding: 7px 14px; border-radius: 8px; transition: all 0.15s; }
+    .nav-back:hover { background: var(--surface-2); color: var(--text); }
 
-    .hero {
-      background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
-      padding: 56px 32px;
-      text-align: center;
-      color: white;
-    }
-    .hero-icon {
-      width: 72px; height: 72px;
-      background: rgba(255,255,255,0.15);
-      border-radius: 20px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 36px;
-      margin: 0 auto 20px;
-    }
-    .hero h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
-    .hero p { font-size: 15px; opacity: 0.88; }
-    .hero-meta {
-      display: flex; gap: 16px; justify-content: center;
-      margin-top: 20px; flex-wrap: wrap;
-    }
-    .meta-badge {
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.2);
-      padding: 5px 14px; border-radius: 99px;
-      font-size: 12px; color: white; font-weight: 500;
-    }
+    /* HERO */
+    .hero { background: linear-gradient(155deg, var(--brand-dark) 0%, var(--brand) 100%); padding: 56px 48px; }
+    .hero-inner { max-width: 720px; margin: 0 auto; }
+    .eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.5); margin-bottom: 14px; }
+    .hero h1 { font-size: 40px; font-weight: 800; color: white; letter-spacing: -0.025em; line-height: 1.1; margin-bottom: 12px; }
+    .hero-desc { font-size: 16px; color: rgba(255,255,255,0.72); line-height: 1.65; margin-bottom: 24px; }
+    .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.85); padding: 4px 13px; border-radius: 99px; font-size: 12px; font-weight: 500; }
 
-    main {
-      max-width: 780px;
-      margin: 40px auto 60px;
-      padding: 0 24px;
-    }
+    /* MAIN — coluna única centralizada */
+    .wrap { max-width: 720px; margin: 0 auto; padding: 44px 32px 80px; }
 
+    /* TOC em linha no topo */
     .toc {
-      background: white;
-      border-radius: 16px;
-      padding: 24px 28px;
-      margin-bottom: 28px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+      background: white; border: 1px solid var(--border); border-radius: 14px;
+      padding: 20px 24px; margin-bottom: 24px;
     }
-    .toc h3 {
-      font-size: 14px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.05em;
-      color: var(--gray-500); margin-bottom: 14px;
+    .toc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--text-muted); margin-bottom: 12px; }
+    .toc-links { display: flex; flex-wrap: wrap; gap: 6px; }
+    .toc-links a {
+      font-size: 13px; font-weight: 500; color: var(--brand);
+      text-decoration: none; background: #EBF4FF;
+      padding: 4px 12px; border-radius: 99px;
+      transition: all 0.15s;
     }
-    .toc ol { padding-left: 20px; }
-    .toc li { margin-bottom: 6px; }
-    .toc a { color: var(--blue); text-decoration: none; font-size: 14px; }
-    .toc a:hover { text-decoration: underline; }
+    .toc-links a:hover { background: #d6ecff; }
 
-    section {
-      background: white;
-      border-radius: 16px;
-      padding: 32px 36px;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-      scroll-margin-top: 80px;
-    }
-    .section-header {
-      display: flex; align-items: center; gap: 14px;
-      margin-bottom: 20px; padding-bottom: 16px;
-      border-bottom: 1px solid var(--gray-200);
-    }
-    .section-num {
-      width: 36px; height: 36px;
-      background: linear-gradient(135deg, var(--blue), var(--blue-light));
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 15px; font-weight: 700; color: white;
-      flex-shrink: 0;
-    }
-    h2 { font-size: 19px; font-weight: 700; color: var(--gray-800); }
-    p { margin-bottom: 12px; color: #444; font-size: 15px; }
-    ul, ol { padding-left: 20px; margin-bottom: 12px; }
-    li { margin-bottom: 8px; color: #444; font-size: 15px; }
-    strong { color: var(--gray-800); }
-    a { color: var(--blue); }
+    .card { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 26px 30px; margin-bottom: 14px; }
+    .card p { font-size: 15px; color: var(--text-muted); line-height: 1.7; }
 
-    .highlight {
-      background: #EBF4FF;
-      border-left: 3px solid var(--blue);
-      padding: 14px 18px;
-      border-radius: 0 10px 10px 0;
-      margin: 16px 0;
-      font-size: 14px;
-      color: var(--blue);
-      font-weight: 500;
-    }
+    .callout { background: #EBF4FF; border: 1px solid #BFDBFE; border-radius: 10px; padding: 13px 18px; margin-bottom: 14px; }
+    .callout p { font-size: 14px; font-weight: 500; color: var(--brand); margin: 0; }
 
-    .contact-box {
-      background: linear-gradient(135deg, var(--blue), var(--blue-light));
-      border-radius: 16px;
-      padding: 28px;
-      color: white;
-      text-align: center;
-      margin-top: 32px;
-    }
-    .contact-box h3 { font-size: 20px; margin-bottom: 8px; }
-    .contact-box p { color: rgba(255,255,255,0.88); margin-bottom: 16px; }
-    .contact-links { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-    .contact-link {
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.25);
-      color: white; text-decoration: none;
-      padding: 10px 20px; border-radius: 10px;
-      font-size: 14px; font-weight: 600;
-      transition: background 0.2s;
-    }
-    .contact-link:hover { background: rgba(255,255,255,0.25); }
+    .sec { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 14px; scroll-margin-top: 84px; }
+    .sec-head { display: flex; align-items: center; gap: 12px; padding-bottom: 18px; margin-bottom: 20px; border-bottom: 1px solid var(--surface-2); }
+    .sec-num { width: 30px; height: 30px; flex-shrink: 0; background: var(--brand); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: white; }
+    .sec-head h2 { font-size: 17px; font-weight: 700; color: var(--text); }
+    .sec p { font-size: 15px; color: var(--text-muted); line-height: 1.7; margin-bottom: 10px; }
+    .sec p:last-child { margin-bottom: 0; }
+    .sec strong { color: var(--text); font-weight: 600; }
+    .sec a { color: var(--brand); text-decoration: none; font-weight: 500; }
+    .sec a:hover { text-decoration: underline; }
 
-    footer {
-      background: var(--gray-800);
-      color: rgba(255,255,255,0.5);
-      text-align: center;
-      padding: 28px 24px;
-      font-size: 13px;
-    }
-    footer strong { color: white; }
-    footer .footer-links { display: flex; gap: 20px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
-    footer .footer-links a { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 12px; }
-    footer .footer-links a:hover { color: white; }
+    .rows { margin: 10px 0; }
+    .row { display: flex; align-items: baseline; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--surface-2); font-size: 15px; color: var(--text-muted); line-height: 1.55; }
+    .row:last-child { border-bottom: none; padding-bottom: 0; }
+    .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--brand); flex-shrink: 0; margin-top: 7px; }
+
+    .contact-box { background: linear-gradient(135deg, var(--brand-dark), var(--brand-light)); border-radius: 14px; padding: 30px; text-align: center; margin-top: 12px; }
+    .contact-box h3 { font-size: 19px; font-weight: 700; color: white; margin-bottom: 6px; }
+    .contact-box p { font-size: 14px; color: rgba(255,255,255,0.75); margin-bottom: 20px; }
+    .cbtns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .cbtn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22); color: white; text-decoration: none; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; transition: all 0.18s; }
+    .cbtn:hover { background: rgba(255,255,255,0.22); }
+
+    footer { background: var(--dark); padding: 26px 48px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .f-copy { font-size: 12px; color: rgba(255,255,255,0.28); }
+    .f-copy strong { color: rgba(255,255,255,0.45); }
+    .f-nav { display: flex; gap: 16px; flex-wrap: wrap; }
+    .f-nav a { font-size: 12px; color: rgba(255,255,255,0.28); text-decoration: none; transition: color 0.15s; }
+    .f-nav a:hover { color: white; }
 
     @media (max-width: 600px) {
-      section { padding: 24px 20px; }
-      .hero h1 { font-size: 24px; }
+      nav { padding: 0 20px; } .hero { padding: 48px 20px; } .hero h1 { font-size: 28px; }
+      .wrap { padding: 28px 16px 60px; } footer { padding: 22px 20px; flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
 
 <nav>
-  <a href="index.html" class="nav-brand">🤟 SignWriter Fácil</a>
+  <a href="index.html" class="nav-brand">
+    <div class="nav-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 8.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm10 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3.5 21a3.5 3.5 0 0 1 7 0m3 0a3.5 3.5 0 0 1 7 0"/>
+      </svg>
+    </div>
+    <span class="nav-name">SignWriter Fácil</span>
+  </a>
   <a href="index.html" class="nav-back">← Voltar</a>
 </nav>
 
 <div class="hero">
-  <div class="hero-icon">🔒</div>
-  <h1>Política de Privacidade</h1>
-  <p>Transparência sobre como seus dados são coletados e protegidos</p>
-  <div class="hero-meta">
-    <span class="meta-badge">Versão 1.0</span>
-    <span class="meta-badge">Junho de 2025</span>
-    <span class="meta-badge">LGPD Compliant</span>
+  <div class="hero-inner">
+    <p class="eyebrow">Documentação Legal</p>
+    <h1>Política de Privacidade</h1>
+    <p class="hero-desc">Transparência sobre como seus dados pessoais são coletados, utilizados e protegidos.</p>
+    <div class="pills">
+      <span class="pill">Versão 1.0</span>
+      <span class="pill">Junho de 2025</span>
+      <span class="pill">LGPD — Lei nº 13.709/2018</span>
+    </div>
   </div>
 </div>
 
-<main>
+<div class="wrap">
 
   <div class="toc">
-    <h3>Índice</h3>
-    <ol>
-      <li><a href="#sec1">Dados que coletamos</a></li>
-      <li><a href="#sec2">Como usamos seus dados</a></li>
-      <li><a href="#sec3">Segurança dos dados</a></li>
-      <li><a href="#sec4">Serviços de terceiros</a></li>
-      <li><a href="#sec5">Seus direitos</a></li>
-      <li><a href="#sec6">Menores de idade</a></li>
-      <li><a href="#sec7">Alterações nesta política</a></li>
-      <li><a href="#sec8">Contato</a></li>
-    </ol>
+    <p class="toc-label">Nesta página</p>
+    <div class="toc-links">
+      <a href="#sec1">1. Dados coletados</a>
+      <a href="#sec2">2. Uso dos dados</a>
+      <a href="#sec3">3. Segurança</a>
+      <a href="#sec4">4. Terceiros</a>
+      <a href="#sec5">5. Seus direitos</a>
+      <a href="#sec6">6. Menores de idade</a>
+      <a href="#sec7">7. Alterações</a>
+      <a href="#sec8">8. Contato</a>
+    </div>
   </div>
 
-  <section>
-    <p>O <strong>SignWriter Fácil</strong> é um aplicativo educacional desenvolvido para facilitar a comunicação entre surdos e ouvintes através do sistema SignWriting. Esta Política de Privacidade descreve como coletamos, usamos e protegemos suas informações pessoais.</p>
-    <div class="highlight">Ao usar o aplicativo, você concorda com as práticas descritas neste documento.</div>
-  </section>
+  <div class="card">
+    <p>O <strong>SignWriter Fácil</strong> é um aplicativo educacional desenvolvido por acadêmicos do curso de Análise e Desenvolvimento de Sistemas do IFRO Câmpus Ji-Paraná, para facilitar a comunicação entre surdos e ouvintes. Esta Política descreve como coletamos, utilizamos e protegemos suas informações pessoais.</p>
+  </div>
 
-  <section id="sec1">
-    <div class="section-header">
-      <div class="section-num">1</div>
-      <h2>Dados que coletamos</h2>
-    </div>
+  <div class="callout">
+    <p>Ao usar o aplicativo, você concorda com as práticas descritas neste documento.</p>
+  </div>
+
+  <div class="sec" id="sec1">
+    <div class="sec-head"><div class="sec-num">1</div><h2>Dados que coletamos</h2></div>
     <p>Coletamos apenas os dados estritamente necessários para o funcionamento do aplicativo:</p>
-    <ul>
-      <li><strong>Nome completo</strong> — para personalizar sua experiência no app</li>
-      <li><strong>Endereço de e-mail</strong> — para autenticação e comunicação</li>
-      <li><strong>Dados de progresso</strong> — lições concluídas e exercícios realizados</li>
-      <li><strong>Sinais favoritos</strong> — sinais salvos no dicionário pelo usuário</li>
-      <li><strong>Histórico de traduções</strong> — buscas recentes de sinais</li>
-    </ul>
-    <p>Quando você usa o <strong>Login com Google</strong>, recebemos apenas o nome e e-mail fornecidos pela sua conta Google, conforme autorizado por você na tela de consentimento.</p>
-  </section>
-
-  <section id="sec2">
-    <div class="section-header">
-      <div class="section-num">2</div>
-      <h2>Como usamos seus dados</h2>
+    <div class="rows">
+      <div class="row"><div class="dot"></div><span><strong>Nome completo</strong> — para personalizar sua experiência</span></div>
+      <div class="row"><div class="dot"></div><span><strong>Endereço de e-mail</strong> — para autenticação e comunicação</span></div>
+      <div class="row"><div class="dot"></div><span><strong>Dados de progresso</strong> — lições concluídas e exercícios realizados</span></div>
+      <div class="row"><div class="dot"></div><span><strong>Sinais favoritos</strong> — sinais salvos no dicionário pelo usuário</span></div>
+      <div class="row"><div class="dot"></div><span><strong>Histórico de traduções</strong> — buscas recentes de sinais</span></div>
     </div>
-    <ul>
-      <li>Autenticação e acesso seguro à sua conta</li>
-      <li>Salvar e sincronizar seu progresso de aprendizado</li>
-      <li>Personalizar a experiência no aplicativo</li>
-      <li>Melhorar as funcionalidades com base no uso</li>
-      <li>Enviar comunicações sobre atualizações (se autorizado)</li>
-    </ul>
-    <div class="highlight">Não vendemos, alugamos ou compartilhamos seus dados pessoais com terceiros para fins comerciais.</div>
-  </section>
+    <p style="margin-top:12px">Quando você usa o <strong>Login com Google</strong>, recebemos apenas nome e e-mail fornecidos pela sua conta, conforme autorizado por você.</p>
+  </div>
 
-  <section id="sec3">
-    <div class="section-header">
-      <div class="section-num">3</div>
-      <h2>Segurança dos dados</h2>
+  <div class="sec" id="sec2">
+    <div class="sec-head"><div class="sec-num">2</div><h2>Como usamos seus dados</h2></div>
+    <div class="rows">
+      <div class="row"><div class="dot"></div><span>Autenticação e acesso seguro à sua conta</span></div>
+      <div class="row"><div class="dot"></div><span>Salvar e sincronizar seu progresso de aprendizado</span></div>
+      <div class="row"><div class="dot"></div><span>Personalizar a experiência no aplicativo</span></div>
+      <div class="row"><div class="dot"></div><span>Melhorar as funcionalidades com base no uso</span></div>
+      <div class="row"><div class="dot"></div><span>Enviar comunicações sobre atualizações (se autorizado)</span></div>
     </div>
-    <p>Utilizamos o <strong>Supabase</strong> como infraestrutura de banco de dados e autenticação, que implementa padrões modernos de segurança:</p>
-    <ul>
-      <li>Senhas armazenadas com hash seguro (nunca em texto puro)</li>
-      <li>Comunicações entre app e servidor via <strong>HTTPS/TLS</strong></li>
-      <li>Dados criptografados em trânsito e em repouso</li>
-      <li>Acesso restrito por autenticação e controle de permissões</li>
-    </ul>
-  </section>
+    <div class="callout" style="margin-top:14px; margin-bottom:0">
+      <p>Não vendemos, alugamos ou compartilhamos seus dados pessoais com terceiros para fins comerciais.</p>
+    </div>
+  </div>
 
-  <section id="sec4">
-    <div class="section-header">
-      <div class="section-num">4</div>
-      <h2>Serviços de terceiros</h2>
+  <div class="sec" id="sec3">
+    <div class="sec-head"><div class="sec-num">3</div><h2>Segurança dos dados</h2></div>
+    <p>Utilizamos o <strong>Supabase</strong> como infraestrutura de banco de dados e autenticação:</p>
+    <div class="rows">
+      <div class="row"><div class="dot"></div><span>Senhas armazenadas com hash seguro — nunca em texto puro</span></div>
+      <div class="row"><div class="dot"></div><span>Comunicações criptografadas via <strong>HTTPS/TLS</strong></span></div>
+      <div class="row"><div class="dot"></div><span>Dados criptografados em trânsito e em repouso</span></div>
+      <div class="row"><div class="dot"></div><span>Acesso restrito por autenticação e controle de permissões</span></div>
     </div>
-    <p>O aplicativo utiliza os seguintes serviços externos, cada um com sua própria política de privacidade:</p>
-    <ul>
-      <li><strong>Supabase</strong> — banco de dados e autenticação (<a href="https://supabase.com/privacy" target="_blank">ver política</a>)</li>
-      <li><strong>Google Sign-In</strong> — login social (<a href="https://policies.google.com/privacy" target="_blank">ver política</a>)</li>
-    </ul>
-  </section>
+  </div>
 
-  <section id="sec5">
-    <div class="section-header">
-      <div class="section-num">5</div>
-      <h2>Seus direitos</h2>
+  <div class="sec" id="sec4">
+    <div class="sec-head"><div class="sec-num">4</div><h2>Serviços de terceiros</h2></div>
+    <p>O aplicativo utiliza os seguintes serviços externos:</p>
+    <div class="rows">
+      <div class="row"><div class="dot"></div><span><strong>Supabase</strong> — banco de dados e autenticação. <a href="https://supabase.com/privacy" target="_blank">Ver política</a></span></div>
+      <div class="row"><div class="dot"></div><span><strong>Google Sign-In</strong> — autenticação social. <a href="https://policies.google.com/privacy" target="_blank">Ver política</a></span></div>
     </div>
+  </div>
+
+  <div class="sec" id="sec5">
+    <div class="sec-head"><div class="sec-num">5</div><h2>Seus direitos</h2></div>
     <p>Em conformidade com a <strong>LGPD (Lei nº 13.709/2018)</strong>, você tem direito a:</p>
-    <ul>
-      <li>Acessar os dados que temos sobre você</li>
-      <li>Corrigir informações incorretas ou desatualizadas</li>
-      <li>Solicitar a exclusão da sua conta e todos os seus dados</li>
-      <li>Revogar o acesso do Google a qualquer momento nas configurações da sua conta Google</li>
-      <li>Obter informações sobre o compartilhamento dos seus dados</li>
-    </ul>
-    <p>Para exercer qualquer direito, entre em contato pelo e-mail abaixo.</p>
-  </section>
-
-  <section id="sec6">
-    <div class="section-header">
-      <div class="section-num">6</div>
-      <h2>Menores de idade</h2>
+    <div class="rows">
+      <div class="row"><div class="dot"></div><span>Acessar os dados que temos sobre você</span></div>
+      <div class="row"><div class="dot"></div><span>Corrigir informações incorretas ou desatualizadas</span></div>
+      <div class="row"><div class="dot"></div><span>Solicitar a exclusão da sua conta e todos os seus dados</span></div>
+      <div class="row"><div class="dot"></div><span>Revogar o acesso do Google nas configurações da sua conta</span></div>
+      <div class="row"><div class="dot"></div><span>Obter informações sobre o compartilhamento dos seus dados</span></div>
     </div>
-    <p>O SignWriter Fácil pode ser usado por pessoas de todas as idades. Para usuários menores de 13 anos, recomendamos o uso com supervisão de um responsável. Não coletamos intencionalmente dados de crianças sem consentimento dos pais ou responsáveis.</p>
-  </section>
+  </div>
 
-  <section id="sec7">
-    <div class="section-header">
-      <div class="section-num">7</div>
-      <h2>Alterações nesta política</h2>
-    </div>
-    <p>Podemos atualizar esta Política de Privacidade periodicamente. Quando isso ocorrer, notificaremos você pelo aplicativo e atualizaremos a data de vigência no topo deste documento. O uso continuado do aplicativo após as alterações implica na aceitação da nova versão.</p>
-  </section>
+  <div class="sec" id="sec6">
+    <div class="sec-head"><div class="sec-num">6</div><h2>Menores de idade</h2></div>
+    <p>O SignWriter Fácil pode ser usado por pessoas de todas as idades. Para usuários menores de 13 anos, recomendamos o uso com supervisão de um responsável. Não coletamos intencionalmente dados de crianças sem consentimento dos pais.</p>
+  </div>
 
-  <section id="sec8">
-    <div class="section-header">
-      <div class="section-num">8</div>
-      <h2>Contato</h2>
-    </div>
-    <p>Dúvidas, solicitações ou reclamações sobre esta Política de Privacidade? Fale conosco:</p>
+  <div class="sec" id="sec7">
+    <div class="sec-head"><div class="sec-num">7</div><h2>Alterações nesta política</h2></div>
+    <p>Podemos atualizar esta Política de Privacidade periodicamente. Quando isso ocorrer, notificaremos você pelo aplicativo. O uso continuado implica na aceitação da nova versão.</p>
+  </div>
 
+  <div class="sec" id="sec8">
+    <div class="sec-head"><div class="sec-num">8</div><h2>Contato</h2></div>
+    <p>Para dúvidas ou solicitações relacionadas a esta política:</p>
     <div class="contact-box">
-      <h3>📬 Entre em contato</h3>
-      <p>Estamos disponíveis para responder suas dúvidas sobre privacidade.</p>
-      <div class="contact-links">
-        <a href="mailto:lhuany.euzebio@gmail.com" class="contact-link">✉️ lhuany.euzebio@gmail.com</a>
-        <a href="https://github.com/LhuanyMotta/SignWriter-Easy-App-Oficial" target="_blank" class="contact-link">💻 GitHub</a>
+      <h3>Entre em contato</h3>
+      <p>Estamos disponíveis para responder suas dúvidas sobre privacidade e proteção de dados.</p>
+      <div class="cbtns">
+        <a href="mailto:lhuany.euzebio@gmail.com" class="cbtn">lhuany.euzebio@gmail.com</a>
+        <a href="https://github.com/LhuanyMotta/SignWriter-Easy-App-Oficial" target="_blank" class="cbtn">GitHub</a>
       </div>
     </div>
-  </section>
+  </div>
 
-</main>
+</div>
 
 <footer>
-  <strong>© 2025 SignWriter Fácil</strong> — Desenvolvido por Lhuany Motta &amp; Bruno Santos
-  <div class="footer-links">
+  <p class="f-copy">© 2025 SignWriter Fácil. Desenvolvido por <strong>Lhuany Motta &amp; Bruno Santos</strong>.</p>
+  <nav class="f-nav">
     <a href="index.html">Início</a>
     <a href="privacy-policy.html">Privacidade</a>
     <a href="terms-of-service.html">Termos</a>
     <a href="mailto:lhuany.euzebio@gmail.com">Contato</a>
-  </div>
+  </nav>
 </footer>
 
 </body>
