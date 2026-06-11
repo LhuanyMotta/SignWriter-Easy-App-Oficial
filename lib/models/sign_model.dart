@@ -59,15 +59,16 @@ class SignModel {
     bool isFavorite = false,
   }) {
     return SignModel(
-      id: '0',
-      name: 'Exemplo',
-      description: 'Sinal de exemplo',
+      id: id,
+      name: name,
+      description: description ?? 'Sinal de exemplo',
       signImagePath: 'assets/images/signwriter_logo.png', // Usa imagem padrão
-      category: 'Outros',
+      category: category,
       tags: const [],
       signWritingCode: null,
-      portugueseText: 'exemplo',
+      portugueseText: name.toLowerCase(),
       createdAt: DateTime.now(),
+      isFavorite: isFavorite,
     );
   }
 
