@@ -1,5 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+
+import '../../l10n/l10n.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/sign_model.dart';
 import '../../theme/app_spacing.dart';
@@ -104,7 +106,7 @@ class _PracticeQuizScreenState extends State<PracticeQuizScreen> {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text('Exercício concluído'),
+          title: Text(context.l10n.quizExerciseDone),
           content: Text('Você acertou $score de ${questions.length} sinais.'),
           actions: [
             TextButton(
@@ -125,7 +127,7 @@ class _PracticeQuizScreenState extends State<PracticeQuizScreen> {
     if (questions.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: Text(widget.title)),
-        body: const Center(child: Text('Nenhum sinal disponível.')),
+        body: Center(child: Text(context.l10n.quizNoSigns)),
       );
     }
 
@@ -213,7 +215,7 @@ class _PracticeQuizScreenState extends State<PracticeQuizScreen> {
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 52),
               ),
-              child: const Text('Próxima'),
+              child: Text(context.l10n.quizNext),
             ),
           ],
         ),

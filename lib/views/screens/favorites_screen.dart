@@ -21,6 +21,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    context.read<FavoritesViewModel>().setAllLabel(context.l10n.favoritesAll);
     _viewModel = Provider.of<FavoritesViewModel>(context, listen: false);
     _searchController.addListener(_onSearchChanged);
   }
@@ -86,7 +92,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                             color: isDark ? Colors.white : Colors.black87,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Buscar favoritos...',
+                            hintText: context.l10n.favoritesSearchHint,
                             hintStyle: TextStyle(
                               color: isDark ? Colors.grey[400] : Colors.grey,
                             ),
@@ -305,7 +311,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       child: Padding(
         padding: AppSpacing.all(context, 32),
         child: Text(
-          'Nenhum favorito encontrado',
+          context.l10n.favoritesEmpty,
           style: TextStyle(
             color: isDark ? Colors.grey[300] : Colors.grey[700],
             fontSize: 18,
@@ -324,19 +330,19 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remover dos favoritos'),
-        content: Text('Deseja remover "${sign.name}" dos seus favoritos?'),
+        title: Text(context.l10n.favoritesRemoveTitle),
+        content: Text(context.l10n.favoritesRemoveContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(context.l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () {
               viewModel.removeFavorite(sign.id);
               Navigator.pop(context);
             },
-            child: const Text('Remover'),
+            child: Text(context.l10n.remove),
           ),
         ],
       ),
@@ -349,19 +355,19 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Limpar favoritos'),
-        content: const Text('Deseja remover todos os favoritos?'),
+        title: Text(context.l10n.favoritesClearTitle),
+        content: Text(context.l10n.favoritesClearContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(context.l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () {
               viewModel.clearAllFavorites();
               Navigator.pop(context);
             },
-            child: const Text('Limpar'),
+            child: Text(context.l10n.clear),
           ),
         ],
       ),

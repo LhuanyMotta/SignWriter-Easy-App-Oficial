@@ -9,17 +9,26 @@ class DictionaryViewModel extends ChangeNotifier {
   List<SignModel> _filteredSigns = [];
 
   String _searchQuery = '';
-  String _selectedCategory = 'Todos';
+  String _selectedCategory = 'All';
 
   bool _isLoading = false;
 
-  List<String> _categories = ['Todos'];
+  String _allLabel = 'All';
+  List<String> _categories = ['All'];
 
   List<SignModel> get signs => _filteredSigns;
   String get searchQuery => _searchQuery;
   String get selectedCategory => _selectedCategory;
   bool get isLoading => _isLoading;
   List<String> get categories => _categories;
+
+  void setAllLabel(String label) {
+    if (_allLabel == label) return;
+    _allLabel = label;
+    if (_categories.isNotEmpty) _categories[0] = label;
+    _selectedCategory = label;
+    notifyListeners();
+  }
 
   DictionaryViewModel() {
     _loadSigns();
@@ -59,7 +68,7 @@ class DictionaryViewModel extends ChangeNotifier {
       final categorySet = _signs.map((sign) => sign.category).toSet().toList();
       categorySet.sort();
 
-      _categories = ['Todos', ...categorySet];
+      _categories = [_allLabel, ...categorySet];
       _filteredSigns = List.from(_signs);
 
       _isLoading = false;
@@ -87,7 +96,7 @@ class DictionaryViewModel extends ChangeNotifier {
   void _applyFilters() {
     _filteredSigns = _signs.where((sign) {
       final matchesCategory =
-          _selectedCategory == 'Todos' || sign.category == _selectedCategory;
+          _selectedCategory == _allLabel || sign.category == _selectedCategory;
 
       final searchLower = _searchQuery.toLowerCase();
 

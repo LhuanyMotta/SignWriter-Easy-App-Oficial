@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../l10n/l10n.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/app_settings_viewmodel.dart';
 
@@ -26,7 +28,7 @@ class AccessibilitySetupScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => _finish(context, settings),
-            child: const Text('Pular configuração'),
+            child: Text(context.l10n.accessibilitySkip),
           ),
         ],
       ),

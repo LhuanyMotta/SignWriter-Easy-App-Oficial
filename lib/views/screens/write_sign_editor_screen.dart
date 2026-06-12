@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/l10n.dart';
+
 import '../../models/written_sign_model.dart';
 
 const List<String> _editorCategories = [
@@ -18,116 +20,116 @@ const List<String> _editorCategories = [
 ];
 
 const List<String> _symbolGroups = [
-  'Mãos',
-  'Movimento',
-  'Rosto',
-  'Corpo',
-  'Marcas',
+  'Hands',
+  'Movement',
+  'Face',
+  'Body',
+  'Marks',
 ];
 
 const List<_SymbolDefinition> _symbolPalette = [
   _SymbolDefinition(
     id: 'hand-open',
-    label: 'Mão aberta',
-    group: 'Mãos',
+    label: 'Open hand',
+    group: 'Hands',
     icon: Icons.back_hand_outlined,
     color: Colors.blue,
   ),
   _SymbolDefinition(
     id: 'hand-point',
-    label: 'Apontar',
-    group: 'Mãos',
+    label: 'Point',
+    group: 'Hands',
     icon: Icons.touch_app_outlined,
     color: Colors.blue,
   ),
   _SymbolDefinition(
     id: 'hand-fist',
-    label: 'Punho',
-    group: 'Mãos',
+    label: 'Fist',
+    group: 'Hands',
     icon: Icons.front_hand_outlined,
     color: Colors.blue,
   ),
   _SymbolDefinition(
     id: 'move-up',
-    label: 'Mover cima',
-    group: 'Movimento',
+    label: 'Move up',
+    group: 'Movement',
     icon: Icons.arrow_upward,
     color: Colors.deepOrange,
   ),
   _SymbolDefinition(
     id: 'move-down',
-    label: 'Mover baixo',
-    group: 'Movimento',
+    label: 'Move down',
+    group: 'Movement',
     icon: Icons.arrow_downward,
     color: Colors.deepOrange,
   ),
   _SymbolDefinition(
     id: 'move-repeat',
-    label: 'Repetir',
-    group: 'Movimento',
+    label: 'Repeat',
+    group: 'Movement',
     icon: Icons.sync,
     color: Colors.deepOrange,
   ),
   _SymbolDefinition(
     id: 'face-neutral',
-    label: 'Rosto neutro',
-    group: 'Rosto',
+    label: 'Neutral face',
+    group: 'Face',
     icon: Icons.sentiment_neutral,
     color: Colors.green,
   ),
   _SymbolDefinition(
     id: 'face-happy',
-    label: 'Rosto feliz',
-    group: 'Rosto',
+    label: 'Happy face',
+    group: 'Face',
     icon: Icons.sentiment_satisfied_alt,
     color: Colors.green,
   ),
   _SymbolDefinition(
     id: 'face-focus',
-    label: 'Olhar',
-    group: 'Rosto',
+    label: 'Look',
+    group: 'Face',
     icon: Icons.visibility_outlined,
     color: Colors.green,
   ),
   _SymbolDefinition(
     id: 'body-center',
-    label: 'Corpo',
-    group: 'Corpo',
+    label: 'Body',
+    group: 'Body',
     icon: Icons.accessibility_new,
     color: Colors.purple,
   ),
   _SymbolDefinition(
     id: 'body-lean',
-    label: 'Inclinar',
-    group: 'Corpo',
+    label: 'Tilt',
+    group: 'Body',
     icon: Icons.directions_run,
     color: Colors.purple,
   ),
   _SymbolDefinition(
     id: 'body-head',
-    label: 'Cabeça',
-    group: 'Corpo',
+    label: 'Head',
+    group: 'Body',
     icon: Icons.emoji_people,
     color: Colors.purple,
   ),
   _SymbolDefinition(
     id: 'mark-contact',
-    label: 'Contato',
-    group: 'Marcas',
+    label: 'Contact',
+    group: 'Marks',
     icon: Icons.radio_button_checked,
     color: Colors.teal,
   ),
   _SymbolDefinition(
     id: 'mark-line',
-    label: 'Linha',
-    group: 'Marcas',
+    label: 'Line',
+    group: 'Marks',
     icon: Icons.horizontal_rule,
     color: Colors.teal,
   ),
   _SymbolDefinition(
     id: 'mark-cross',
-    label: 'Cruz',
-    group: 'Marcas',
+    label: 'Cross',
+    group: 'Marks',
     icon: Icons.close,
     color: Colors.teal,
   ),
@@ -139,8 +141,8 @@ _SymbolDefinition _getSymbolDefinition(String symbolId) {
   }
   return const _SymbolDefinition(
     id: 'unknown',
-    label: 'Símbolo',
-    group: 'Outros',
+    label: 'Symbol',
+    group: 'Others',
     icon: Icons.help_outline,
     color: Colors.grey,
   );
@@ -209,7 +211,7 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Editar sinal' : 'Novo sinal'),
+        title: Text(_isEditing ? context.l10n.editorEditSign : context.l10n.editorNewSign),
       ),
       body: SafeArea(
         child: Form(
@@ -252,8 +254,8 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _selectedCategory,
-                decoration: const InputDecoration(
-                  labelText: 'Categoria',
+                decoration: InputDecoration(
+                  labelText: context.l10n.editorCategoryLabel,
                   border: OutlineInputBorder(),
                 ),
                 items: _editorCategories
@@ -274,9 +276,9 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _tagsController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Tags',
-                  hintText: 'Ex: saudação, escola, básico',
+                  hintText: context.l10n.editorTagsHint,
                   border: OutlineInputBorder(),
                 ),
                 textInputAction: TextInputAction.next,
@@ -330,7 +332,7 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _submit,
-                  child: const Text('Salvar sinal'),
+                  child: Text(context.l10n.editorSaveSign),
                 ),
               ),
             ],
@@ -599,37 +601,37 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
             OutlinedButton.icon(
               onPressed: selectedSymbol == null ? null : () => _rotateSelectedSymbol(-1),
               icon: const Icon(Icons.rotate_left),
-              label: const Text('Girar -'),
+              label: Text(context.l10n.editorRotateMinus),
             ),
             OutlinedButton.icon(
               onPressed: selectedSymbol == null ? null : () => _rotateSelectedSymbol(1),
               icon: const Icon(Icons.rotate_right),
-              label: const Text('Girar +'),
+              label: Text(context.l10n.editorRotatePlus),
             ),
             OutlinedButton.icon(
               onPressed: selectedSymbol == null ? null : _mirrorSelectedSymbol,
               icon: const Icon(Icons.flip),
-              label: const Text('Espelhar'),
+              label: Text(context.l10n.editorMirror),
             ),
             OutlinedButton.icon(
               onPressed: selectedSymbol == null ? null : _duplicateSelectedSymbol,
               icon: const Icon(Icons.content_copy),
-              label: const Text('Duplicar'),
+              label: Text(context.l10n.editorDuplicate),
             ),
             OutlinedButton.icon(
               onPressed: selectedSymbol == null ? null : _centerSelectedSymbol,
               icon: const Icon(Icons.center_focus_strong),
-              label: const Text('Centralizar'),
+              label: Text(context.l10n.editorCenter),
             ),
             TextButton.icon(
               onPressed: selectedSymbol == null ? null : _deleteSelectedSymbol,
               icon: const Icon(Icons.delete_outline),
-              label: const Text('Excluir'),
+              label: Text(context.l10n.editorDelete),
             ),
             TextButton.icon(
               onPressed: _placedSymbols.isEmpty ? null : _clearAllSymbols,
               icon: const Icon(Icons.layers_clear),
-              label: const Text('Limpar tudo'),
+              label: Text(context.l10n.editorClearAll),
             ),
           ],
         ),
@@ -766,8 +768,8 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
 
     if (_placedSymbols.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Adicione pelo menos um símbolo antes de salvar.'),
+        SnackBar(
+          content: Text(context.l10n.editorAddSymbolFirst),
         ),
       );
       return;

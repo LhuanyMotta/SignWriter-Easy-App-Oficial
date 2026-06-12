@@ -1031,6 +1031,59 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back to lesson'**
   String get learningReturnToLesson;
+  // Editor de sinais
+  String get editorNewSign;
+  String get editorEditSign;
+  String get editorSaveSign;
+  String get editorAddSymbolFirst;
+  String get editorRotateMinus;
+  String get editorRotatePlus;
+  String get editorMirror;
+  String get editorDuplicate;
+  String get editorCenter;
+  String get editorDelete;
+  String get editorClearAll;
+  String get editorTagsHint;
+  String get editorOpenHand;
+  String get editorPoint;
+  String get editorFist;
+  String get editorMoveUp;
+  String get editorMoveDown;
+  String get editorRepeat;
+  String get editorFaceNeutral;
+  String get editorFaceHappy;
+  String get editorLook;
+  String get editorBody;
+  String get editorTilt;
+  String get editorHead;
+  String get editorContact;
+  String get editorLine;
+  String get editorCross;
+  String get editorSymbol;
+
+  // Favoritos
+  String get favoritesSearchHint;
+  String get favoritesRemoveTitle;
+  String get favoritesRemoveContent;
+  String get favoritesClearTitle;
+  String get favoritesClearContent;
+  String get favoritesCancelButton;
+  String get favoritesRemoveButton;
+  String get favoritesClearButton;
+
+  // Perfil
+  String get profileSignOutTitle;
+  String get profileSignOutContent;
+  String get profileSignOutConfirm;
+  String get profileSignOutButton;
+  String get profileDeleteTitle;
+  String get profileDeleteContent;
+  String get profileDeleteConfirm;
+  String get profileDeleteButton;
+  String get profileGallery;
+  String get profileCamera;
+  String get profileExportError;
+
 
   // Auth errors & messages
   String get authErrorInvalidCredentials;
@@ -1044,6 +1097,40 @@ abstract class AppLocalizations {
   String get authErrorLogin;
   String get authErrorSignup;
   String get authErrorCreateAccount;
+
+  String get favoritesAll;
+  String get favoritesEmpty;
+  String get translateNoSignFound;
+  String get translateNotFound;
+  String get editorCategoryLabel;
+  String get remove;
+  String get clear;
+  String get allFilter;
+  String get dictionarySearchHint;
+  String get dictionaryNoSignFound;
+  String get writeSignsNew;
+  String get writeSignsSearchHint;
+  String get writeSignsAll;
+  String get writeSignsEmpty;
+  String get writeSignsEmptyHint;
+  String get writeSignsCategory;
+  String get writeSignsSymbols;
+  String get translateNotFoundPrefix;
+  String get translateErrorMsg;
+  String get quizNoSigns;
+  String get profileErrorUpdatePhoto;
+  String get profileErrorExportData;
+  String get profileErrorDeleteAccount;
+
+  String get homeDictionaryDesc;
+  String get homeTranslateDesc;
+  String get translateAudioSoon;
+  String get translateCameraSoon;
+  String get accessibilitySkip;
+  String get quizExerciseDone;
+  String get quizNext;
+  String get quizScoreMsg;
+
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
@@ -1076,4 +1163,5 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
     'that was used.'
   );
+
 }

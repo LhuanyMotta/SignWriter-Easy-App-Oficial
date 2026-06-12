@@ -254,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen>
       child: _buildInfoCard(
         icon: Icons.menu_book,
         title: context.l10n.featureDictionary,
-        description: 'Consulte sinais cadastrados no Supabase.',
+        description: context.l10n.homeDictionaryDesc,
         buttonText: context.l10n.featureDictionary,
         onTap: () => _viewModel.navigateToDictionary(context),
       ),
@@ -267,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen>
       child: _buildInfoCard(
         icon: Icons.translate,
         title: context.l10n.featureTranslateSigns,
-        description: 'Digite uma palavra ou frase para buscar sinais correspondentes.',
+        description: context.l10n.homeTranslateDesc,
         buttonText: context.l10n.featureTranslateSigns,
         onTap: () => _viewModel.navigateToTranslateSigns(context),
       ),

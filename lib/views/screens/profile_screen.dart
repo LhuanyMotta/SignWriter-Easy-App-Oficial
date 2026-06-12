@@ -337,17 +337,17 @@ void initState() {
           final confirmed = await showDialog<bool>(
             context: context,
             builder: (_) => AlertDialog(
-              title: const Text('Sair da conta'),
-              content: const Text('Tem certeza que deseja sair?'),
+              title: Text(context.l10n.profileSignOutTitle),
+              content: Text(context.l10n.profileSignOutContent),
               actions: [
                 TextButton(  
                   onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancelar'),
+                  child: Text(context.l10n.cancel),
                 ),
                 ElevatedButton(
                   onPressed: () => Navigator.pop(context, true),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  child: const Text('Sair'),
+                  child: Text(context.l10n.profileSignOutButton),
                 ),
               ],
             ),
@@ -364,7 +364,7 @@ void initState() {
           }
         },
         icon: const Icon(Icons.logout),
-        label: const Text('Sair da Conta'),
+        label: Text(context.l10n.profileSignOutConfirm),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.red,
           foregroundColor: Colors.white,
@@ -405,7 +405,7 @@ void initState() {
                     backgroundColor: Color(0xFF2D78BB),
                     child: Icon(Icons.photo_library, color: Colors.white),
                   ),
-                  title: Text('Galeria', style: TextStyle(color: _textColor(context))),
+                  title: Text(context.l10n.profileGallery, style: TextStyle(color: _textColor(context))),
                   onTap: () => Navigator.pop(context, ImageSource.gallery),
                 ),
                 ListTile(
@@ -413,7 +413,7 @@ void initState() {
                     backgroundColor: Color(0xFF4EB1F0),
                     child: Icon(Icons.camera_alt, color: Colors.white),
                   ),
-                  title: Text('Câmera', style: TextStyle(color: _textColor(context))),
+                  title: Text(context.l10n.profileCamera, style: TextStyle(color: _textColor(context))),
                   onTap: () => Navigator.pop(context, ImageSource.camera),
                 ),
               ],
@@ -434,7 +434,7 @@ void initState() {
         content: Text(
           success
               ? 'Foto de perfil atualizada com sucesso!'
-              : viewModel.errorMessage ?? 'Erro ao atualizar foto',
+              : viewModel.errorMessage ?? context.l10n.profileErrorUpdatePhoto,
         ),
         backgroundColor: success ? Colors.green : Colors.red,
       ),
@@ -470,14 +470,14 @@ void initState() {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Excluir Conta'),
+        title: Text(context.l10n.profileDeleteTitle),
         content: const Text(
           'Tem certeza que deseja excluir sua conta? Esta ação é irreversível.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(context.l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -492,14 +492,14 @@ void initState() {
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(viewModel.errorMessage ?? 'Erro ao excluir conta'),
+                    content: Text(viewModel.errorMessage ?? context.l10n.profileErrorDeleteAccount),
                     backgroundColor: Colors.red,
                   ),
                 );
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Excluir'),
+            child: Text(context.l10n.profileDeleteButton),
           ),
         ],
       ),

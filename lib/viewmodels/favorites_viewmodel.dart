@@ -8,10 +8,20 @@ class FavoritesViewModel extends ChangeNotifier {
   List<SignModel> _favorites = [];
   List<SignModel> _filteredFavorites = [];
 
-  List<String> _categories = ['Todos'];
+  String _allLabel = 'All';
+  List<String> _categories = ['All'];
 
   String _searchQuery = '';
-  String _selectedCategory = 'Todos';
+  String _selectedCategory = 'All';
+
+  void setAllLabel(String label) {
+    _allLabel = label;
+    if (_selectedCategory == 'All' || _categories.isEmpty || _categories.first != label) {
+      _categories = [label, ..._categories.skip(1)];
+      _selectedCategory = label;
+      notifyListeners();
+    }
+  }
 
   bool _isLoading = false;
 
@@ -76,7 +86,8 @@ class FavoritesViewModel extends ChangeNotifier {
 
       categorySet.sort();
 
-      _categories = ['Todos', ...categorySet];
+      _categories = [_allLabel, ...categorySet];
+      _selectedCategory = _allLabel;
 
       _filteredFavorites = List.from(_favorites);
 
@@ -106,7 +117,7 @@ class FavoritesViewModel extends ChangeNotifier {
   void _applyFilters() {
     _filteredFavorites = _favorites.where((sign) {
       final matchesCategory =
-          _selectedCategory == 'Todos' || sign.category == _selectedCategory;
+          _selectedCategory == _allLabel || sign.category == _selectedCategory;
 
       final searchLower = _searchQuery.toLowerCase();
 

@@ -79,7 +79,7 @@ class TranslateViewModel extends ChangeNotifier {
         _recentTranslations.removeLast();
       }
     } catch (e) {
-      _errorMessage = 'Erro ao traduzir: $e';
+      _errorMessage = 'Translation error: $e';
     } finally {
       _isTranslating = false;
       notifyListeners();

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../l10n/l10n.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/sign_model.dart';
@@ -86,9 +88,9 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
             indicatorColor: Colors.white,
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
-            tabs: const [
-              Tab(text: 'Texto → Libras'),
-              Tab(text: 'Libras → Texto'),
+            tabs: [
+              Tab(text: context.l10n.tabTextToLibras),
+              Tab(text: context.l10n.tabLibrasToText),
             ],
           ),
         ),
@@ -106,7 +108,7 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
                   _buildTranslateButton(viewModel),
                   SizedBox(height: AppSpacing.value(context, 24)),
                   Text(
-                    'Resultado',
+                    context.l10n.resultTitle,
                     style: TextStyle(
                       color: textColor,
                       fontSize: 18,
@@ -131,8 +133,8 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
   Widget _buildInputTitle() {
     return Text(
       _tabController.index == 0
-          ? 'Digite o texto'
-          : 'Capturar Libras para texto',
+          ? context.l10n.typeText
+          : context.l10n.tabLibrasToText,
       style: TextStyle(
         color: textColor,
         fontSize: 16,
@@ -159,8 +161,8 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
             style: TextStyle(color: textColor),
             decoration: InputDecoration(
               hintText: _tabController.index == 0
-                  ? 'Digite o texto para traduzir'
-                  : 'Recurso de imagem/câmera será implementado em breve',
+                  ? context.l10n.inputHintTextToLibras
+                  : context.l10n.translateCameraSoon,
               hintStyle: TextStyle(color: subtitleColor),
               contentPadding: AppSpacing.all(context, 16),
               border: InputBorder.none,
@@ -177,21 +179,21 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
                   color: const Color(0xFF2D78BB),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Reconhecimento por áudio será implementado em breve.'),
+                      SnackBar(
+                        content: Text(context.l10n.translateAudioSoon),
                       ),
                     );
                   },
                 ),
                 if (_tabController.index == 1)
                   IconButton(
-                    tooltip: 'Câmera',
+                    tooltip: context.l10n.profileCamera,
                     icon: const Icon(Icons.camera_alt),
                     color: const Color(0xFF2D78BB),
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Captura pela câmera será implementada em breve.'),
+                        SnackBar(
+                          content: Text(context.l10n.translateCameraSoon),
                         ),
                       );
                     },
@@ -234,8 +236,8 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
               )
             : Text(
                 _tabController.index == 0
-                    ? 'Traduzir para Libras'
-                    : 'Traduzir para Texto',
+                    ? context.l10n.translateToLibras
+                    : context.l10n.tabLibrasToText,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
       ),
@@ -281,7 +283,7 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
     if (viewModel.lastTranslation == null) {
       return Center(
         child: Text(
-          'A tradução para Libras aparecerá aqui.',
+          context.l10n.librasTranslationPlaceholder,
           textAlign: TextAlign.center,
           style: TextStyle(color: subtitleColor, fontSize: 16),
         ),
@@ -291,7 +293,7 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
     if (viewModel.signs.isEmpty) {
       return Center(
         child: Text(
-          'Nenhum sinal encontrado para esse texto.',
+          context.l10n.translateNoSignFound,
           textAlign: TextAlign.center,
           style: TextStyle(color: subtitleColor, fontSize: 16),
         ),

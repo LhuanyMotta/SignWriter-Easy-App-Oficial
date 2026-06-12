@@ -1,437 +1,630 @@
 {
   "categories": [
     {
-      "id": "intro-signwriting",
+      "id": "cat_introducao",
       "title": "Introdução ao SignWriting",
-      "description": "Uma trilha inicial para entender o que é o SignWriting, como ler sinais escritos e como praticar no SignWriter Fácil.",
+      "description": "Aprenda os fundamentos do sistema de escrita visual de sinais",
       "icon": "menu_book",
       "color": "#2D78BB",
       "lessons": [
         {
-          "id": "intro-app",
-          "title": "O que é o SignWriter Fácil?",
-          "summary": "Conheça a proposta do app e como a trilha foi organizada para você aprender aos poucos.",
-          "estimatedMinutes": 4,
-          "difficulty": "Iniciante",
-          "objectives": [
-            "Entender a proposta do aplicativo.",
-            "Reconhecer a lógica da trilha Aprender e Praticar.",
-            "Saber o que esperar das primeiras lições."
-          ],
-          "sections": [
-            {
-              "title": "Uma porta de entrada para o SignWriting",
-              "body": "O SignWriter Fácil foi pensado para ajudar você a estudar, consultar, praticar e produzir sinais escritos com mais segurança. A ideia do app não é jogar símbolos soltos na tela, mas criar um caminho simples para observar o sinal, entender sua estrutura e praticar aos poucos."
-            },
-            {
-              "title": "Como esta trilha foi organizada",
-              "body": "Nesta área, o conteúdo começa pelos fundamentos do sistema de escrita. Primeiro você entende o que é o SignWriting, depois aprende a observar mãos, movimentos, expressões e organização espacial. Só depois disso a prática fica mais natural.",
-              "bullets": [
-                "Lições curtas e focadas.",
-                "Exercícios rápidos para revisão.",
-                "Progresso salvo localmente no dispositivo."
-              ]
-            },
-            {
-              "title": "Como estudar melhor aqui",
-              "body": "Leia a explicação, observe os elementos principais e responda aos exercícios sem pressa. Se precisar, refaça a lição. No SignWriting, reconhecer padrões visuais é mais importante do que decorar frases prontas.",
-              "highlight": "Avance em pequenas etapas: compreender a estrutura do sinal vale mais do que correr para terminar a trilha."
-            }
-          ],
-          "references": [
-            "Valerie Sutton - SignWriting Basics (2022)",
-            "SignWriting Basics Instruction Manual"
-          ],
-          "exercises": [
-            {
-              "id": "intro-app-q1",
-              "type": "multipleChoice",
-              "prompt": "Qual é a proposta principal desta trilha no app?",
-              "options": [
-                {
-                  "id": "a",
-                  "label": "Ensinar somente atalhos de navegação."
-                },
-                {
-                  "id": "b",
-                  "label": "Ajudar você a entender e praticar a escrita de sinais passo a passo."
-                },
-                {
-                  "id": "c",
-                  "label": "Substituir totalmente o estudo de Libras."
-                }
-              ],
-              "correctOptionId": "b",
-              "explanation": "A trilha foi pensada para apresentar o sistema, apoiar a leitura e reforçar a prática com exercícios curtos."
-            },
-            {
-              "id": "intro-app-q2",
-              "type": "trueFalse",
-              "prompt": "Verdadeiro ou falso: a trilha começa pelos fundamentos do sistema antes de avançar para práticas mais amplas.",
-              "options": [
-                {
-                  "id": "true",
-                  "label": "Verdadeiro"
-                },
-                {
-                  "id": "false",
-                  "label": "Falso"
-                }
-              ],
-              "correctOptionId": "true",
-              "explanation": "O objetivo do MVP é construir base primeiro: sistema, leitura e reconhecimento."
-            }
-          ]
-        },
-        {
-          "id": "what-is-signwriting",
-          "title": "O que é SignWriting?",
-          "summary": "Entenda o sistema criado por Valerie Sutton e por que ele pode registrar línguas de sinais.",
-          "estimatedMinutes": 6,
-          "difficulty": "Iniciante",
-          "objectives": [
-            "Identificar o SignWriting como sistema de escrita.",
-            "Conhecer sua origem e referência principal.",
-            "Perceber que ele registra movimento, configuração e expressão."
-          ],
-          "sections": [
-            {
-              "title": "Um sistema de escrita para línguas de sinais",
-              "body": "SignWriting é um sistema visual usado para escrever línguas de sinais. Em vez de representar sons, ele representa o que o corpo faz ao sinalizar: formato das mãos, orientação, movimento, expressões faciais e outros componentes relevantes."
-            },
-            {
-              "title": "Origem e referência",
-              "body": "Segundo os materiais de Valerie Sutton, o sistema foi desenvolvido em 1974 e evoluiu ao longo dos anos para atender a diferentes línguas de sinais. O conjunto internacional de símbolos mais citado é o ISWA 2008, que organiza símbolos usados para mãos, movimentos, rosto, cabeça e corpo."
-            },
-            {
-              "title": "O que o sistema tenta registrar",
-              "body": "A escrita procura registrar como o sinal é produzido visualmente. Isso significa que o leitor aprende a observar padrões do sinal e não apenas traduzir palavra por palavra.",
-              "bullets": [
-                "Configuração e orientação das mãos.",
-                "Trajetória do movimento.",
-                "Expressões faciais e postura corporal.",
-                "Organização espacial do sinal."
-              ]
-            }
-          ],
-          "references": [
-            "Valerie Sutton - SignWriting Basics (2022)",
-            "ISWA 2008 Reference Manual",
-            "A Cross-Linguistic Guide to SignWriting"
-          ],
-          "exercises": [
-            {
-              "id": "what-is-sw-q1",
-              "type": "multipleChoice",
-              "prompt": "No contexto desta trilha, o SignWriting é apresentado como:",
-              "options": [
-                {
-                  "id": "a",
-                  "label": "Um conjunto de emojis para resumir sinais."
-                },
-                {
-                  "id": "b",
-                  "label": "Um sistema visual para escrever línguas de sinais."
-                },
-                {
-                  "id": "c",
-                  "label": "Uma lista fixa de palavras em português."
-                }
-              ],
-              "correctOptionId": "b",
-              "explanation": "SignWriting é um sistema de escrita visual voltado para línguas de sinais."
-            },
-            {
-              "id": "what-is-sw-q2",
-              "type": "trueFalse",
-              "prompt": "Verdadeiro ou falso: o SignWriting foi criado para registrar aspectos visuais do sinal, como mãos, movimento e expressões.",
-              "options": [
-                {
-                  "id": "true",
-                  "label": "Verdadeiro"
-                },
-                {
-                  "id": "false",
-                  "label": "Falso"
-                }
-              ],
-              "correctOptionId": "true",
-              "explanation": "Essa é justamente a força do sistema: escrever o sinal a partir do que é visto."
-            },
-            {
-              "id": "what-is-sw-q3",
-              "type": "multipleChoice",
-              "prompt": "Qual referência é usada como base internacional para o conjunto de símbolos mencionado nesta lição?",
-              "options": [
-                {
-                  "id": "a",
-                  "label": "ISWA 2008"
-                },
-                {
-                  "id": "b",
-                  "label": "ASCII 95"
-                },
-                {
-                  "id": "c",
-                  "label": "Unicode Braille Legacy"
-                }
-              ],
-              "correctOptionId": "a",
-              "explanation": "O ISWA 2008 é uma referência importante para organizar símbolos do SignWriting."
-            }
-          ]
-        },
-        {
-          "id": "read-written-sign",
-          "title": "Como ler um sinal escrito",
-          "summary": "Aprenda a observar mãos, movimentos, expressões e a organização visual do sinal.",
-          "estimatedMinutes": 7,
-          "difficulty": "Iniciante",
-          "objectives": [
-            "Identificar componentes centrais de um sinal escrito.",
-            "Relacionar símbolos de mão, movimento e expressão.",
-            "Entender que o arranjo visual importa na leitura."
-          ],
-          "sections": [
-            {
-              "title": "Observe as mãos primeiro",
-              "body": "As mãos costumam ser um bom ponto de partida. O leitor observa configuração, orientação e relação entre uma mão e outra. O símbolo da mão ajuda a perceber a forma e a direção da palma."
-            },
-            {
-              "title": "Depois acompanhe o movimento",
-              "body": "Setas e marcas indicam direção, repetição e trajetórias. Nem todo sinal é estático. Muitas vezes, entender a seta correta é o que diferencia um gesto isolado de um sinal completo."
-            },
-            {
-              "title": "Rosto, corpo e arranjo espacial",
-              "body": "Expressões faciais, cabeça e corpo complementam a leitura. Além disso, o sinal é lido como um conjunto visual organizado no espaço. O SignWriting não depende apenas de uma sequência linear; a posição relativa dos elementos também comunica significado.",
-              "highlight": "Ler SignWriting é observar um conjunto visual: mãos, movimento, expressão e posição trabalham juntos."
-            }
-          ],
-          "references": [
-            "SignWriting Basics Instruction Manual",
-            "ISWA 2008 Reference Manual"
-          ],
-          "exercises": [
-            {
-              "id": "read-written-sign-q1",
-              "type": "multipleChoice",
-              "prompt": "Ao começar a leitura de um sinal escrito, qual observação costuma ajudar primeiro?",
-              "options": [
-                {
-                  "id": "a",
-                  "label": "A cor do tema do aplicativo."
-                },
-                {
-                  "id": "b",
-                  "label": "A configuração e a orientação das mãos."
-                },
-                {
-                  "id": "c",
-                  "label": "A quantidade de páginas da lição."
-                }
-              ],
-              "correctOptionId": "b",
-              "explanation": "As mãos oferecem uma primeira pista importante sobre a estrutura do sinal."
-            },
-            {
-              "id": "read-written-sign-q2",
-              "type": "trueFalse",
-              "prompt": "Verdadeiro ou falso: no SignWriting, a posição relativa dos elementos pode influenciar a leitura do sinal.",
-              "options": [
-                {
-                  "id": "true",
-                  "label": "Verdadeiro"
-                },
-                {
-                  "id": "false",
-                  "label": "Falso"
-                }
-              ],
-              "correctOptionId": "true",
-              "explanation": "O sinal é lido como um arranjo visual, não apenas como uma lista linear de marcas."
-            },
-            {
-              "id": "read-written-sign-q3",
-              "type": "matching",
-              "prompt": "Associe cada componente àquilo que ele ajuda a mostrar.",
-              "pairs": [
-                {
-                  "left": "Mãos",
-                  "right": "Configuração e orientação"
-                },
-                {
-                  "left": "Movimento",
-                  "right": "Trajetória e direção"
-                },
-                {
-                  "left": "Rosto e corpo",
-                  "right": "Expressão e apoio visual"
-                }
-              ],
-              "explanation": "Esses elementos trabalham em conjunto na leitura do sinal escrito."
-            }
-          ]
-        },
-        {
-          "id": "navigate-app",
-          "title": "Como navegar no app",
-          "summary": "Veja como usar as áreas do app para estudar, consultar sinais e acompanhar seu avanço.",
+          "id": "lesson_o_que_e_sw",
+          "title": "O que é o SignWriting?",
+          "summary": "Conheça o sistema de escrita visual criado por Valerie Sutton para representar línguas de sinais.",
           "estimatedMinutes": 5,
-          "difficulty": "Iniciante",
+          "difficulty": "iniciante",
           "objectives": [
-            "Reconhecer os módulos principais do app.",
-            "Relacionar cada módulo a uma tarefa prática.",
-            "Entender onde o progresso aparece."
+            "Entender o que é o SignWriting",
+            "Conhecer a história do sistema",
+            "Identificar os elementos básicos"
           ],
           "sections": [
             {
-              "title": "Aprender e Praticar",
-              "body": "Esta é a área da trilha pedagógica. Aqui você encontra categorias, lições e exercícios curtos. Quando conclui uma lição, seu progresso local é atualizado."
+              "title": "O que é o SignWriting?",
+              "body": "O SignWriting é um sistema de escrita visual criado por Valerie Sutton em 1974. Ele permite representar graficamente os movimentos das mãos, expressões faciais e posturas corporais usados nas línguas de sinais.",
+              "bullets": [
+                "Criado em 1974 por Valerie Sutton",
+                "Representa visualmente qualquer língua de sinais do mundo",
+                "Usado em mais de 40 países",
+                "Reconhecido pela UNESCO"
+              ],
+              "highlight": "O SignWriting é o único sistema de escrita capaz de representar qualquer língua de sinais do mundo!"
             },
             {
-              "title": "Outras áreas que apoiam o estudo",
-              "body": "O app também reúne recursos complementares para consulta e produção.",
+              "title": "Por que aprender SignWriting?",
+              "body": "Aprender SignWriting permite que surdos possam escrever e ler na própria língua materna, sem depender do português escrito. É uma ferramenta poderosa para educação e comunicação.",
               "bullets": [
-                "Dicionário: consulta sinais já cadastrados.",
-                "Traduzir Sinais: busca apoiar a conversão entre texto e sinais.",
-                "Escrever Sinais: espaço para criar e salvar sinais autorais."
+                "Escrita na própria língua materna dos surdos",
+                "Facilita o aprendizado de crianças surdas",
+                "Preserva e documenta línguas de sinais",
+                "Promove autonomia e autoestima"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_sw_1",
+              "type": "multipleChoice",
+              "prompt": "Em que ano o SignWriting foi criado?",
+              "options": [
+                { "id": "a", "label": "1960" },
+                { "id": "b", "label": "1974" },
+                { "id": "c", "label": "1985" },
+                { "id": "d", "label": "2000" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "O SignWriting foi criado por Valerie Sutton em 1974, como parte do seu sistema de notação de movimentos."
+            },
+            {
+              "id": "ex_sw_2",
+              "type": "multipleChoice",
+              "prompt": "Quem criou o sistema SignWriting?",
+              "options": [
+                { "id": "a", "label": "William Stokoe" },
+                { "id": "b", "label": "Gallaudet Edwards" },
+                { "id": "c", "label": "Valerie Sutton" },
+                { "id": "d", "label": "Charles Darwin" }
+              ],
+              "correctOptionId": "c",
+              "explanation": "Valerie Sutton é a criadora do SignWriting, um sistema que ela desenvolveu inicialmente para notação de dança."
+            },
+            {
+              "id": "ex_sw_3",
+              "type": "trueFalse",
+              "prompt": "O SignWriting só pode ser usado para representar a Língua Brasileira de Sinais (Libras).",
+              "options": [
+                { "id": "verdadeiro", "label": "Verdadeiro" },
+                { "id": "falso", "label": "Falso" }
+              ],
+              "correctOptionId": "falso",
+              "explanation": "O SignWriting pode representar qualquer língua de sinais do mundo, sendo usado em mais de 40 países."
+            }
+          ],
+          "references": ["Sutton, V. SignWriting: The world's first writing system for sign languages. 1974."],
+          "relatedSignIds": []
+        },
+        {
+          "id": "lesson_elementos_basicos",
+          "title": "Elementos básicos do SignWriting",
+          "summary": "Aprenda os quatro elementos fundamentais que compõem qualquer sinal no SignWriting.",
+          "estimatedMinutes": 8,
+          "difficulty": "iniciante",
+          "objectives": [
+            "Identificar os 4 elementos do SignWriting",
+            "Entender a função de cada elemento",
+            "Reconhecer como elementos se combinam"
+          ],
+          "sections": [
+            {
+              "title": "Os quatro elementos",
+              "body": "Todo sinal no SignWriting é composto por quatro elementos fundamentais que trabalham juntos para representar a comunicação visual completa.",
+              "bullets": [
+                "Mãos: formato e posição das mãos",
+                "Movimentos: direção e tipo de movimento",
+                "Expressões faciais: rosto e olhos",
+                "Corpo: postura e orientação corporal"
+              ],
+              "highlight": "Esses quatro elementos juntos permitem representar qualquer sinal com precisão!"
+            },
+            {
+              "title": "As mãos no SignWriting",
+              "body": "A configuração das mãos é o elemento mais visível do SignWriting. Existem dezenas de formatos diferentes que representam como os dedos estão posicionados durante o sinal.",
+              "bullets": [
+                "Mão aberta: todos os dedos estendidos",
+                "Punho fechado: todos os dedos dobrados",
+                "Mão em L: dedo indicador e polegar estendidos",
+                "Mão em V: índice e médio estendidos"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_elem_1",
+              "type": "multipleChoice",
+              "prompt": "Quantos elementos fundamentais compõem o SignWriting?",
+              "options": [
+                { "id": "a", "label": "2" },
+                { "id": "b", "label": "3" },
+                { "id": "c", "label": "4" },
+                { "id": "d", "label": "6" }
+              ],
+              "correctOptionId": "c",
+              "explanation": "O SignWriting possui 4 elementos: mãos, movimentos, expressões faciais e corpo."
+            },
+            {
+              "id": "ex_elem_2",
+              "type": "trueFalse",
+              "prompt": "As expressões faciais são um elemento importante do SignWriting.",
+              "options": [
+                { "id": "verdadeiro", "label": "Verdadeiro" },
+                { "id": "falso", "label": "Falso" }
+              ],
+              "correctOptionId": "verdadeiro",
+              "explanation": "Sim! As expressões faciais são um dos 4 elementos fundamentais e são essenciais para o significado dos sinais."
+            },
+            {
+              "id": "ex_elem_3",
+              "type": "multipleChoice",
+              "prompt": "Qual elemento do SignWriting representa a direção e tipo de movimento?",
+              "options": [
+                { "id": "a", "label": "Mãos" },
+                { "id": "b", "label": "Movimentos" },
+                { "id": "c", "label": "Expressões faciais" },
+                { "id": "d", "label": "Corpo" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Os movimentos representam a direção, velocidade e tipo de deslocamento das mãos durante o sinal."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        }
+      ]
+    },
+    {
+      "id": "cat_libras_basico",
+      "title": "Libras Básico",
+      "description": "Sinais essenciais para comunicação cotidiana em Libras",
+      "icon": "sign_language",
+      "color": "#1D9E75",
+      "lessons": [
+        {
+          "id": "lesson_cumprimentos",
+          "title": "Cumprimentos e saudações",
+          "summary": "Aprenda os sinais mais usados para cumprimentar e se despedir em Libras.",
+          "estimatedMinutes": 6,
+          "difficulty": "iniciante",
+          "objectives": [
+            "Aprender sinais de saudação",
+            "Aprender sinais de despedida",
+            "Praticar sinais de cortesia"
+          ],
+          "sections": [
+            {
+              "title": "Saudações básicas",
+              "body": "Os cumprimentos são os primeiros sinais que devemos aprender em qualquer língua. Em Libras, as saudações são simples e expressivas.",
+              "bullets": [
+                "OLÁ: mão aberta, balançar levemente",
+                "BOM DIA: movimento descendente à frente do corpo",
+                "BOA TARDE: variação do bom dia com movimento diferente",
+                "BOA NOITE: mão em arco descendente"
+              ],
+              "highlight": "Sempre use expressão facial positiva ao cumprimentar!"
+            },
+            {
+              "title": "Despedidas",
+              "body": "As despedidas em Libras são igualmente importantes para uma comunicação completa e respeitosa.",
+              "bullets": [
+                "TCHAU: mão aberta, balançar os dedos",
+                "ATÉ LOGO: sinal de 'até' + 'logo'",
+                "ATÉ AMANHÃ: sinal de 'até' + 'amanhã'",
+                "FOI UM PRAZER: expressão de satisfação"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_cum_1",
+              "type": "multipleChoice",
+              "prompt": "Qual é a expressão facial correta ao cumprimentar alguém em Libras?",
+              "options": [
+                { "id": "a", "label": "Expressão séria e formal" },
+                { "id": "b", "label": "Expressão positiva e amistosa" },
+                { "id": "c", "label": "Sem expressão facial" },
+                { "id": "d", "label": "Expressão de surpresa" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "Em Libras, as expressões faciais fazem parte da gramática. Ao cumprimentar, use uma expressão positiva e amistosa."
+            },
+            {
+              "id": "ex_cum_2",
+              "type": "trueFalse",
+              "prompt": "Em Libras, o sinal de TCHAU é feito balançando a mão aberta.",
+              "options": [
+                { "id": "verdadeiro", "label": "Verdadeiro" },
+                { "id": "falso", "label": "Falso" }
+              ],
+              "correctOptionId": "verdadeiro",
+              "explanation": "Sim, o sinal de TCHAU é feito com a mão aberta, balançando os dedos de um lado para o outro."
+            },
+            {
+              "id": "ex_cum_3",
+              "type": "multipleChoice",
+              "prompt": "Por que as expressões faciais são importantes em Libras?",
+              "options": [
+                { "id": "a", "label": "São apenas decorativas" },
+                { "id": "b", "label": "Fazem parte da gramática da língua" },
+                { "id": "c", "label": "São opcionais e podem ser ignoradas" },
+                { "id": "d", "label": "São usadas apenas por crianças" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "As expressões faciais são parte fundamental da gramática de Libras, modificando o significado dos sinais."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        },
+        {
+          "id": "lesson_numeros",
+          "title": "Números em Libras",
+          "summary": "Aprenda a fazer os números de 1 a 10 em Libras e como usá-los no dia a dia.",
+          "estimatedMinutes": 7,
+          "difficulty": "iniciante",
+          "objectives": [
+            "Aprender os números de 1 a 10",
+            "Entender a lógica dos números em Libras",
+            "Praticar uso de números em contexto"
+          ],
+          "sections": [
+            {
+              "title": "Números de 1 a 5",
+              "body": "Os números de 1 a 5 em Libras seguem uma lógica parecida com a dos dedos da mão. Cada número é representado pela quantidade de dedos estendidos.",
+              "bullets": [
+                "1: apenas o dedo indicador estendido",
+                "2: indicador e médio estendidos",
+                "3: indicador, médio e anelar estendidos",
+                "4: todos os dedos exceto o polegar",
+                "5: mão aberta, todos os dedos estendidos"
+              ],
+              "highlight": "Os números de 1 a 5 são os mais fáceis — basta contar nos dedos!"
+            },
+            {
+              "title": "Números de 6 a 10",
+              "body": "Os números de 6 a 10 têm configurações próprias que diferem da simples contagem de dedos.",
+              "bullets": [
+                "6: polegar e mindinho se tocam",
+                "7: polegar e anelar se tocam",
+                "8: polegar e médio se tocam",
+                "9: polegar e indicador se tocam (anel)",
+                "10: polegar para cima com movimento"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_num_1",
+              "type": "multipleChoice",
+              "prompt": "Como se faz o número 5 em Libras?",
+              "options": [
+                { "id": "a", "label": "Mão fechada" },
+                { "id": "b", "label": "Apenas o polegar estendido" },
+                { "id": "c", "label": "Mão aberta, todos os dedos estendidos" },
+                { "id": "d", "label": "Indicador e médio estendidos" }
+              ],
+              "correctOptionId": "c",
+              "explanation": "O número 5 é representado pela mão completamente aberta, com todos os dedos estendidos."
+            },
+            {
+              "id": "ex_num_2",
+              "type": "trueFalse",
+              "prompt": "Em Libras, o número 9 é feito com o polegar e o indicador se tocando, formando um anel.",
+              "options": [
+                { "id": "verdadeiro", "label": "Verdadeiro" },
+                { "id": "falso", "label": "Falso" }
+              ],
+              "correctOptionId": "verdadeiro",
+              "explanation": "Sim! O número 9 é feito com polegar e indicador se tocando, formando o formato de um anel."
+            },
+            {
+              "id": "ex_num_3",
+              "type": "multipleChoice",
+              "prompt": "Qual dedo fica estendido no número 1 em Libras?",
+              "options": [
+                { "id": "a", "label": "Polegar" },
+                { "id": "b", "label": "Indicador" },
+                { "id": "c", "label": "Médio" },
+                { "id": "d", "label": "Mindinho" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "No número 1, apenas o dedo indicador fica estendido, apontando para cima."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        }
+      ]
+    },
+    {
+      "id": "cat_alfabeto",
+      "title": "Alfabeto em Sinais",
+      "description": "Domine o alfabeto manual e a soletração em Libras",
+      "icon": "gesture",
+      "color": "#D85A30",
+      "lessons": [
+        {
+          "id": "lesson_vogais",
+          "title": "Vogais no alfabeto manual",
+          "summary": "Aprenda as configurações de mão para as vogais A, E, I, O e U no alfabeto manual da Libras.",
+          "estimatedMinutes": 6,
+          "difficulty": "iniciante",
+          "objectives": [
+            "Aprender as 5 vogais no alfabeto manual",
+            "Diferenciar as configurações de cada vogal",
+            "Praticar a soletração de sílabas simples"
+          ],
+          "sections": [
+            {
+              "title": "As vogais em Libras",
+              "body": "O alfabeto manual é usado para soletrar palavras que não têm um sinal específico. As vogais têm configurações distintas que precisam ser memorizadas.",
+              "bullets": [
+                "A: mão fechada (punho)",
+                "E: dedos dobrados, unidos",
+                "I: apenas o mindinho estendido",
+                "O: dedos curvados formando um círculo",
+                "U: indicador e médio estendidos e unidos"
+              ],
+              "highlight": "Pratique as vogais até que elas sejam automáticas!"
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_vog_1",
+              "type": "multipleChoice",
+              "prompt": "Como é a configuração da vogal 'A' no alfabeto manual?",
+              "options": [
+                { "id": "a", "label": "Mão aberta" },
+                { "id": "b", "label": "Mão fechada (punho)" },
+                { "id": "c", "label": "Apenas o indicador estendido" },
+                { "id": "d", "label": "Dedos em círculo" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "A vogal A é representada pela mão fechada em punho, com o polegar ao lado."
+            },
+            {
+              "id": "ex_vog_2",
+              "type": "multipleChoice",
+              "prompt": "Qual vogal é representada com apenas o dedo mindinho estendido?",
+              "options": [
+                { "id": "a", "label": "A" },
+                { "id": "b", "label": "E" },
+                { "id": "c", "label": "I" },
+                { "id": "d", "label": "U" }
+              ],
+              "correctOptionId": "c",
+              "explanation": "A vogal I é representada com apenas o dedo mindinho estendido, os outros dedos fechados."
+            },
+            {
+              "id": "ex_vog_3",
+              "type": "trueFalse",
+              "prompt": "A vogal O é feita com os dedos curvados formando a forma de um círculo.",
+              "options": [
+                { "id": "verdadeiro", "label": "Verdadeiro" },
+                { "id": "falso", "label": "Falso" }
+              ],
+              "correctOptionId": "verdadeiro",
+              "explanation": "Sim! A vogal O é feita com os dedos curvados e unidos na ponta, formando um círculo ou oval."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        },
+        {
+          "id": "lesson_consoantes",
+          "title": "Consoantes principais",
+          "summary": "Aprenda as consoantes mais usadas no alfabeto manual da Libras.",
+          "estimatedMinutes": 10,
+          "difficulty": "iniciante",
+          "objectives": [
+            "Aprender as consoantes B, C, D, F, G, H",
+            "Aprender as consoantes L, M, N, P, R, S, T",
+            "Praticar soletração de palavras curtas"
+          ],
+          "sections": [
+            {
+              "title": "Consoantes B a H",
+              "body": "As primeiras consoantes do alfabeto manual têm configurações variadas. Algumas são parecidas com a letra escrita, o que facilita a memorização.",
+              "bullets": [
+                "B: quatro dedos estendidos e unidos, polegar dobrado",
+                "C: mão em forma de C, dedos curvados",
+                "D: indicador para cima, outros dedos curvados tocando o polegar",
+                "F: polegar e indicador se tocam, outros estendidos",
+                "G: indicador aponta para o lado",
+                "H: indicador e médio estendidos horizontalmente"
               ]
             },
             {
-              "title": "Como acompanhar a evolução",
-              "body": "A barra de progresso desta trilha mostra quantas lições você concluiu dentro da categoria e no total. Ao terminar a prática de uma lição, o cartão da categoria e o resumo geral são atualizados."
+              "title": "Consoantes L a T",
+              "body": "A segunda parte das consoantes completa o alfabeto manual necessário para soletrar palavras completas.",
+              "bullets": [
+                "L: polegar e indicador formam um L",
+                "M: três dedos sobre o polegar",
+                "N: dois dedos sobre o polegar",
+                "P: indicador aponta para baixo",
+                "R: indicador e médio cruzados",
+                "S: punho fechado com polegar sobre os dedos",
+                "T: polegar entre indicador e médio"
+              ],
+              "highlight": "Combine vogais e consoantes para praticar a soletração!"
             }
-          ],
-          "references": [
-            "Estrutura pedagógica do SignWriter Fácil",
-            "Fluxo do MVP Aprender e Praticar"
           ],
           "exercises": [
             {
-              "id": "navigate-app-q1",
+              "id": "ex_con_1",
               "type": "multipleChoice",
-              "prompt": "Onde você encontra a trilha com lições e exercícios desta implementação?",
+              "prompt": "Qual consoante é feita com o polegar e indicador formando a letra 'L'?",
               "options": [
-                {
-                  "id": "a",
-                  "label": "Na área Aprender e Praticar."
-                },
-                {
-                  "id": "b",
-                  "label": "Somente na tela de perfil."
-                },
-                {
-                  "id": "c",
-                  "label": "Apenas no editor de sinais."
-                }
+                { "id": "a", "label": "J" },
+                { "id": "b", "label": "L" },
+                { "id": "c", "label": "T" },
+                { "id": "d", "label": "V" }
               ],
-              "correctOptionId": "a",
-              "explanation": "A trilha foi implementada dentro da área Aprender e Praticar."
+              "correctOptionId": "b",
+              "explanation": "A letra L no alfabeto manual é feita exatamente como parece: polegar e indicador formando um L."
             },
             {
-              "id": "navigate-app-q2",
+              "id": "ex_con_2",
               "type": "trueFalse",
-              "prompt": "Verdadeiro ou falso: concluir a prática de uma lição atualiza o progresso local da categoria.",
+              "prompt": "A letra C no alfabeto manual tem a forma de um C com a mão.",
               "options": [
-                {
-                  "id": "true",
-                  "label": "Verdadeiro"
-                },
-                {
-                  "id": "false",
-                  "label": "Falso"
-                }
+                { "id": "verdadeiro", "label": "Verdadeiro" },
+                { "id": "falso", "label": "Falso" }
               ],
-              "correctOptionId": "true",
-              "explanation": "A conclusão da prática é o evento usado para salvar a lição como concluída."
+              "correctOptionId": "verdadeiro",
+              "explanation": "Sim! A letra C é uma das mais intuitivas: a mão forma exatamente o formato da letra C."
+            },
+            {
+              "id": "ex_con_3",
+              "type": "multipleChoice",
+              "prompt": "Como se faz a letra R no alfabeto manual?",
+              "options": [
+                { "id": "a", "label": "Punho fechado" },
+                { "id": "b", "label": "Indicador e médio cruzados" },
+                { "id": "c", "label": "Mão aberta" },
+                { "id": "d", "label": "Polegar estendido" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "A letra R é feita com o indicador e o médio cruzados, os outros dedos fechados."
             }
-          ]
-        },
+          ],
+          "references": [],
+          "relatedSignIds": []
+        }
+      ]
+    },
+    {
+      "id": "cat_comunicacao_cotidiana",
+      "title": "Comunicação Cotidiana",
+      "description": "Sinais para situações do dia a dia: família, cores, alimentos e mais",
+      "icon": "face",
+      "color": "#533AB7",
+      "lessons": [
         {
-          "id": "recognition-practice",
-          "title": "Primeira prática de reconhecimento",
-          "summary": "Revise os conceitos principais e faça uma última prática curta para fixar a base.",
-          "estimatedMinutes": 6,
-          "difficulty": "Iniciante",
+          "id": "lesson_familia",
+          "title": "Família em Libras",
+          "summary": "Aprenda os sinais para os membros da família e como falar sobre parentesco.",
+          "estimatedMinutes": 8,
+          "difficulty": "iniciante",
           "objectives": [
-            "Revisar a ideia central do SignWriting.",
-            "Retomar os componentes da leitura.",
-            "Concluir uma prática de reconhecimento no app."
+            "Aprender sinais dos membros da família",
+            "Entender como expressar parentesco",
+            "Praticar apresentações familiares"
           ],
           "sections": [
             {
-              "title": "O que revisar antes de responder",
-              "body": "Antes de marcar as alternativas, retome mentalmente três perguntas: o que as mãos mostram, o que o movimento indica e como rosto/corpo ajudam a leitura. Essa sequência simples ajuda bastante no começo."
-            },
-            {
-              "title": "Uma prática curta e objetiva",
-              "body": "Você não precisa acertar tudo de primeira. O objetivo é consolidar observação, leitura e navegação. Repetir a prática faz parte do aprendizado."
+              "title": "Membros da família",
+              "body": "Os sinais de família são essenciais para se apresentar e falar sobre as pessoas próximas. Em Libras, muitos sinais de família têm uma lógica baseada no rosto.",
+              "bullets": [
+                "MÃE: mão espalmada no queixo",
+                "PAI: mão espalmada na testa",
+                "FILHO/FILHA: movimento de embalar bebê",
+                "IRMÃO: sinal de 'igual' + 'homem'",
+                "IRMÃ: sinal de 'igual' + 'mulher'",
+                "AVÔ: sinal de 'pai' com movimento adicional",
+                "AVÓ: sinal de 'mãe' com movimento adicional"
+              ],
+              "highlight": "Note que os sinais femininos geralmente se fazem perto do queixo e os masculinos perto da testa!"
             }
-          ],
-          "references": [
-            "Valerie Sutton - SignWriting Basics (2022)",
-            "ISWA 2008 Reference Manual"
           ],
           "exercises": [
             {
-              "id": "recognition-practice-q1",
+              "id": "ex_fam_1",
               "type": "multipleChoice",
-              "prompt": "Qual conjunto resume melhor os elementos que esta trilha destacou para a leitura inicial?",
+              "prompt": "Onde geralmente se fazem os sinais femininos em Libras?",
               "options": [
-                {
-                  "id": "a",
-                  "label": "Cor do fundo, tamanho da tela e nome do arquivo."
-                },
-                {
-                  "id": "b",
-                  "label": "Mãos, movimento, expressões e organização espacial."
-                },
-                {
-                  "id": "c",
-                  "label": "Somente letras do alfabeto manual."
-                }
+                { "id": "a", "label": "Perto da testa" },
+                { "id": "b", "label": "Perto do queixo" },
+                { "id": "c", "label": "No peito" },
+                { "id": "d", "label": "No ombro" }
               ],
               "correctOptionId": "b",
-              "explanation": "Esses foram os pilares trabalhados nas lições introdutórias."
+              "explanation": "Em Libras, os sinais femininos geralmente são feitos perto do queixo, enquanto os masculinos são perto da testa."
             },
             {
-              "id": "recognition-practice-q2",
+              "id": "ex_fam_2",
               "type": "trueFalse",
-              "prompt": "Verdadeiro ou falso: no uso cotidiano, a leitura do SignWriting depende só de uma ordem linear fixa, sem considerar o arranjo visual.",
+              "prompt": "O sinal de MÃE em Libras é feito com a mão espalmada no queixo.",
               "options": [
-                {
-                  "id": "true",
-                  "label": "Verdadeiro"
-                },
-                {
-                  "id": "false",
-                  "label": "Falso"
-                }
+                { "id": "verdadeiro", "label": "Verdadeiro" },
+                { "id": "falso", "label": "Falso" }
               ],
-              "correctOptionId": "false",
-              "explanation": "O arranjo visual do sinal faz parte da leitura."
+              "correctOptionId": "verdadeiro",
+              "explanation": "Sim! O sinal de MÃE é feito com a mão espalmada (aberta) tocando levemente o queixo."
             },
             {
-              "id": "recognition-practice-q3",
-              "type": "matching",
-              "prompt": "Associe a área do app ao uso mais provável.",
-              "pairs": [
-                {
-                  "left": "Aprender e Praticar",
-                  "right": "Estudar lições e fazer exercícios"
-                },
-                {
-                  "left": "Dicionário",
-                  "right": "Consultar sinais cadastrados"
-                },
-                {
-                  "left": "Escrever Sinais",
-                  "right": "Criar sinais autorais"
-                }
+              "id": "ex_fam_3",
+              "type": "multipleChoice",
+              "prompt": "Como se faz o sinal de PAI em Libras?",
+              "options": [
+                { "id": "a", "label": "Mão espalmada no queixo" },
+                { "id": "b", "label": "Mão fechada no peito" },
+                { "id": "c", "label": "Mão espalmada na testa" },
+                { "id": "d", "label": "Dedo apontando para cima" }
               ],
-              "explanation": "Cada área cumpre um papel diferente no fluxo de estudo e produção."
+              "correctOptionId": "c",
+              "explanation": "O sinal de PAI é feito com a mão espalmada na testa — seguindo a regra dos sinais masculinos em Libras."
             }
-          ]
+          ],
+          "references": [],
+          "relatedSignIds": []
+        },
+        {
+          "id": "lesson_cores",
+          "title": "Cores em Libras",
+          "summary": "Aprenda os sinais para as cores básicas e como descrevê-las em Libras.",
+          "estimatedMinutes": 7,
+          "difficulty": "iniciante",
+          "objectives": [
+            "Aprender as cores básicas em Libras",
+            "Usar cores para descrever objetos",
+            "Praticar combinação de sinais"
+          ],
+          "sections": [
+            {
+              "title": "Cores básicas",
+              "body": "As cores em Libras geralmente têm sinais que remetem a objetos ou elementos naturais daquela cor, facilitando a associação.",
+              "bullets": [
+                "VERMELHO: dedo indicador nos lábios deslizando",
+                "AZUL: letra B com movimento de rotação",
+                "VERDE: letra G com movimento de rotação",
+                "AMARELO: letra A com movimento rotacional",
+                "PRETO: dedo indicador cruzando a testa",
+                "BRANCO: mão no peito se afastando aberta",
+                "LARANJA: mão abrindo e fechando (como espremer laranja)"
+              ],
+              "highlight": "Algumas cores usam a letra inicial em movimento — é uma dica para memorizar!"
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_cor_1",
+              "type": "multipleChoice",
+              "prompt": "Como se faz o sinal de LARANJA em Libras?",
+              "options": [
+                { "id": "a", "label": "Dedo nos lábios" },
+                { "id": "b", "label": "Mão abrindo e fechando como espremer uma laranja" },
+                { "id": "c", "label": "Letra L com movimento" },
+                { "id": "d", "label": "Mão no peito" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "O sinal de LARANJA imita o gesto de espremer a fruta: mão abrindo e fechando na frente do rosto."
+            },
+            {
+              "id": "ex_cor_2",
+              "type": "trueFalse",
+              "prompt": "O sinal de VERMELHO é feito com o dedo indicador nos lábios.",
+              "options": [
+                { "id": "verdadeiro", "label": "Verdadeiro" },
+                { "id": "falso", "label": "Falso" }
+              ],
+              "correctOptionId": "verdadeiro",
+              "explanation": "Sim! VERMELHO é feito com o indicador nos lábios deslizando para baixo — associação com a cor dos lábios."
+            },
+            {
+              "id": "ex_cor_3",
+              "type": "multipleChoice",
+              "prompt": "Quais cores usam as letras iniciais com movimento de rotação?",
+              "options": [
+                { "id": "a", "label": "Vermelho e laranja" },
+                { "id": "b", "label": "Preto e branco" },
+                { "id": "c", "label": "Azul, verde e amarelo" },
+                { "id": "d", "label": "Rosa e roxo" }
+              ],
+              "correctOptionId": "c",
+              "explanation": "Azul (B), Verde (G) e Amarelo (A) usam as letras iniciais no alfabeto manual com movimento de rotação."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
         }
       ]
     }

@@ -517,4 +517,139 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get authErrorCreateAccount => 'Erro ao criar conta. Tente novamente.';
+
+  @override
+  String get editorNewSign => 'Novo sinal';
+  @override
+  String get editorEditSign => 'Editar sinal';
+  @override
+  String get editorSaveSign => 'Salvar sinal';
+  @override
+  String get editorAddSymbolFirst => 'Adicione pelo menos um símbolo antes de salvar.';
+  @override
+  String get editorRotateMinus => 'Girar -';
+  @override
+  String get editorRotatePlus => 'Girar +';
+  @override
+  String get editorMirror => 'Espelhar';
+  @override
+  String get editorDuplicate => 'Duplicar';
+  @override
+  String get editorCenter => 'Centralizar';
+  @override
+  String get editorDelete => 'Excluir';
+  @override
+  String get editorClearAll => 'Limpar tudo';
+  @override
+  String get editorTagsHint => 'Ex: saudação, escola, básico';
+  @override
+  String get editorOpenHand => 'Mão aberta';
+  @override
+  String get editorPoint => 'Apontar';
+  @override
+  String get editorFist => 'Punho';
+  @override
+  String get editorMoveUp => 'Mover cima';
+  @override
+  String get editorMoveDown => 'Mover baixo';
+  @override
+  String get editorRepeat => 'Repetir';
+  @override
+  String get editorFaceNeutral => 'Rosto neutro';
+  @override
+  String get editorFaceHappy => 'Rosto feliz';
+  @override
+  String get editorLook => 'Olhar';
+  @override
+  String get editorBody => 'Corpo';
+  @override
+  String get editorTilt => 'Inclinar';
+  @override
+  String get editorHead => 'Cabeça';
+  @override
+  String get editorContact => 'Contato';
+  @override
+  String get editorLine => 'Linha';
+  @override
+  String get editorCross => 'Cruz';
+  @override
+  String get editorSymbol => 'Símbolo';
+
+  @override
+  String get favoritesSearchHint => 'Buscar favoritos...';
+  @override
+  String get favoritesRemoveTitle => 'Remover dos favoritos';
+  @override
+  String get favoritesRemoveContent => 'Deseja remover este sinal dos seus favoritos?';
+  @override
+  String get favoritesClearTitle => 'Limpar favoritos';
+  @override
+  String get favoritesClearContent => 'Deseja remover todos os favoritos?';
+  @override
+  String get favoritesCancelButton => 'Cancelar';
+  @override
+  String get favoritesRemoveButton => 'Remover';
+  @override
+  String get favoritesClearButton => 'Limpar tudo';
+
+  @override
+  String get profileSignOutTitle => 'Sair da conta';
+  @override
+  String get profileSignOutContent => 'Tem certeza que deseja sair?';
+  @override
+  String get profileSignOutConfirm => 'Sair da Conta';
+  @override
+  String get profileSignOutButton => 'Sair';
+  @override
+  String get profileDeleteTitle => 'Excluir Conta';
+  @override
+  String get profileDeleteContent => 'Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.';
+  @override
+  String get profileDeleteConfirm => 'Excluir minha conta';
+  @override
+  String get profileDeleteButton => 'Excluir';
+  @override
+  String get profileGallery => 'Galeria';
+  @override
+  String get profileCamera => 'Câmera';
+  @override
+  String get profileExportError => 'Erro ao exportar dados';
+
+
+  @override String get favoritesAll => 'Todos';
+  @override String get favoritesEmpty => 'Nenhum favorito encontrado';
+  @override String get translateNoSignFound => 'Nenhum sinal encontrado para esse texto.';
+  @override String get translateNotFound => 'Não encontrados';
+  @override String get editorCategoryLabel => 'Categoria';
+
+
+  @override String get clear => 'Limpar';
+  @override String get allFilter => 'Todos';
+  @override String get dictionarySearchHint => 'Buscar sinais...';
+  @override String get dictionaryNoSignFound => 'Nenhum sinal encontrado';
+  @override String get writeSignsNew => 'Novo sinal';
+  @override String get writeSignsSearchHint => 'Buscar por nome, categoria ou tag';
+  @override String get writeSignsAll => 'Todos';
+  @override String get writeSignsEmpty => 'Nenhum sinal encontrado.';
+  @override String get writeSignsEmptyHint => 'Use o botão "Novo sinal" para criar seu primeiro sinal.';
+  @override String get writeSignsCategory => 'Categoria';
+  @override String get writeSignsSymbols => 'Símbolos';
+  @override String get translateNotFoundPrefix => 'Não encontrados';
+  @override String get translateErrorMsg => 'Erro ao traduzir';
+  @override String get quizNoSigns => 'Nenhum sinal disponível.';
+  @override String get profileErrorUpdatePhoto => 'Erro ao atualizar foto';
+  @override String get profileErrorExportData => 'Erro ao exportar dados';
+  @override String get profileErrorDeleteAccount => 'Erro ao excluir conta';
+
+  @override String get remove => 'Remover';
+
+@override String get homeDictionaryDesc => 'Consulte sinais cadastrados no banco de dados.';
+  @override String get homeTranslateDesc => 'Digite uma palavra ou frase para buscar sinais correspondentes.';
+
+@override String get translateAudioSoon => 'Reconhecimento por áudio será implementado em breve.';
+  @override String get translateCameraSoon => 'Captura pela câmera será implementada em breve.';
+  @override String get accessibilitySkip => 'Pular configuração';
+  @override String get quizExerciseDone => 'Exercício concluído';
+  @override String get quizNext => 'Próxima';
+  @override String get quizScoreMsg => 'Você acertou {score} de {total} sinais.';
 }

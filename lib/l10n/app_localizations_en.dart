@@ -517,4 +517,139 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authErrorCreateAccount => 'Failed to create account. Please try again.';
+
+  @override
+  String get editorNewSign => 'New sign';
+  @override
+  String get editorEditSign => 'Edit sign';
+  @override
+  String get editorSaveSign => 'Save sign';
+  @override
+  String get editorAddSymbolFirst => 'Add at least one symbol before saving.';
+  @override
+  String get editorRotateMinus => 'Rotate -';
+  @override
+  String get editorRotatePlus => 'Rotate +';
+  @override
+  String get editorMirror => 'Mirror';
+  @override
+  String get editorDuplicate => 'Duplicate';
+  @override
+  String get editorCenter => 'Center';
+  @override
+  String get editorDelete => 'Delete';
+  @override
+  String get editorClearAll => 'Clear all';
+  @override
+  String get editorTagsHint => 'Ex: greeting, school, basic';
+  @override
+  String get editorOpenHand => 'Open hand';
+  @override
+  String get editorPoint => 'Point';
+  @override
+  String get editorFist => 'Fist';
+  @override
+  String get editorMoveUp => 'Move up';
+  @override
+  String get editorMoveDown => 'Move down';
+  @override
+  String get editorRepeat => 'Repeat';
+  @override
+  String get editorFaceNeutral => 'Neutral face';
+  @override
+  String get editorFaceHappy => 'Happy face';
+  @override
+  String get editorLook => 'Look';
+  @override
+  String get editorBody => 'Body';
+  @override
+  String get editorTilt => 'Tilt';
+  @override
+  String get editorHead => 'Head';
+  @override
+  String get editorContact => 'Contact';
+  @override
+  String get editorLine => 'Line';
+  @override
+  String get editorCross => 'Cross';
+  @override
+  String get editorSymbol => 'Symbol';
+
+  @override
+  String get favoritesSearchHint => 'Search favorites...';
+  @override
+  String get favoritesRemoveTitle => 'Remove from favorites';
+  @override
+  String get favoritesRemoveContent => 'Do you want to remove this sign from your favorites?';
+  @override
+  String get favoritesClearTitle => 'Clear favorites';
+  @override
+  String get favoritesClearContent => 'Do you want to remove all favorites?';
+  @override
+  String get favoritesCancelButton => 'Cancel';
+  @override
+  String get favoritesRemoveButton => 'Remove';
+  @override
+  String get favoritesClearButton => 'Clear all';
+
+  @override
+  String get profileSignOutTitle => 'Sign out';
+  @override
+  String get profileSignOutContent => 'Are you sure you want to sign out?';
+  @override
+  String get profileSignOutConfirm => 'Sign Out';
+  @override
+  String get profileSignOutButton => 'Sign out';
+  @override
+  String get profileDeleteTitle => 'Delete Account';
+  @override
+  String get profileDeleteContent => 'Are you sure you want to delete your account? This action cannot be undone.';
+  @override
+  String get profileDeleteConfirm => 'Delete my account';
+  @override
+  String get profileDeleteButton => 'Delete';
+  @override
+  String get profileGallery => 'Gallery';
+  @override
+  String get profileCamera => 'Camera';
+  @override
+  String get profileExportError => 'Error exporting data';
+
+
+  @override String get favoritesAll => 'All';
+  @override String get favoritesEmpty => 'No favorites found';
+  @override String get translateNoSignFound => 'No sign found for this text.';
+  @override String get translateNotFound => 'Not found';
+  @override String get editorCategoryLabel => 'Category';
+
+
+  @override String get clear => 'Clear';
+  @override String get allFilter => 'All';
+  @override String get dictionarySearchHint => 'Search signs...';
+  @override String get dictionaryNoSignFound => 'No sign found';
+  @override String get writeSignsNew => 'New sign';
+  @override String get writeSignsSearchHint => 'Search by name, category or tag';
+  @override String get writeSignsAll => 'All';
+  @override String get writeSignsEmpty => 'No sign found.';
+  @override String get writeSignsEmptyHint => 'Use the "New sign" button to create your first sign.';
+  @override String get writeSignsCategory => 'Category';
+  @override String get writeSignsSymbols => 'Symbols';
+  @override String get translateNotFoundPrefix => 'Not found';
+  @override String get translateErrorMsg => 'Translation error';
+  @override String get quizNoSigns => 'No signs available.';
+  @override String get profileErrorUpdatePhoto => 'Error updating photo';
+  @override String get profileErrorExportData => 'Error exporting data';
+  @override String get profileErrorDeleteAccount => 'Error deleting account';
+
+  @override String get remove => 'Remove';
+
+@override String get homeDictionaryDesc => 'Browse signs registered in the database.';
+  @override String get homeTranslateDesc => 'Type a word or phrase to search for corresponding signs.';
+
+@override String get translateAudioSoon => 'Audio recognition will be available soon.';
+  @override String get translateCameraSoon => 'Camera capture will be available soon.';
+  @override String get accessibilitySkip => 'Skip setup';
+  @override String get quizExerciseDone => 'Exercise completed';
+  @override String get quizNext => 'Next';
+  @override String get quizScoreMsg => 'You got {score} out of {total} signs correct.';
 }

@@ -21,6 +21,12 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    context.read<DictionaryViewModel>().setAllLabel(context.l10n.allFilter);
     _viewModel = Provider.of<DictionaryViewModel>(context, listen: false);
     _searchController.addListener(_onSearchChanged);
   }
@@ -80,7 +86,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                             color: isDark ? Colors.white : Colors.black87,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Buscar sinais...',
+                            hintText: context.l10n.dictionarySearchHint,
                             hintStyle: TextStyle(
                               color: isDark ? Colors.grey[400] : Colors.grey,
                             ),
@@ -275,7 +281,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                   ),
                   SizedBox(height: AppSpacing.value(context, 4)),
                   Text(
-                    sign.description ?? 'Sem descrição',
+                    sign.description ?? context.l10n.dictionaryNoSignFound,
                     style: TextStyle(
                       fontSize: 13,
                       color: isDark ? Colors.grey[400] : Colors.grey[600],
