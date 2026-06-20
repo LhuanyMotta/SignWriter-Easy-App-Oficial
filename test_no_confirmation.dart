@@ -38,7 +38,7 @@ void main() async {
       print('✅ Login OK: ${login.user?.email}');
       
     } else {
-      print('❌ Falha: ${response.error?.message}');
+      print('❌ Falha: cadastro não retornou usuário nem sessão.');
       print('\n💡 SOLUÇÃO:');
       print('1. Acesse: https://app.supabase.com/project/zznrlwswttfzccuvzbzw');
       print('2. Authentication > Providers > Email');

@@ -61,6 +61,789 @@
           "relatedSignIds": []
         }
       ]
+    },
+    {
+      "id": "cat_sw_reading",
+      "title": "Reading SignWriting",
+      "description": "Practice how to read handshapes, movement, contact and facial symbols",
+      "icon": "swipe",
+      "color": "#4EB1F0",
+      "lessons": [
+        {
+          "id": "lesson_written_sign_map_en",
+          "title": "The visual map of a sign",
+          "summary": "Learn how SignWriting arranges symbols as a visual map instead of a linear word.",
+          "estimatedMinutes": 8,
+          "difficulty": "beginner",
+          "objectives": [
+            "Recognize the visual area of a written sign",
+            "Connect symbol placement with body location",
+            "Read the whole sign before individual details"
+          ],
+          "sections": [
+            {
+              "title": "Read the whole image first",
+              "body": "A written sign is organized visually. Hand symbols, movement arrows, facial symbols and body information appear in relation to each other.",
+              "bullets": [
+                "Higher symbols often relate to upper body locations",
+                "Left and right placement help show spatial relationships",
+                "Movement arrows should be read with the symbol that moves",
+                "The full layout gives context before details"
+              ],
+              "highlight": "Start with the overall shape of the sign, then inspect each symbol."
+            },
+            {
+              "title": "From overview to detail",
+              "body": "A reliable reading routine checks hands, location, movement and expression in sequence.",
+              "bullets": [
+                "Notice how many hands appear",
+                "Check where the sign is located",
+                "Look for movement and contact",
+                "Confirm face and body information"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_written_map_en_1",
+              "type": "multipleChoice",
+              "prompt": "What is a good first step when reading a written sign?",
+              "options": [
+                { "id": "a", "label": "Read it like a spoken-language word" },
+                { "id": "b", "label": "Observe the whole visual layout" },
+                { "id": "c", "label": "Ignore symbol placement" },
+                { "id": "d", "label": "Read only the arrows" }
+              ],
+              "correctOptionId": "b",
+              "explanation": "SignWriting is visual, so the complete layout gives important context."
+            },
+            {
+              "id": "ex_written_map_en_2",
+              "type": "trueFalse",
+              "prompt": "Symbol placement can help show where the sign happens in the body or signing space.",
+              "options": [
+                { "id": "true", "label": "True" },
+                { "id": "false", "label": "False" }
+              ],
+              "correctOptionId": "true",
+              "explanation": "Placement is part of the visual information in a written sign."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        },
+        {
+          "id": "lesson_handshape_orientation_en",
+          "title": "Handshape and orientation",
+          "summary": "Compare hand symbols and learn how palm direction changes the reading.",
+          "estimatedMinutes": 9,
+          "difficulty": "beginner",
+          "objectives": [
+            "Identify handshape details",
+            "Notice palm orientation",
+            "Avoid confusing similar symbols"
+          ],
+          "sections": [
+            {
+              "title": "Small details matter",
+              "body": "Two signs can look similar but differ by finger position or palm orientation. Careful comparison makes reading more accurate.",
+              "bullets": [
+                "Check which fingers are extended",
+                "Notice whether fingers are together or separated",
+                "Compare open hand, fist and curved fingers",
+                "Look for the direction of the palm"
+              ],
+              "highlight": "A small change in handshape can change the sign."
+            },
+            {
+              "title": "A comparison routine",
+              "body": "When symbols look close, compare one feature at a time: fingers, thumb, palm, location and movement.",
+              "bullets": [
+                "Count visible fingers",
+                "Look for the thumb position",
+                "Compare palm direction",
+                "Confirm movement after the handshape"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_handshape_orientation_en_1",
+              "type": "multipleChoice",
+              "prompt": "Which feature should you check when comparing hand symbols?",
+              "options": [
+                { "id": "a", "label": "Finger position and palm direction" },
+                { "id": "b", "label": "The app background color" },
+                { "id": "c", "label": "The number of English letters" },
+                { "id": "d", "label": "Only the lesson title" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Handshape and orientation are core visual details."
+            },
+            {
+              "id": "ex_handshape_orientation_en_2",
+              "type": "trueFalse",
+              "prompt": "Similar hand symbols always represent the same sign.",
+              "options": [
+                { "id": "true", "label": "True" },
+                { "id": "false", "label": "False" }
+              ],
+              "correctOptionId": "false",
+              "explanation": "Similar symbols may differ in important details."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        },
+        {
+          "id": "lesson_movement_arrows_en",
+          "title": "Movement arrows",
+          "summary": "Understand how arrows show direction, repetition and movement type.",
+          "estimatedMinutes": 10,
+          "difficulty": "beginner",
+          "objectives": [
+            "Recognize the purpose of movement arrows",
+            "Connect arrows with moving symbols",
+            "Notice direction and repetition"
+          ],
+          "sections": [
+            {
+              "title": "What arrows show",
+              "body": "Movement arrows tell you where a hand or body part moves. They can show direction, repeated movement and movement path.",
+              "bullets": [
+                "The arrow tip points toward the movement direction",
+                "Repeated arrows can show repeated movement",
+                "The arrow belongs to a hand, face or body symbol",
+                "Direction must be read in the sign layout"
+              ],
+              "highlight": "Do not read the arrow alone; connect it to what is moving."
+            },
+            {
+              "title": "Read movement in context",
+              "body": "Look for where the movement starts, where it ends and whether contact or repetition appears.",
+              "bullets": [
+                "Find the moving symbol",
+                "Check the starting location",
+                "Follow the arrow direction",
+                "Confirm repeated or small movements"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_arrows_en_1",
+              "type": "multipleChoice",
+              "prompt": "The tip of a movement arrow usually indicates:",
+              "options": [
+                { "id": "a", "label": "Movement direction" },
+                { "id": "b", "label": "The learner's score" },
+                { "id": "c", "label": "A spoken-language translation" },
+                { "id": "d", "label": "The lesson category" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Arrows guide the direction of movement in the written sign."
+            },
+            {
+              "id": "ex_arrows_en_2",
+              "type": "trueFalse",
+              "prompt": "A movement arrow should be connected to the symbol that moves.",
+              "options": [
+                { "id": "true", "label": "True" },
+                { "id": "false", "label": "False" }
+              ],
+              "correctOptionId": "true",
+              "explanation": "The arrow is meaningful because it describes movement of a specific symbol."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        },
+        {
+          "id": "lesson_contact_expression_en",
+          "title": "Contact and facial expression",
+          "summary": "Learn how touch, proximity and facial information improve the written sign.",
+          "estimatedMinutes": 9,
+          "difficulty": "intermediate",
+          "objectives": [
+            "Notice contact information",
+            "Separate touch from proximity",
+            "Understand facial symbols as language information"
+          ],
+          "sections": [
+            {
+              "title": "Touch is meaningful",
+              "body": "Some signs touch the face, torso or another hand. SignWriting can represent contact so the sign can be read more precisely.",
+              "bullets": [
+                "Contact may change the meaning of a sign",
+                "Touch and near movement are different",
+                "The contact point helps locate the sign",
+                "Context confirms the reading"
+              ],
+              "highlight": "Contact is linguistic information, not decoration."
+            },
+            {
+              "title": "Face and body",
+              "body": "Facial expression, eye gaze and body posture can mark questions, negation, intensity or focus.",
+              "bullets": [
+                "Eyebrows can mark question types",
+                "Eye gaze can show focus",
+                "Mouth movement may add intensity or shape",
+                "Body posture can clarify the message"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_contact_expression_en_1",
+              "type": "multipleChoice",
+              "prompt": "Why is contact information useful?",
+              "options": [
+                { "id": "a", "label": "It shows whether the sign touches or approaches a location" },
+                { "id": "b", "label": "It replaces all hand symbols" },
+                { "id": "c", "label": "It changes the app language" },
+                { "id": "d", "label": "It is only decorative" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Contact helps readers understand how the sign happens in space or on the body."
+            },
+            {
+              "id": "ex_contact_expression_en_2",
+              "type": "trueFalse",
+              "prompt": "Facial expression can carry grammar in sign languages.",
+              "options": [
+                { "id": "true", "label": "True" },
+                { "id": "false", "label": "False" }
+              ],
+              "correctOptionId": "true",
+              "explanation": "Facial expression can mark questions, negation, intensity and other grammatical information."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        }
+      ]
+    },
+    {
+      "id": "cat_libras_foundations",
+      "title": "Libras Foundations",
+      "description": "Build basic Brazilian Sign Language skills for everyday communication",
+      "icon": "sign_language",
+      "color": "#2D78BB",
+      "lessons": [
+        {
+          "id": "lesson_greetings_polite_en",
+          "title": "Greetings and polite interaction",
+          "summary": "Practice simple greetings, attention and polite visual interaction in Libras.",
+          "estimatedMinutes": 7,
+          "difficulty": "beginner",
+          "objectives": [
+            "Understand the role of friendly expression",
+            "Use visual attention respectfully",
+            "Structure a short greeting exchange"
+          ],
+          "sections": [
+            {
+              "title": "Start with visual attention",
+              "body": "In sign language interaction, visual attention matters. A greeting works best when the other person is ready to see the sign.",
+              "bullets": [
+                "Make sure the person can see you",
+                "Use a friendly facial expression",
+                "Keep the signing space clear",
+                "Pause for the other person's response"
+              ],
+              "highlight": "Polite interaction starts with shared visual attention."
+            },
+            {
+              "title": "Short exchanges",
+              "body": "A simple exchange can include greeting, name, question and closing. Keep each part clear before adding more information.",
+              "bullets": [
+                "Greeting",
+                "Name or identification",
+                "A simple question",
+                "Closing or thanks"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_greetings_polite_en_1",
+              "type": "multipleChoice",
+              "prompt": "What should you confirm before starting a signed greeting?",
+              "options": [
+                { "id": "a", "label": "That the person can visually attend to you" },
+                { "id": "b", "label": "That the room is completely silent" },
+                { "id": "c", "label": "That every word is fingerspelled" },
+                { "id": "d", "label": "That facial expression is ignored" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Sign language interaction depends on shared visual attention."
+            },
+            {
+              "id": "ex_greetings_polite_en_2",
+              "type": "trueFalse",
+              "prompt": "A friendly facial expression can support a greeting in Libras.",
+              "options": [
+                { "id": "true", "label": "True" },
+                { "id": "false", "label": "False" }
+              ],
+              "correctOptionId": "true",
+              "explanation": "Expression is part of clear and respectful visual communication."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        },
+        {
+          "id": "lesson_fingerspelling_context_en",
+          "title": "Fingerspelling in context",
+          "summary": "Learn when fingerspelling is useful and how to keep it readable.",
+          "estimatedMinutes": 8,
+          "difficulty": "beginner",
+          "objectives": [
+            "Use fingerspelling for names and specific terms",
+            "Keep a steady rhythm",
+            "Avoid overusing fingerspelling"
+          ],
+          "sections": [
+            {
+              "title": "When to fingerspell",
+              "body": "Fingerspelling is useful for names, acronyms and terms without a known sign. It should support communication, not replace the whole language.",
+              "bullets": [
+                "Use it for proper names",
+                "Use it for acronyms or specific terms",
+                "Avoid fingerspelling entire conversations",
+                "Use the known sign when available"
+              ],
+              "highlight": "Fingerspelling is a tool, not the whole language."
+            },
+            {
+              "title": "Rhythm and clarity",
+              "body": "A steady rhythm is easier to read than very fast fingerspelling. Keep your hand comfortable and letters clear.",
+              "bullets": [
+                "Keep a stable hand position",
+                "Make each letter clear",
+                "Pause between words",
+                "Check if the other person understood"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_fingerspelling_en_1",
+              "type": "multipleChoice",
+              "prompt": "Fingerspelling is especially useful for:",
+              "options": [
+                { "id": "a", "label": "Names, acronyms and specific terms" },
+                { "id": "b", "label": "Replacing every sign" },
+                { "id": "c", "label": "Avoiding facial expression" },
+                { "id": "d", "label": "Showing only numbers" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Fingerspelling supports communication when a specific word must be spelled."
+            },
+            {
+              "id": "ex_fingerspelling_en_2",
+              "type": "trueFalse",
+              "prompt": "Fingerspelling too quickly can make comprehension harder.",
+              "options": [
+                { "id": "true", "label": "True" },
+                { "id": "false", "label": "False" }
+              ],
+              "correctOptionId": "true",
+              "explanation": "Clear rhythm helps the other person read each letter."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        },
+        {
+          "id": "lesson_signing_space_en",
+          "title": "Using signing space",
+          "summary": "See how space can organize people, places and ideas in Libras.",
+          "estimatedMinutes": 9,
+          "difficulty": "intermediate",
+          "objectives": [
+            "Use reference points in signing space",
+            "Keep spatial references consistent",
+            "Use gaze and body orientation clearly"
+          ],
+          "sections": [
+            {
+              "title": "Space organizes meaning",
+              "body": "Libras can use points in front of the body to represent people, places or ideas. Gaze and body orientation help return to those points.",
+              "bullets": [
+                "A point can represent a person",
+                "Eye gaze can return to that point",
+                "Body orientation can show a shift in focus",
+                "Consistent references reduce confusion"
+              ],
+              "highlight": "Space is part of the structure of the language."
+            },
+            {
+              "title": "Stay consistent",
+              "body": "After assigning a reference to a location, keep the same logic while the topic continues.",
+              "bullets": [
+                "Choose a point for each reference",
+                "Return to it with gaze or pointing",
+                "Avoid moving references without reason",
+                "Use body shifts when the focus changes"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_space_en_1",
+              "type": "multipleChoice",
+              "prompt": "Signing space can help organize:",
+              "options": [
+                { "id": "a", "label": "People, places and ideas" },
+                { "id": "b", "label": "Only app settings" },
+                { "id": "c", "label": "Only written punctuation" },
+                { "id": "d", "label": "Only colors" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Spatial organization is a core visual resource in sign languages."
+            },
+            {
+              "id": "ex_space_en_2",
+              "type": "trueFalse",
+              "prompt": "Keeping spatial references consistent helps the conversation stay clear.",
+              "options": [
+                { "id": "true", "label": "True" },
+                { "id": "false", "label": "False" }
+              ],
+              "correctOptionId": "true",
+              "explanation": "Consistency helps the viewer track who or what is being discussed."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        },
+        {
+          "id": "lesson_questions_negation_en",
+          "title": "Questions and negation",
+          "summary": "Practice visual markers for questions, answers and negation.",
+          "estimatedMinutes": 8,
+          "difficulty": "beginner",
+          "objectives": [
+            "Notice question markers",
+            "Recognize manual and facial negation",
+            "Combine signs with matching expression"
+          ],
+          "sections": [
+            {
+              "title": "Visual questions",
+              "body": "Questions can involve facial expression, gaze and question signs. The face helps the viewer understand the intent of the sentence.",
+              "bullets": [
+                "Watch eyebrows and eyes",
+                "Use question signs when needed",
+                "Keep the expression through the question",
+                "End with attention to the viewer"
+              ],
+              "highlight": "Facial expression should match the question intent."
+            },
+            {
+              "title": "Negation",
+              "body": "Negation may combine manual signs, head movement and facial expression. These elements often work together.",
+              "bullets": [
+                "Head movement can reinforce negation",
+                "Facial expression shows disagreement or impossibility",
+                "Negation signs need the right context",
+                "Clarity comes from the whole sentence"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_question_negation_en_1",
+              "type": "multipleChoice",
+              "prompt": "Which element often helps mark questions in Libras?",
+              "options": [
+                { "id": "a", "label": "Facial expression and gaze" },
+                { "id": "b", "label": "Only written punctuation" },
+                { "id": "c", "label": "The color of the button" },
+                { "id": "d", "label": "The number of letters" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Face and gaze are important visual markers in signed questions."
+            },
+            {
+              "id": "ex_question_negation_en_2",
+              "type": "trueFalse",
+              "prompt": "Negation can include facial expression and head movement.",
+              "options": [
+                { "id": "true", "label": "True" },
+                { "id": "false", "label": "False" }
+              ],
+              "correctOptionId": "true",
+              "explanation": "Negation may combine manual, facial and body resources."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        }
+      ]
+    },
+    {
+      "id": "cat_guided_practice",
+      "title": "Guided Practice",
+      "description": "Short practice lessons for observation, dialogue and review",
+      "icon": "gesture",
+      "color": "#4EB1F0",
+      "lessons": [
+        {
+          "id": "lesson_visual_observation_en",
+          "title": "Visual observation routine",
+          "summary": "Train yourself to observe signs through hands, movement, face and body.",
+          "estimatedMinutes": 7,
+          "difficulty": "beginner",
+          "objectives": [
+            "Observe signs in layers",
+            "Improve visual memory",
+            "Notice details without losing the whole sign"
+          ],
+          "sections": [
+            {
+              "title": "Observe in layers",
+              "body": "First look at the overall sign. Then focus on handshape, movement, face and body one layer at a time.",
+              "bullets": [
+                "Layer 1: overall meaning",
+                "Layer 2: hand configuration",
+                "Layer 3: movement and location",
+                "Layer 4: face and body"
+              ],
+              "highlight": "Layered observation helps you catch more details."
+            },
+            {
+              "title": "Build visual memory",
+              "body": "After observing a sign, pause and try to remember its overall shape before checking it again.",
+              "bullets": [
+                "Remember hand position",
+                "Recall movement direction",
+                "Think about facial expression",
+                "Compare your memory with the original sign"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_visual_observation_en_1",
+              "type": "multipleChoice",
+              "prompt": "What does layered observation mean?",
+              "options": [
+                { "id": "a", "label": "Checking the whole sign, hands, movement, face and body" },
+                { "id": "b", "label": "Looking only at one hand" },
+                { "id": "c", "label": "Ignoring movement" },
+                { "id": "d", "label": "Focusing only on translation" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Layered observation improves awareness of all sign components."
+            },
+            {
+              "id": "ex_visual_observation_en_2",
+              "type": "trueFalse",
+              "prompt": "Face and body should be part of sign observation practice.",
+              "options": [
+                { "id": "true", "label": "True" },
+                { "id": "false", "label": "False" }
+              ],
+              "correctOptionId": "true",
+              "explanation": "Sign languages use the full visual body space."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        },
+        {
+          "id": "lesson_short_dialogues_en",
+          "title": "Build short dialogues",
+          "summary": "Combine greeting, question, answer and closing in simple interactions.",
+          "estimatedMinutes": 10,
+          "difficulty": "intermediate",
+          "objectives": [
+            "Structure a brief dialogue",
+            "Use visual turn-taking",
+            "Combine signs with attention and expression"
+          ],
+          "sections": [
+            {
+              "title": "Beginning, middle and end",
+              "body": "A short dialogue can include opening, a question or main information, a response and closing. Visual attention helps organize turns.",
+              "bullets": [
+                "Start with a greeting",
+                "Ask a clear question",
+                "Wait and observe the response",
+                "Close with thanks or goodbye"
+              ],
+              "highlight": "Eye contact and pauses make turn-taking clearer."
+            },
+            {
+              "title": "Simple responses",
+              "body": "Practice short responses before longer conversations. Clear answers build confidence.",
+              "bullets": [
+                "Use clear affirmation or negation",
+                "Return to the question topic",
+                "Avoid adding too much information at first",
+                "Repeat the same dialogue with variations"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_short_dialogues_en_1",
+              "type": "multipleChoice",
+              "prompt": "What helps organize turn-taking in a signed dialogue?",
+              "options": [
+                { "id": "a", "label": "Eye contact and clear pauses" },
+                { "id": "b", "label": "Looking away the whole time" },
+                { "id": "c", "label": "Using only written text" },
+                { "id": "d", "label": "Changing topic every sign" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Visual attention and pauses support clear interaction."
+            },
+            {
+              "id": "ex_short_dialogues_en_2",
+              "type": "trueFalse",
+              "prompt": "A short dialogue can start with a greeting, include a question and end with a closing.",
+              "options": [
+                { "id": "true", "label": "True" },
+                { "id": "false", "label": "False" }
+              ],
+              "correctOptionId": "true",
+              "explanation": "This structure is useful for everyday practice."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        },
+        {
+          "id": "lesson_review_mistakes_en",
+          "title": "Review mistakes",
+          "summary": "Use missed questions as a guide for what to study next.",
+          "estimatedMinutes": 6,
+          "difficulty": "beginner",
+          "objectives": [
+            "Turn errors into review goals",
+            "Identify recurring weak points",
+            "Practice the same topic again with focus"
+          ],
+          "sections": [
+            {
+              "title": "Mistakes show the next step",
+              "body": "A wrong answer is useful feedback. It can show whether you need to review handshape, movement, expression or meaning.",
+              "bullets": [
+                "Check the explanation after each answer",
+                "Write down the topic you missed",
+                "Return to the related lesson section",
+                "Retake the exercise later"
+              ],
+              "highlight": "Reviewing mistakes is part of practice, not a failure."
+            },
+            {
+              "title": "Look for patterns",
+              "body": "If several mistakes involve the same topic, make that topic your next study focus.",
+              "bullets": [
+                "Repeated handshape errors need comparison practice",
+                "Movement errors need arrow review",
+                "Expression errors need face and body observation",
+                "Vocabulary errors need more context"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_review_mistakes_en_1",
+              "type": "multipleChoice",
+              "prompt": "What should you do after missing a question?",
+              "options": [
+                { "id": "a", "label": "Read the explanation and review the related topic" },
+                { "id": "b", "label": "Ignore the mistake" },
+                { "id": "c", "label": "Delete the lesson" },
+                { "id": "d", "label": "Stop practicing permanently" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "Mistakes point to what needs focused review."
+            },
+            {
+              "id": "ex_review_mistakes_en_2",
+              "type": "trueFalse",
+              "prompt": "Repeated mistakes can reveal a topic that needs more practice.",
+              "options": [
+                { "id": "true", "label": "True" },
+                { "id": "false", "label": "False" }
+              ],
+              "correctOptionId": "true",
+              "explanation": "Patterns in mistakes are useful for planning the next review."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        },
+        {
+          "id": "lesson_final_basics_review_en",
+          "title": "Final basics review",
+          "summary": "Review the core ideas before moving into more advanced content.",
+          "estimatedMinutes": 10,
+          "difficulty": "beginner",
+          "objectives": [
+            "Review SignWriting elements",
+            "Reinforce visual observation",
+            "Prepare for deeper study"
+          ],
+          "sections": [
+            {
+              "title": "Core elements",
+              "body": "The basics include handshape, orientation, movement, face, body and signing space. These elements support both Libras learning and SignWriting reading.",
+              "bullets": [
+                "Hands show configuration and orientation",
+                "Movements show direction and repetition",
+                "Face and body carry grammar",
+                "Space organizes people, places and ideas"
+              ],
+              "highlight": "Strong basics make the next lessons easier."
+            },
+            {
+              "title": "How to continue",
+              "body": "Keep alternating lesson reading, exercises, review and real sign observation whenever possible.",
+              "bullets": [
+                "Review low-score lessons",
+                "Compare similar signs",
+                "Practice a little every day",
+                "Write down questions for later study"
+              ]
+            }
+          ],
+          "exercises": [
+            {
+              "id": "ex_final_review_en_1",
+              "type": "multipleChoice",
+              "prompt": "Which elements are part of the visual basics?",
+              "options": [
+                { "id": "a", "label": "Hands, movement, face, body and space" },
+                { "id": "b", "label": "Only spoken sounds" },
+                { "id": "c", "label": "Only written punctuation" },
+                { "id": "d", "label": "Only numbers" }
+              ],
+              "correctOptionId": "a",
+              "explanation": "These elements form the base of sign language observation and SignWriting reading."
+            },
+            {
+              "id": "ex_final_review_en_2",
+              "type": "trueFalse",
+              "prompt": "Reviewing lessons with low scores helps consolidate learning.",
+              "options": [
+                { "id": "true", "label": "True" },
+                { "id": "false", "label": "False" }
+              ],
+              "correctOptionId": "true",
+              "explanation": "Focused review strengthens the topics that are still difficult."
+            }
+          ],
+          "references": [],
+          "relatedSignIds": []
+        }
+      ]
     }
   ]
 }
