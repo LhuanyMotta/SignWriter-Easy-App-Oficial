@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'dart:io';
 
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -284,7 +285,9 @@ Future<void> setThemeMode(
   }
 
   Future<bool> recoverLostProfileImage() async {
-    if (!Platform.isAndroid) return false;
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return false;
+    }
 
     try {
       final picker = ImagePicker();
@@ -324,13 +327,13 @@ Future<void> setThemeMode(
         return false;
       }
 
-      final file = File(pickedImage.path);
+      final bytes = await pickedImage.readAsBytes();
       final fileExt = pickedImage.path.split('.').last;
       final filePath = 'profiles/${user.id}.$fileExt';
 
-      await _supabase.storage.from('avatars').upload(
+      await _supabase.storage.from('avatars').uploadBinary(
             filePath,
-            file,
+            bytes,
             fileOptions: const FileOptions(upsert: true),
           );
 

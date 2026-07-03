@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/lesson_model.dart';
 import '../../models/lesson_section_model.dart';
 import '../../viewmodels/learn_practice_viewmodel.dart';
+import '../../theme/responsive_content.dart';
 import 'lesson_exercise_screen.dart';
 
 class LessonDetailScreen extends StatelessWidget {
@@ -46,7 +47,7 @@ class LessonDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(lesson.title),
       ),
-      body: SafeArea(
+      body: ResponsiveContent(maxWidth: 720, child: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
@@ -108,7 +109,7 @@ class LessonDetailScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 

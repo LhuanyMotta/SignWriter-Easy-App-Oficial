@@ -5,6 +5,7 @@ import '../../l10n/l10n.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/sign_model.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/responsive_content.dart';
 
 class PracticeQuizScreen extends StatefulWidget {
   final String title;
@@ -135,13 +136,10 @@ class _PracticeQuizScreenState extends State<PracticeQuizScreen> {
     final options = _generateOptions(sign);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
         title: Text(widget.title),
-        backgroundColor: const Color(0xFF2D78BB),
-        foregroundColor: Colors.white,
       ),
-      body: Padding(
+      body: ResponsiveContent(child: Padding(
         padding: AppSpacing.all(context, 16),
         child: Column(
           children: [
@@ -219,7 +217,7 @@ class _PracticeQuizScreenState extends State<PracticeQuizScreen> {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 }

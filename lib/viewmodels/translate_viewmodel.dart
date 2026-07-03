@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -23,7 +23,7 @@ class TranslateViewModel extends ChangeNotifier {
   List<TranslationModel> _recentTranslations = [];
 
   // Aba Libras → Texto
-  File? _capturedImage;
+  Uint8List? _capturedImage;
   String? _recognizedText;
 
   // Ditado por voz
@@ -38,7 +38,7 @@ class TranslateViewModel extends ChangeNotifier {
   List<String> get notFoundWords => _notFoundWords;
   TranslationModel? get lastTranslation => _lastTranslation;
   List<TranslationModel> get recentTranslations => _recentTranslations;
-  File? get capturedImage => _capturedImage;
+  Uint8List? get capturedImage => _capturedImage;
   String? get recognizedText => _recognizedText;
   bool get isListening => _isListening;
   String get partialSpeechText => _partialSpeechText;
@@ -232,25 +232,24 @@ class TranslateViewModel extends ChangeNotifier {
       final notFound = <String>[];
 
       for (final word in words) {
-        final normalized = _normalize(word);
-
         final response = await _supabase
             .from('signs_dictionary')
             .select()
-            .or('title.ilike.%$word%,name.ilike.%$word%,description.ilike.%$word%')
-            .limit(5);
+            .or('title.ilike.%$word%,name.ilike.%$word%')
+            .order('title', ascending: true)
+            .limit(10);
 
         if (response.isNotEmpty) {
-          final exact = (response as List).firstWhere(
-            (row) {
-              final title = _normalize((row['title'] ?? row['name'] ?? '').toString());
-              return title == normalized;
-            },
-            orElse: () => response.first,
-          );
-          final sign = SignModel.fromMap(exact);
-          if (!foundSigns.any((s) => s.id == sign.id)) {
-            foundSigns.add(sign);
+          final rows = (response as List);
+
+          // Mostra TODOS os sinais cujo nome contém a palavra digitada,
+          // não só o que combina exatamente — ex: buscar "dados" também
+          // traz "Visualizar Dados" e "Análise de Dados e Ciência de Dados".
+          for (final row in rows) {
+            final sign = SignModel.fromMap(row);
+            if (!foundSigns.any((s) => s.id == sign.id)) {
+              foundSigns.add(sign);
+            }
           }
         } else {
           notFound.add(word);
@@ -293,7 +292,7 @@ class TranslateViewModel extends ChangeNotifier {
       );
       if (picked == null) return;
 
-      _capturedImage = File(picked.path);
+      _capturedImage = await picked.readAsBytes();
       _recognizedText = null;
       _errorMessage = null;
       notifyListeners();
@@ -353,11 +352,16 @@ class TranslateViewModel extends ChangeNotifier {
   // UTILITÁRIOS
   // ─────────────────────────────────────────────────────────────
   List<String> _extractWords(String text) {
+    const stopwords = {
+      'de', 'da', 'do', 'das', 'dos', 'e', 'em', 'com', 'para', 'por',
+      'a', 'o', 'as', 'os', 'no', 'na', 'nos', 'nas', 'um', 'uma',
+      'que', 'se', 'ao', 'aos', 'à', 'às',
+    };
     return text
         .toLowerCase()
         .split(RegExp(r'\s+'))
         .map((word) => word.replaceAll(RegExp(r'[^\p{L}\p{N}]', unicode: true), ''))
-        .where((word) => word.isNotEmpty)
+        .where((word) => word.isNotEmpty && !stopwords.contains(word))
         .toSet()
         .toList();
   }

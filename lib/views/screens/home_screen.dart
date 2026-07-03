@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/responsive.dart';
+import '../../theme/responsive_content.dart';
+import '../../theme/adaptive_nav_scaffold.dart';
+import '../../theme/hover_lift.dart';
+import '../../theme/app_radius.dart';
 import '../../l10n/l10n.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -35,46 +40,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AdaptiveNavScaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: _primary,
-        elevation: 0,
         title: Text(
           context.l10n.appTitle,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
         ),
       ),
-      body: _buildHomeTab(),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentBottomIndex,
-        backgroundColor: isDark ? const Color(0xFF101826) : Colors.white,
-        selectedItemColor: _primary,
-        unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          setState(() => _currentBottomIndex = index);
-          _viewModel.onBottomNavTapped(index, context);
-        },
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home),
-            label: context.l10n.bottomHome,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.favorite),
-            label: context.l10n.bottomFavorites,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.person),
-            label: context.l10n.bottomProfile,
-          ),
-        ],
-      ),
+      currentIndex: _currentBottomIndex,
+      homeLabel: context.l10n.bottomHome,
+      favoritesLabel: context.l10n.bottomFavorites,
+      profileLabel: context.l10n.bottomProfile,
+      onTabSelected: (index) {
+        setState(() => _currentBottomIndex = index);
+        _viewModel.onBottomNavTapped(index, context);
+      },
+      body: ResponsiveContent(child: _buildHomeTab()),
     );
   }
 
@@ -133,7 +116,9 @@ class _HomeScreenState extends State<HomeScreen> {
           LayoutBuilder(
             builder: (context, constraints) {
               final spacing = AppSpacing.value(context, 16);
-              final cardWidth = (constraints.maxWidth - spacing) / 2;
+              final columns = Responsive.isWide(context) ? 4 : 2;
+              final cardWidth =
+                  (constraints.maxWidth - spacing * (columns - 1)) / columns;
 
               return Wrap(
                 spacing: spacing,
@@ -179,9 +164,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildFeatureCard(_FeatureData item) {
-    return Material(
+    return HoverLift(
+      child: Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(AppRadius.card),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: item.onTap,
@@ -195,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
             vertical: 22,
           ),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
+            borderRadius: BorderRadius.circular(AppRadius.card),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -243,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   // Explicação visual de como funciona o SignWriting — diferencial educativo do app

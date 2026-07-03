@@ -7,6 +7,8 @@ import '../../models/sign_model.dart';
 import '../../models/translation_model.dart';
 import '../../viewmodels/translate_viewmodel.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/responsive.dart';
+import '../../theme/responsive_content.dart';
 
 class TranslateSignsScreen extends StatefulWidget {
   const TranslateSignsScreen({super.key});
@@ -34,7 +36,7 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
   Color get cardColor => isDark ? const Color(0xFF121C2B) : Colors.white;
 
   Color get inputColor =>
-      isDark ? const Color(0xFF1A2636) : Colors.grey.shade100;
+      isDark ? const Color(0xFF1A2636) : Colors.white;
 
   Color get textColor => isDark ? Colors.white : const Color(0xFF1E1E1E);
 
@@ -105,35 +107,76 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
       child: Scaffold(
         backgroundColor: backgroundColor,
         appBar: AppBar(
-          title: const Text(
-            'Traduzir Sinais',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          backgroundColor: _primary,
-          foregroundColor: Colors.white,
-          bottom: TabBar(
-            controller: _tabController,
-            indicatorColor: Colors.white,
-            indicatorWeight: 3,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            tabs: [
-              Tab(text: context.l10n.tabTextToLibras),
-              Tab(text: context.l10n.tabLibrasToText),
-            ],
-          ),
+          title: const Text('Traduzir Sinais'),
         ),
-        body: Consumer<TranslateViewModel>(
+        body: ResponsiveContent(child: Consumer<TranslateViewModel>(
           builder: (context, viewModel, child) {
-            return TabBarView(
-              controller: _tabController,
-              physics: const NeverScrollableScrollPhysics(),
+            return Column(
               children: [
-                _buildTextToLibrasTab(viewModel),
-                _buildLibrasToTextTab(viewModel),
+                Padding(
+                  padding: AppSpacing.all(context, 16),
+                  child: _buildTabSelector(),
+                ),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      _buildTextToLibrasTab(viewModel),
+                      _buildLibrasToTextTab(viewModel),
+                    ],
+                  ),
+                ),
               ],
             );
           },
+        )),
+      ),
+    );
+  }
+
+  /// Seletor de abas no padrão usado no resto do app (pílulas dentro de um
+  /// fundo neutro), em vez de um TabBar colado no AppBar — assim essa tela
+  /// segue a mesma estrutura visual das demais (AppBar só com título).
+  Widget _buildTabSelector() {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1A2636) : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: AnimatedBuilder(
+        animation: _tabController,
+        builder: (context, _) {
+          return Row(
+            children: [
+              Expanded(child: _buildTabPill(0, context.l10n.tabTextToLibras)),
+              Expanded(child: _buildTabPill(1, context.l10n.tabLibrasToText)),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTabPill(int index, String label) {
+    final selected = _tabController.index == index;
+    return GestureDetector(
+      onTap: () => setState(() => _tabController.animateTo(index)),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? _primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: selected ? Colors.white : (isDark ? Colors.grey[300] : Colors.grey[600]),
+            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
       ),
     );
@@ -190,10 +233,18 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
 
   Widget _buildTextInputBox() {
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: inputColor,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -272,11 +323,19 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
   Widget _buildResultBox(TranslateViewModel viewModel) {
     return Container(
       width: double.infinity,
+      clipBehavior: Clip.antiAlias,
       padding: AppSpacing.all(context, 16),
       decoration: BoxDecoration(
         color: inputColor,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: _buildResultContent(viewModel),
     );
@@ -316,8 +375,8 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
         Expanded(
           child: GridView.builder(
             itemCount: viewModel.signs.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: Responsive.isWide(context) ? 4 : 2,
               childAspectRatio: 0.78,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
@@ -354,7 +413,11 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
   }
 
   Widget _buildSignResultCard(SignModel sign) {
-    return Container(
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () => _openSignDetail(sign),
+      child: Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(14),
@@ -392,6 +455,56 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
           ),
         ],
       ),
+      ),
+    );
+  }
+
+  void _openSignDetail(SignModel sign) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(sign.name),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (sign.signImagePath.isNotEmpty)
+                Image.network(
+                  sign.signImagePath,
+                  height: 180,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(Icons.sign_language, size: 80);
+                  },
+                ),
+              const SizedBox(height: 12),
+              if (sign.description != null && sign.description!.trim().isNotEmpty)
+                Text(sign.description!),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2D78BB).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  sign.category,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2D78BB),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Fechar'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -636,7 +749,7 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
           : Stack(
               fit: StackFit.expand,
               children: [
-                Image.file(viewModel.capturedImage!, fit: BoxFit.cover),
+                Image.memory(viewModel.capturedImage!, fit: BoxFit.cover),
                 Positioned(
                   top: 8,
                   right: 8,
@@ -659,10 +772,18 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
 
   Widget _buildConfirmInputBox(TranslateViewModel viewModel) {
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: inputColor,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: borderColor),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: TextField(
         controller: _confirmController,
@@ -765,4 +886,4 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
       ),
     );
   }
-}
+}                                                                                                                                                             

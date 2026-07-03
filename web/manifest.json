@@ -1,11 +1,11 @@
 {
-    "name": "signwriter_facil",
-    "short_name": "signwriter_facil",
+    "name": "SignWriter Fácil",
+    "short_name": "SignWriter Fácil",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#hexcode",
-    "theme_color": "#hexcode",
-    "description": "A new Flutter project.",
+    "background_color": "#2D78BB",
+    "theme_color": "#2D78BB",
+    "description": "Aplicativo para facilitar a comunicação entre surdos e ouvintes através do SignWriting e da Libras.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

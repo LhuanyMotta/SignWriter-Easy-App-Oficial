@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/written_sign_model.dart';
 import '../../viewmodels/write_signs_viewmodel.dart';
+import '../../theme/responsive_content.dart';
 import 'write_sign_editor_screen.dart';
 
 class WriteSignsScreen extends StatefulWidget {
@@ -54,49 +55,88 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
                 ),
               ],
             ),
-            body: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Meus sinais',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            body: ResponsiveContent(child: SafeArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header como card com fundo primário — alinhado com o
+                  // padrão das outras telas (mesma aparência do "Aprender")
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Theme.of(context).colorScheme.primary,
+                          Theme.of(context).colorScheme.primary.withValues(alpha: 0.80),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Meus sinais',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Crie e salve seus sinais para editar quando quiser.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildSummaryRow(viewModel),
-                    const SizedBox(height: 16),
-                    _buildSearchField(),
-                    const SizedBox(height: 12),
-                    _buildStatusFilters(viewModel),
-                    const SizedBox(height: 12),
-                    if (viewModel.statusMessage.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Text(
-                          viewModel.statusMessage,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Crie e salve seus sinais para editar quando quiser.',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.white70,
                           ),
                         ),
-                      ),
-                    Expanded(
-                      child: viewModel.isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : _buildSignsList(viewModel),
+                        const SizedBox(height: 16),
+                        _buildSummaryRow(viewModel),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  // Busca, filtros e lista — padding normal
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSearchField(),
+                          const SizedBox(height: 12),
+                          _buildStatusFilters(viewModel),
+                          const SizedBox(height: 12),
+                          if (viewModel.statusMessage.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Text(
+                                viewModel.statusMessage,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                          Expanded(
+                            child: viewModel.isLoading
+                                ? const Center(child: CircularProgressIndicator())
+                                : _buildSignsList(viewModel),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
+            )),
             floatingActionButton: FloatingActionButton.extended(
               onPressed: () => _openEditor(),
               icon: const Icon(Icons.add),

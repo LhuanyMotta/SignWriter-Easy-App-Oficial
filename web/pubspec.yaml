@@ -52,8 +52,8 @@ flutter_launcher_icons:
   web:
     generate: true
     image_path: "assets/images/signwriter_logo.png"
-    background_color: "#hexcode"
-    theme_color: "#hexcode"
+    background_color: "#2D78BB"
+    theme_color: "#2D78BB"
   windows:
     generate: true
     image_path: "assets/images/signwriter_logo.png"

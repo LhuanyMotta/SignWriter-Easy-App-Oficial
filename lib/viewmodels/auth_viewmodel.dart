@@ -19,6 +19,13 @@ class AuthViewModel extends ChangeNotifier {
   final SupabaseClient _supabase;
   static const String _oauthRedirectUrl = 'signwriterfacil://login-callback';
 
+  /// Na Web não existe esquema de URI customizado (signwriterfacil://) —
+  /// o navegador precisa voltar pra uma URL http(s) real, que tem que estar
+  /// cadastrada em Supabase Dashboard > Authentication > URL Configuration
+  /// > Redirect URLs. Em mobile, mantém o esquema customizado de sempre.
+  String get _resolvedRedirectUrl =>
+      kIsWeb ? Uri.base.origin : _oauthRedirectUrl;
+
   bool _isLoading = false;
   String? _error;
   AuthErrorType? _errorType;
@@ -115,7 +122,7 @@ class AuthViewModel extends ChangeNotifier {
 
       await _supabase.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: _oauthRedirectUrl,
+        redirectTo: _resolvedRedirectUrl,
         authScreenLaunchMode: launchMode,
         queryParams: {
           'prompt': 'select_account', // sempre mostra tela de seleção de conta
@@ -143,7 +150,7 @@ class AuthViewModel extends ChangeNotifier {
 
       await _supabase.auth.signInWithOAuth(
         OAuthProvider.apple,
-        redirectTo: _oauthRedirectUrl,
+        redirectTo: _resolvedRedirectUrl,
         authScreenLaunchMode: launchMode,
       );
       _setLoading(false);

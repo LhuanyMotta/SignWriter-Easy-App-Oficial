@@ -5,6 +5,7 @@ import '../../models/lesson_category_model.dart';
 import '../../models/lesson_exercise_model.dart';
 import '../../models/lesson_model.dart';
 import '../../viewmodels/learn_practice_viewmodel.dart';
+import '../../theme/responsive_content.dart';
 
 class ExerciseScreen extends StatefulWidget {
   final LessonModel lesson;
@@ -180,7 +181,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
 
     return Scaffold(
       backgroundColor: scheme.surface,
-      body: Column(
+      body: ResponsiveContent(child: Column(
         children: [
           _ExerciseHeader(
             category: cat,
@@ -246,7 +247,7 @@ class _ExerciseScreenState extends State<ExerciseScreen>
               onTap: _next,
             ),
         ],
-      ),
+      )),
     );
   }
 }
@@ -869,7 +870,7 @@ class _ResultScreenState extends State<_ResultScreen>
           ),
         ),
         child: SafeArea(
-          child: Padding(
+          child: ResponsiveContent(child: Padding(
             padding: const EdgeInsets.all(24),
             child: FadeTransition(
               opacity: _fadeAnim,
@@ -1015,7 +1016,7 @@ class _ResultScreenState extends State<_ResultScreen>
                 ],
               ),
             ),
-          ),
+          )),
         ),
       ),
     );

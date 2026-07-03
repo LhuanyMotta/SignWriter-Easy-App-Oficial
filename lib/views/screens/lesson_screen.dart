@@ -5,6 +5,7 @@ import '../../models/lesson_category_model.dart';
 import '../../models/lesson_model.dart';
 import '../../models/lesson_section_model.dart';
 import '../../viewmodels/learn_practice_viewmodel.dart';
+import '../../theme/responsive_content.dart';
 import 'exercise_screen.dart';
 
 class LessonScreen extends StatefulWidget {
@@ -97,7 +98,7 @@ class _LessonScreenState extends State<LessonScreen> {
     final hasExercises = lesson.exercises.isNotEmpty;
 
     return Scaffold(
-      body: CustomScrollView(
+      body: ResponsiveContent(maxWidth: 720, child: CustomScrollView(
         controller: _scroll,
         slivers: [
           // AppBar com gradiente da categoria
@@ -168,7 +169,7 @@ class _LessonScreenState extends State<LessonScreen> {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 }

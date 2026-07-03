@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/lesson_exercise_model.dart';
 import '../../models/lesson_model.dart';
 import '../../viewmodels/learn_practice_viewmodel.dart';
+import '../../theme/responsive_content.dart';
 
 class LessonExerciseScreen extends StatefulWidget {
   final String categoryId;
@@ -74,7 +75,7 @@ class _LessonExerciseScreenState extends State<LessonExerciseScreen> {
       appBar: AppBar(
         title: Text(l10n.learningPracticeTitle),
       ),
-      body: SafeArea(
+      body: ResponsiveContent(maxWidth: 720, child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -154,7 +155,7 @@ class _LessonExerciseScreenState extends State<LessonExerciseScreen> {
             ],
           ),
         ),
-      ),
+      )),
     );
   }
 

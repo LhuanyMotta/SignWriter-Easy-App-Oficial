@@ -6,6 +6,7 @@ import '../../models/lesson_category_model.dart';
 import '../../models/lesson_model.dart';
 import '../../theme/app_theme.dart';
 import '../../viewmodels/learn_practice_viewmodel.dart';
+import '../../theme/responsive_content.dart';
 import 'lesson_detail_screen.dart';
 
 class LearningCategoryScreen extends StatelessWidget {
@@ -46,7 +47,7 @@ class LearningCategoryScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(category.title),
       ),
-      body: SafeArea(
+      body: ResponsiveContent(child: SafeArea(
         child: ListView(
           padding: EdgeInsets.all(16 * spacing),
           children: [
@@ -79,7 +80,7 @@ class LearningCategoryScreen extends StatelessWidget {
                   ),
           ],
         ),
-      ),
+      )),
     );
   }
 

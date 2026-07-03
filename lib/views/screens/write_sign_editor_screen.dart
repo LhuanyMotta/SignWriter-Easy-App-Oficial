@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/l10n.dart';
 
 import '../../models/written_sign_model.dart';
+import '../../theme/responsive_content.dart';
 
 const List<String> _editorCategories = [
   'Alfabeto',
@@ -213,7 +214,7 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
       appBar: AppBar(
         title: Text(_isEditing ? context.l10n.editorEditSign : context.l10n.editorNewSign),
       ),
-      body: SafeArea(
+      body: ResponsiveContent(maxWidth: 720, child: SafeArea(
         child: Form(
           key: _formKey,
           child: ListView(
@@ -338,7 +339,7 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
             ],
           ),
         ),
-      ),
+      )),
     );
   }
 

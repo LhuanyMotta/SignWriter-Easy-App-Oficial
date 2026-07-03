@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/l10n.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/app_settings_viewmodel.dart';
+import '../../theme/responsive_content.dart';
 
 /// Tela de configuração inicial de acessibilidade (primeiro acesso).
 ///
@@ -32,7 +33,7 @@ class AccessibilitySetupScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SafeArea(
+      body: ResponsiveContent(maxWidth: 720, child: SafeArea(
         // Sem SingleChildScrollView para impedir rolagem e manter fluxo direto.
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -164,7 +165,7 @@ class AccessibilitySetupScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
+      )),
     );
   }
 

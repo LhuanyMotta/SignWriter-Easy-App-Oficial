@@ -1,5 +1,6 @@
 import 'dart:ui' show lerpDouble;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 @immutable
@@ -126,11 +127,74 @@ class AppTheme {
       ],
       cardTheme: base.cardTheme.copyWith(
         color: surface,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: border.withValues(alpha: 0.6), width: 1),
+        ),
+        shadowColor: Colors.black.withValues(alpha: 0.08),
       ),
       appBarTheme: base.appBarTheme.copyWith(
         backgroundColor: _brandPrimary,
         foregroundColor: Colors.white,
         centerTitle: false,
+        elevation: 0,
+        scrolledUnderElevation: 2,
+        shadowColor: Colors.black.withValues(alpha: 0.10),
+        titleTextStyle: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
+          letterSpacing: -0.2,
+        ),
+        toolbarHeight: 60,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _brandPrimary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          minimumSize: const Size.fromHeight(52),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            letterSpacing: 0.2,
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(52),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          side: BorderSide(color: _brandPrimary, width: 1.5),
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: _brandPrimary,
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+          ),
+        ),
+      ),
+      chipTheme: base.chipTheme.copyWith(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        elevation: 0,
+        pressElevation: 0,
       ),
       listTileTheme: base.listTileTheme.copyWith(
         contentPadding: EdgeInsets.symmetric(
@@ -141,18 +205,50 @@ class AppTheme {
       inputDecorationTheme: base.inputDecorationTheme.copyWith(
         filled: true,
         fillColor: surfaceMuted,
-        border: const OutlineInputBorder(),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: border, width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: border, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: _brandPrimary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1),
+        ),
         contentPadding: EdgeInsets.symmetric(
           horizontal: 16 * spacingScale.clamp(0.8, 2.0),
           vertical: 14 * spacingScale.clamp(0.8, 2.0),
         ),
+        labelStyle: TextStyle(color: onSurfaceMuted),
+        hintStyle: TextStyle(color: onSurfaceMuted.withValues(alpha: 0.7)),
+        prefixIconColor: onSurfaceMuted,
       ),
       bottomNavigationBarTheme: base.bottomNavigationBarTheme.copyWith(
         selectedItemColor: _brandPrimary,
         unselectedItemColor: onSurfaceMuted,
+        elevation: 8,
+        type: BottomNavigationBarType.fixed,
       ),
       dividerTheme: DividerThemeData(
-        color: border,
+        color: border.withValues(alpha: 0.7),
+        thickness: 1,
+        space: 1,
+      ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.fuchsia: FadeUpwardsPageTransitionsBuilder(),
+        },
       ),
     );
   }
@@ -244,10 +340,72 @@ class AppTheme {
       ],
       cardTheme: base.cardTheme.copyWith(
         color: surface,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: border.withValues(alpha: 0.5), width: 1),
+        ),
       ),
       appBarTheme: base.appBarTheme.copyWith(
         backgroundColor: surface,
         foregroundColor: onSurface,
+        elevation: 0,
+        scrolledUnderElevation: 1,
+        shadowColor: Colors.black.withValues(alpha: 0.15),
+        titleTextStyle: TextStyle(
+          color: onSurface,
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
+          letterSpacing: -0.2,
+        ),
+        toolbarHeight: 60,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _brandSecondary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          minimumSize: const Size.fromHeight(52),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            letterSpacing: 0.2,
+          ),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size.fromHeight(52),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          side: BorderSide(color: _brandSecondary, width: 1.5),
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: _brandSecondary,
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+          ),
+        ),
+      ),
+      chipTheme: base.chipTheme.copyWith(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        elevation: 0,
+        pressElevation: 0,
       ),
       listTileTheme: base.listTileTheme.copyWith(
         contentPadding: EdgeInsets.symmetric(
@@ -258,11 +416,28 @@ class AppTheme {
       inputDecorationTheme: base.inputDecorationTheme.copyWith(
         filled: true,
         fillColor: surfaceMuted,
-        border: const OutlineInputBorder(),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: border, width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: border, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: _brandSecondary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFF87171), width: 1),
+        ),
         contentPadding: EdgeInsets.symmetric(
           horizontal: 16 * spacingScale.clamp(0.8, 2.0),
           vertical: 14 * spacingScale.clamp(0.8, 2.0),
         ),
+        hintStyle: TextStyle(color: onSurface.withValues(alpha: 0.4)),
+        prefixIconColor: onSurface.withValues(alpha: 0.5),
       ),
       bottomNavigationBarTheme: base.bottomNavigationBarTheme.copyWith(
         backgroundColor: surface,
@@ -272,9 +447,23 @@ class AppTheme {
           const Color(0xFFE5E7EB),
           contrastT,
         ),
+        elevation: 0,
+        type: BottomNavigationBarType.fixed,
       ),
       dividerTheme: DividerThemeData(
-        color: border,
+        color: border.withValues(alpha: 0.6),
+        thickness: 1,
+        space: 1,
+      ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.fuchsia: FadeUpwardsPageTransitionsBuilder(),
+        },
       ),
     );
   }
@@ -283,48 +472,78 @@ class AppTheme {
     return theme.copyWith(
       displayLarge: theme.displayLarge?.copyWith(
         fontSize: (theme.displayLarge?.fontSize ?? 57) * scale,
+        fontWeight: FontWeight.bold,
+        letterSpacing: -1.0,
       ),
       displayMedium: theme.displayMedium?.copyWith(
         fontSize: (theme.displayMedium?.fontSize ?? 45) * scale,
+        fontWeight: FontWeight.bold,
+        letterSpacing: -0.8,
       ),
       displaySmall: theme.displaySmall?.copyWith(
         fontSize: (theme.displaySmall?.fontSize ?? 36) * scale,
+        fontWeight: FontWeight.bold,
+        letterSpacing: -0.5,
       ),
       headlineLarge: theme.headlineLarge?.copyWith(
         fontSize: (theme.headlineLarge?.fontSize ?? 32) * scale,
+        fontWeight: FontWeight.bold,
+        letterSpacing: -0.5,
       ),
       headlineMedium: theme.headlineMedium?.copyWith(
         fontSize: (theme.headlineMedium?.fontSize ?? 28) * scale,
+        fontWeight: FontWeight.bold,
+        letterSpacing: -0.3,
       ),
       headlineSmall: theme.headlineSmall?.copyWith(
         fontSize: (theme.headlineSmall?.fontSize ?? 24) * scale,
+        fontWeight: FontWeight.bold,
+        letterSpacing: -0.2,
       ),
       titleLarge: theme.titleLarge?.copyWith(
         fontSize: (theme.titleLarge?.fontSize ?? 22) * scale,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.2,
       ),
       titleMedium: theme.titleMedium?.copyWith(
         fontSize: (theme.titleMedium?.fontSize ?? 16) * scale,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.0,
       ),
       titleSmall: theme.titleSmall?.copyWith(
         fontSize: (theme.titleSmall?.fontSize ?? 14) * scale,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.0,
       ),
       bodyLarge: theme.bodyLarge?.copyWith(
         fontSize: (theme.bodyLarge?.fontSize ?? 16) * scale,
+        height: 1.55,
+        letterSpacing: 0.1,
       ),
       bodyMedium: theme.bodyMedium?.copyWith(
         fontSize: (theme.bodyMedium?.fontSize ?? 14) * scale,
+        height: 1.5,
+        letterSpacing: 0.1,
       ),
       bodySmall: theme.bodySmall?.copyWith(
         fontSize: (theme.bodySmall?.fontSize ?? 12) * scale,
+        height: 1.45,
+        letterSpacing: 0.2,
       ),
       labelLarge: theme.labelLarge?.copyWith(
         fontSize: (theme.labelLarge?.fontSize ?? 14) * scale,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.1,
       ),
       labelMedium: theme.labelMedium?.copyWith(
         fontSize: (theme.labelMedium?.fontSize ?? 12) * scale,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.3,
       ),
       labelSmall: theme.labelSmall?.copyWith(
         fontSize: (theme.labelSmall?.fontSize ?? 11) * scale,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.4,
       ),
     );
   }

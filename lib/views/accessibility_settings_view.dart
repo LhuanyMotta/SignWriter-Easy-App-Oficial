@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../viewmodels/profile_viewmodel.dart';
 import 'screens/home_screen.dart';
 import '../theme/app_spacing.dart';
+import '../theme/responsive_content.dart';
 import '../l10n/l10n.dart';
 
 class AccessibilitySettingsView extends StatelessWidget {
@@ -35,17 +36,11 @@ class AccessibilitySettingsView extends StatelessWidget {
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: AppBar(
-            title: Text(
-              l10n.accessibilityTitle,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            backgroundColor: const Color(0xFF2D78BB),
-            iconTheme: const IconThemeData(color: Colors.white),
+            title: Text(l10n.accessibilityTitle),
           ),
-          body: ListView(
+          body: ResponsiveContent(
+            maxWidth: 640,
+            child: ListView(
             padding: EdgeInsets.all(16 * viewModel.spacing),
             children: [
               Text(
@@ -252,7 +247,7 @@ class AccessibilitySettingsView extends StatelessWidget {
                 SizedBox(height: AppSpacing.value(context, 24)),
               ],
             ],
-          ),
+          )),
         );
       },
     );

@@ -9,6 +9,7 @@ import 'home_screen.dart';
 import '../widgets/app_logo.dart';
 import '../accessibility_settings_view.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/responsive.dart';
 import '../../l10n/l10n.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -66,11 +67,128 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    final isWide = Responsive.isWide(context);
+
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: SafeArea(
+        body: isWide ? _buildWideLayout(context) : _buildFormBody(context),
+      ),
+    );
+  }
+
+  /// Layout de Web/desktop: painel de marca à esquerda (ocupando o espaço
+  /// extra que sobra numa tela larga) + o formulário de sempre à direita,
+  /// numa largura fixa de "card", como a maioria dos apps SaaS faz.
+  Widget _buildWideLayout(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF2D78BB), Color(0xFF1B4E7A)],
+              ),
+            ),
+            child: Stack(
+              children: [
+                // Formas decorativas — só pra dar textura ao painel,
+                // sem competir com o conteúdo.
+                Positioned(
+                  top: -60,
+                  right: -60,
+                  child: _DecorativeCircle(size: 220, opacity: 0.10),
+                ),
+                Positioned(
+                  bottom: -80,
+                  left: -40,
+                  child: _DecorativeCircle(size: 260, opacity: 0.08),
+                ),
+                Positioned(
+                  bottom: 120,
+                  right: 40,
+                  child: _DecorativeCircle(size: 90, opacity: 0.12),
+                ),
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    child: Padding(
+                      padding: const EdgeInsets.all(48),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const AppLogo(size: 64, colored: false, showText: false),
+                          const SizedBox(height: 32),
+                          Text(
+                            context.l10n.appTitle,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 36,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            context.l10n.authSubtitle,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: 18,
+                              height: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 40),
+                          const _AuthFeatureBullet(text: 'Tradução de texto para Libras'),
+                          const SizedBox(height: 16),
+                          const _AuthFeatureBullet(text: 'Dicionário completo de sinais'),
+                          const SizedBox(height: 16),
+                          const _AuthFeatureBullet(text: 'Aprenda no seu próprio ritmo'),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            color: const Color(0xFFF5F7FB),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 480),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(vertical: 48),
+                  child: Container(
+                    padding: const EdgeInsets.all(40),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 32,
+                          offset: const Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: _buildFormCard(context),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFormBody(BuildContext context) {
+    return SafeArea(
   child: Stack(
     children: [
       Column(
@@ -101,31 +219,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                       ),
                 ),
                 SizedBox(height: AppSpacing.value(context, 32)),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TabBar(
-                            controller: _tabController,
-                            dividerColor: Colors.transparent,
-                            indicator: BoxDecoration(
-                              color: const Color(0xFF2D78BB),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    labelColor: Colors.white,
-                    unselectedLabelColor: Colors.grey[600],
-                    labelStyle: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                    tabs: [
-                      Tab(text: context.l10n.loginTab),
-                      Tab(text: context.l10n.signupTab),
-                    ],
-                  ),
-                ),
+                _buildTabBarChrome(context),
                 SizedBox(height: AppSpacing.value(context, 24)),
               ],
             ),
@@ -143,7 +237,62 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       ),
     ],
   ),
-),
+);
+  }
+
+  /// Mesmo conteúdo de formulário do mobile, mas sem o SafeArea/Stack
+  /// externo — usado dentro do card centralizado da tela larga.
+  Widget _buildFormCard(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          context.l10n.appTitle,
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF2D78BB),
+              ),
+        ),
+        const SizedBox(height: 24),
+        _buildTabBarChrome(context),
+        const SizedBox(height: 24),
+        // Numa tela larga não tem Expanded/TabBarView com altura infinita
+        // disponível (estamos dentro de um SingleChildScrollView), então
+        // cada aba precisa se dimensionar pelo próprio conteúdo.
+        AnimatedBuilder(
+          animation: _tabController,
+          builder: (context, _) {
+            return _tabController.index == 0 ? _buildLoginTab() : _buildSignupTab();
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTabBarChrome(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: TabBar(
+        controller: _tabController,
+        dividerColor: Colors.transparent,
+        indicator: BoxDecoration(
+          color: const Color(0xFF2D78BB),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.grey[600],
+        labelStyle: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
+        ),
+        tabs: [
+          Tab(text: context.l10n.loginTab),
+          Tab(text: context.l10n.signupTab),
+        ],
       ),
     );
   }
@@ -718,5 +867,59 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       case null:
         return isSignup ? l.authErrorSignup : l.authErrorLogin;
     }
+  }
+}
+
+class _DecorativeCircle extends StatelessWidget {
+  final double size;
+  final double opacity;
+
+  const _DecorativeCircle({required this.size, required this.opacity});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withValues(alpha: opacity),
+      ),
+    );
+  }
+}
+
+class _AuthFeatureBullet extends StatelessWidget {
+  final String text;
+
+  const _AuthFeatureBullet({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.18),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.check, color: Colors.white, size: 16),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.92),
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

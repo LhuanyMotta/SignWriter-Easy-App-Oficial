@@ -4,6 +4,9 @@ import '../../viewmodels/dictionary_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../models/sign_model.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/responsive.dart';
+import '../../theme/adaptive_nav_scaffold.dart';
+import '../../theme/hover_lift.dart';
 import '../../l10n/l10n.dart';
 
 class DictionaryScreen extends StatefulWidget {
@@ -26,8 +29,14 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    context.read<DictionaryViewModel>().setAllLabel(context.l10n.allFilter);
+    final label = context.l10n.allFilter;
     _viewModel = Provider.of<DictionaryViewModel>(context, listen: false);
+    // Adia a chamada pro próximo frame: notifyListeners() não pode ser
+    // disparado enquanto esta tela ainda está sendo construída.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _viewModel.setAllLabel(label);
+    });
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -50,7 +59,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
 
     return ChangeNotifierProvider.value(
       value: _viewModel,
-      child: Scaffold(
+      child: AdaptiveNavScaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: Text(
@@ -155,38 +164,42 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                 Expanded(
                   child: viewModel.signs.isEmpty
                       ? _buildEmptyState(context)
-                      : GridView.builder(
-                          padding: AppSpacing.all(context, 16),
-                          itemCount: viewModel.signs.length,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 0.72,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
+                      : Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              maxWidth: Responsive.maxContentWidth,
+                            ),
+                            child: GridView.builder(
+                              padding: AppSpacing.all(context, 16),
+                              itemCount: viewModel.signs.length,
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount:
+                                    Responsive.isWide(context) ? 5 : 2,
+                                childAspectRatio: 0.72,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                              ),
+                              itemBuilder: (context, index) {
+                                return _buildSignCard(
+                                  context,
+                                  viewModel.signs[index],
+                                  viewModel,
+                                );
+                              },
+                            ),
                           ),
-                          itemBuilder: (context, index) {
-                            return _buildSignCard(
-                              context,
-                              viewModel.signs[index],
-                              viewModel,
-                            );
-                          },
                         ),
                 ),
               ],
             );
           },
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 0,
-          onTap: (index) => _homeViewModel.onBottomNavTapped(index, context),
-          items: [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: context.l10n.bottomHome),
-            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: context.l10n.bottomFavorites),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: context.l10n.bottomProfile),
-          ],
-        ),
+        currentIndex: 0,
+        homeLabel: context.l10n.bottomHome,
+        favoritesLabel: context.l10n.bottomFavorites,
+        profileLabel: context.l10n.bottomProfile,
+        onTabSelected: (index) => _homeViewModel.onBottomNavTapped(index, context),
       ),
     );
   }
@@ -200,7 +213,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
     final primary = Theme.of(context).colorScheme.primary;
     final cardColor = Theme.of(context).cardColor;
 
-    return InkWell(
+    return HoverLift(child: InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: () => viewModel.openSignDetails(context, sign),
       child: Container(
@@ -280,15 +293,16 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: AppSpacing.value(context, 4)),
-                  Text(
-                    sign.description ?? context.l10n.dictionaryNoSignFound,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  if (sign.description != null && sign.description!.trim().isNotEmpty)
+                    Text(
+                      sign.description!,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
                   SizedBox(height: AppSpacing.value(context, 8)),
                   Container(
                     padding: AppSpacing.symmetric(context, horizontal: 8, vertical: 4),
@@ -311,7 +325,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildEmptyState(BuildContext context) {

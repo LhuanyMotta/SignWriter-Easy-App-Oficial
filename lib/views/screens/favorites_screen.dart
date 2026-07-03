@@ -4,6 +4,9 @@ import '../../viewmodels/favorites_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../models/sign_model.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/adaptive_nav_scaffold.dart';
+import '../../theme/responsive_content.dart';
+import '../../theme/app_radius.dart';
 import '../../l10n/l10n.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -26,8 +29,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    context.read<FavoritesViewModel>().setAllLabel(context.l10n.favoritesAll);
+    final label = context.l10n.favoritesAll;
     _viewModel = Provider.of<FavoritesViewModel>(context, listen: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _viewModel.setAllLabel(label);
+    });
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -50,7 +57,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
     return ChangeNotifierProvider.value(
       value: _viewModel,
-      child: Scaffold(
+      child: AdaptiveNavScaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: Text(
@@ -70,7 +77,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             ),
           ],
         ),
-        body: Consumer<FavoritesViewModel>(
+        body: ResponsiveContent(child: Consumer<FavoritesViewModel>(
           builder: (context, viewModel, child) {
             return Column(
               children: [
@@ -162,16 +169,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               ],
             );
           },
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 1,
-          onTap: (index) => _homeViewModel.onBottomNavTapped(index, context),
-          items: [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: context.l10n.bottomHome),
-            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: context.l10n.bottomFavorites),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: context.l10n.bottomProfile),
-          ],
-        ),
+        )),
+        currentIndex: 1,
+        homeLabel: context.l10n.bottomHome,
+        favoritesLabel: context.l10n.bottomFavorites,
+        profileLabel: context.l10n.bottomProfile,
+        onTabSelected: (index) => _homeViewModel.onBottomNavTapped(index, context),
       ),
     );
   }
@@ -209,12 +212,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     final primary = Theme.of(context).colorScheme.primary;
 
     return InkWell(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(AppRadius.card),
       onTap: () => viewModel.openSignDetails(context, sign),
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadius.card),
           boxShadow: [
             BoxShadow(
               color: isDark ? Colors.black26 : Colors.grey.withOpacity(0.1),

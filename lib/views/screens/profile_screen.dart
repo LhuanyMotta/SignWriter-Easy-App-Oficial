@@ -1,13 +1,14 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
+import '../../services/export_data.dart';
 import '../../viewmodels/profile_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../accessibility_settings_view.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/adaptive_nav_scaffold.dart';
+import '../../theme/responsive_content.dart';
+import '../../theme/app_radius.dart';
 import '../../l10n/l10n.dart';
 import '../../routes/app_routes.dart';
 
@@ -53,54 +54,44 @@ void initState() {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _viewModel,
-      child: Scaffold(
+      child: AdaptiveNavScaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          title: Text(
-            context.l10n.bottomProfile,
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          backgroundColor: const Color(0xFF2D78BB),
-          iconTheme: const IconThemeData(color: Colors.white),
+          title: Text(context.l10n.bottomProfile),
         ),
-        body: Consumer<ProfileViewModel>(
-          builder: (context, viewModel, child) {
-            if (viewModel.userData == null) {
-              return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF2D78BB)),
-              );
-            }
+        body: ResponsiveContent(
+          child: Consumer<ProfileViewModel>(
+            builder: (context, viewModel, child) {
+              if (viewModel.userData == null) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF2D78BB)),
+                );
+              }
 
-            return ListView(
-              padding: AppSpacing.all(context, 16),
-              children: [
-                _buildUserCard(context, viewModel),
-                SizedBox(height: AppSpacing.value(context, 18)),
-                _sectionTitle(context, context.l10n.settingsTitle),
-                SizedBox(height: AppSpacing.value(context, 10)),
-                _buildSettingsCard(context, viewModel),
-                SizedBox(height: AppSpacing.value(context, 18)),
-                _sectionTitle(context, context.l10n.accountDataTitle),
-                SizedBox(height: AppSpacing.value(context, 10)),
-                _buildAccountCard(context, viewModel),
-                SizedBox(height: AppSpacing.value(context, 20)),
-                _buildLogoutButton(context, viewModel),
-              ],
-            );
-          },
+              return ListView(
+                padding: AppSpacing.all(context, 16),
+                children: [
+                  _buildUserCard(context, viewModel),
+                  SizedBox(height: AppSpacing.value(context, 18)),
+                  _sectionTitle(context, context.l10n.settingsTitle),
+                  SizedBox(height: AppSpacing.value(context, 10)),
+                  _buildSettingsCard(context, viewModel),
+                  SizedBox(height: AppSpacing.value(context, 18)),
+                  _sectionTitle(context, context.l10n.accountDataTitle),
+                  SizedBox(height: AppSpacing.value(context, 10)),
+                  _buildAccountCard(context, viewModel),
+                  SizedBox(height: AppSpacing.value(context, 20)),
+                  _buildLogoutButton(context, viewModel),
+                ],
+              );
+            },
+          ),
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 2,
-          onTap: (index) => _homeViewModel.onBottomNavTapped(index, context),
-          items: [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: context.l10n.bottomHome),
-            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: context.l10n.bottomFavorites),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: context.l10n.bottomProfile),
-          ],
-        ),
+        currentIndex: 2,
+        homeLabel: context.l10n.bottomHome,
+        favoritesLabel: context.l10n.bottomFavorites,
+        profileLabel: context.l10n.bottomProfile,
+        onTabSelected: (index) => _homeViewModel.onBottomNavTapped(index, context),
       ),
     );
   }
@@ -120,7 +111,7 @@ void initState() {
       padding: AppSpacing.all(context, 18),
       decoration: BoxDecoration(
         color: _cardColor(context),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(
@@ -447,13 +438,10 @@ void initState() {
   ) async {
     try {
       final jsonData = await viewModel.exportUserData();
-      final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/meus_dados_signwriter.json');
-      await file.writeAsString(jsonData);
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: 'Meus dados do SignWriter Fácil',
-        subject: 'Exportação de dados - SignWriter Fácil',
+      await shareExportedUserData(
+        jsonData,
+        shareText: 'Meus dados do SignWriter Fácil',
+        shareSubject: 'Exportação de dados - SignWriter Fácil',
       );
     } catch (e) {
       if (!mounted) return;

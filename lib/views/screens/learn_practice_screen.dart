@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../models/lesson_category_model.dart';
 import '../../models/lesson_model.dart';
 import '../../viewmodels/learn_practice_viewmodel.dart';
+import '../../theme/responsive_content.dart';
+import '../../theme/app_radius.dart';
 import 'lesson_screen.dart';
 
 class LearnPracticeScreen extends StatefulWidget {
@@ -56,7 +58,10 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: Consumer<LearnPracticeViewModel>(
+      appBar: AppBar(
+        title: const Text('Aprender e Praticar'),
+      ),
+      body: ResponsiveContent(child: Consumer<LearnPracticeViewModel>(
         builder: (context, vm, _) {
           if (vm.isLoading) {
             return const _LoadingState();
@@ -69,9 +74,12 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen>
           }
           return CustomScrollView(
             slivers: [
-              _SliverAppHeader(
-                fadeAnimation: _headerFade,
-                vm: vm,
+              SliverToBoxAdapter(
+                child: _HeaderBackground(
+                  progress: vm.overallProgress,
+                  completed: vm.completedLessons,
+                  total: vm.totalLessons,
+                ),
               ),
               if (vm.categories.isEmpty)
                 const SliverFillRemaining(child: _EmptyState())
@@ -83,7 +91,7 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen>
             ],
           );
         },
-      ),
+      )),
     );
   }
 }
@@ -152,80 +160,86 @@ class _HeaderBackground extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
 
     return Container(
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
             scheme.primary,
-            scheme.primary.withValues(alpha: 0.75),
+            scheme.primary.withValues(alpha: 0.80),
           ],
         ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 56, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(
-                      Icons.auto_stories_rounded,
-                      color: Colors.white,
-                      size: 26,
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Seu progresso',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          total == 0
-                              ? 'Nenhuma lição disponível'
-                              : '$completed de $total lições concluídas',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _CircularProgress(progress: progress),
-                ],
-              ),
-              const SizedBox(height: 20),
-              // Barra de progresso linear
-              ClipRRect(
-                borderRadius: BorderRadius.circular(100),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  backgroundColor: Colors.white.withValues(alpha: 0.2),
-                  valueColor:
-                      const AlwaysStoppedAnimation<Color>(Color(0xFF4EB1F0)),
-                  minHeight: 8,
-                ),
-              ),
-            ],
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: scheme.primary.withValues(alpha: 0.30),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.auto_stories_rounded,
+                    color: Colors.white,
+                    size: 26,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Seu progresso',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        total == 0
+                            ? 'Nenhuma lição disponível'
+                            : '$completed de $total lições concluídas',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                _CircularProgress(progress: progress),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(100),
+              child: LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.white.withValues(alpha: 0.2),
+                valueColor:
+                    const AlwaysStoppedAnimation<Color>(Color(0xFF4EB1F0)),
+                minHeight: 8,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -340,7 +354,7 @@ class _ContinueCard extends StatelessWidget {
               category.color.withValues(alpha: 0.75),
             ],
           ),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppRadius.large),
           boxShadow: [
             BoxShadow(
               color: category.color.withValues(alpha: 0.35),
@@ -358,7 +372,7 @@ class _ContinueCard extends StatelessWidget {
                 height: 54,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadius.small),
                 ),
                 child: Icon(category.icon, color: Colors.white, size: 28),
               ),
@@ -547,7 +561,7 @@ class _CategoryCardState extends State<_CategoryCard>
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: scheme.surface,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
           color: scheme.outlineVariant,
           width: 1,
@@ -565,7 +579,7 @@ class _CategoryCardState extends State<_CategoryCard>
           // Header da categoria
           InkWell(
             onTap: _toggle,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadius.card),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -575,7 +589,7 @@ class _CategoryCardState extends State<_CategoryCard>
                     height: 48,
                     decoration: BoxDecoration(
                       color: cat.color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(13),
+                      borderRadius: BorderRadius.circular(AppRadius.small),
                     ),
                     child: Icon(cat.icon, color: cat.color, size: 24),
                   ),
