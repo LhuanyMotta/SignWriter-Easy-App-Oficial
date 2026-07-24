@@ -1,3 +1,4 @@
+import 'lesson_block_model.dart';
 import 'lesson_exercise_model.dart';
 import 'lesson_section_model.dart';
 
@@ -12,6 +13,8 @@ class LessonModel {
   final List<LessonExerciseModel> exercises;
   final List<String> references;
   final List<String> relatedSignIds;
+  final List<LessonBlockModel> explicitBlocks;
+  final String status;
 
   const LessonModel({
     required this.id,
@@ -24,11 +27,61 @@ class LessonModel {
     this.exercises = const [],
     this.references = const [],
     this.relatedSignIds = const [],
+    this.explicitBlocks = const [],
+    this.status = 'published',
   });
 
   bool get hasExercises => exercises.isNotEmpty;
 
+  /// Blocos explícitos ou derivados das seções legadas.
+  List<LessonBlockModel> get blocks {
+    if (explicitBlocks.isNotEmpty) return explicitBlocks;
+    return LessonBlockModel.fromSections(sections);
+  }
+
+  LessonModel copyWith({
+    String? id,
+    String? title,
+    String? summary,
+    int? estimatedMinutes,
+    String? difficulty,
+    List<String>? objectives,
+    List<LessonSectionModel>? sections,
+    List<LessonExerciseModel>? exercises,
+    List<String>? references,
+    List<String>? relatedSignIds,
+    List<LessonBlockModel>? explicitBlocks,
+    String? status,
+  }) {
+    return LessonModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      summary: summary ?? this.summary,
+      estimatedMinutes: estimatedMinutes ?? this.estimatedMinutes,
+      difficulty: difficulty ?? this.difficulty,
+      objectives: objectives ?? this.objectives,
+      sections: sections ?? this.sections,
+      exercises: exercises ?? this.exercises,
+      references: references ?? this.references,
+      relatedSignIds: relatedSignIds ?? this.relatedSignIds,
+      explicitBlocks: explicitBlocks ?? this.explicitBlocks,
+      status: status ?? this.status,
+    );
+  }
+
   factory LessonModel.fromMap(Map<String, dynamic> map) {
+    final rawBlocks = map['blocks'];
+    final explicitBlocks = rawBlocks is List
+        ? rawBlocks
+            .whereType<Map>()
+            .map(
+              (item) => LessonBlockModel.fromMap(
+                Map<String, dynamic>.from(item),
+              ),
+            )
+            .toList()
+        : const <LessonBlockModel>[];
+
     return LessonModel(
       id: map['id']?.toString() ?? '',
       title: map['title']?.toString() ?? '',
@@ -40,6 +93,8 @@ class LessonModel {
       exercises: _parseExercises(map['exercises']),
       references: _parseStringList(map['references']),
       relatedSignIds: _parseStringList(map['relatedSignIds']),
+      explicitBlocks: explicitBlocks,
+      status: map['status']?.toString() ?? 'published',
     );
   }
 
@@ -55,6 +110,8 @@ class LessonModel {
       'exercises': exercises.map((exercise) => exercise.toMap()).toList(),
       'references': references,
       'relatedSignIds': relatedSignIds,
+      'blocks': explicitBlocks.map((block) => block.toMap()).toList(),
+      'status': status,
     };
   }
 

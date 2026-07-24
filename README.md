@@ -63,13 +63,7 @@ Criação e edição de sinais utilizando o padrão visual SignWriting.
 
 ## 📚 Dicionário de Sinais
 
-Pesquisa organizada de sinais por categorias.
-
----
-
-## ❤️ Favoritos
-
-Sistema de favoritos para salvar sinais importantes.
+Pesquisa organizada de sinais por categorias, com opção de marcar e filtrar favoritos.
 
 ---
 

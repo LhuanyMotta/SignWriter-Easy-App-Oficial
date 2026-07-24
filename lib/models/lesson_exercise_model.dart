@@ -2,21 +2,34 @@ enum LessonExerciseType {
   multipleChoice,
   trueFalse,
   matching,
+  recognizeSymbol,
+  chooseCorrectWriting,
 }
 
 class ExerciseOptionModel {
   final String id;
   final String label;
+  final String? mediaUrl;
+  final String? mediaAsset;
 
   const ExerciseOptionModel({
     required this.id,
     required this.label,
+    this.mediaUrl,
+    this.mediaAsset,
   });
+
+  bool get hasMedia =>
+      (mediaUrl != null && mediaUrl!.trim().isNotEmpty) ||
+      (mediaAsset != null && mediaAsset!.trim().isNotEmpty);
 
   factory ExerciseOptionModel.fromMap(Map<String, dynamic> map) {
     return ExerciseOptionModel(
       id: map['id']?.toString() ?? '',
       label: map['label']?.toString() ?? '',
+      mediaUrl: map['mediaUrl']?.toString() ?? map['media_url']?.toString(),
+      mediaAsset:
+          map['mediaAsset']?.toString() ?? map['media_asset']?.toString(),
     );
   }
 
@@ -24,6 +37,8 @@ class ExerciseOptionModel {
     return {
       'id': id,
       'label': label,
+      'mediaUrl': mediaUrl,
+      'mediaAsset': mediaAsset,
     };
   }
 }
@@ -60,6 +75,8 @@ class LessonExerciseModel {
   final String? correctOptionId;
   final List<MatchingPairModel> pairs;
   final String? explanation;
+  final String? mediaUrl;
+  final String? mediaAsset;
 
   const LessonExerciseModel({
     required this.id,
@@ -69,11 +86,25 @@ class LessonExerciseModel {
     this.correctOptionId,
     this.pairs = const [],
     this.explanation,
+    this.mediaUrl,
+    this.mediaAsset,
   });
 
   bool get isMultipleChoice => type == LessonExerciseType.multipleChoice;
   bool get isTrueFalse => type == LessonExerciseType.trueFalse;
   bool get isMatching => type == LessonExerciseType.matching;
+  bool get isRecognizeSymbol => type == LessonExerciseType.recognizeSymbol;
+  bool get isChooseCorrectWriting =>
+      type == LessonExerciseType.chooseCorrectWriting;
+  bool get usesOptionSelection =>
+      isMultipleChoice ||
+      isTrueFalse ||
+      isRecognizeSymbol ||
+      isChooseCorrectWriting;
+
+  bool get hasMedia =>
+      (mediaUrl != null && mediaUrl!.trim().isNotEmpty) ||
+      (mediaAsset != null && mediaAsset!.trim().isNotEmpty);
 
   factory LessonExerciseModel.fromMap(Map<String, dynamic> map) {
     return LessonExerciseModel(
@@ -81,9 +112,13 @@ class LessonExerciseModel {
       type: _parseExerciseType(map['type']?.toString()),
       prompt: map['prompt']?.toString() ?? '',
       options: _parseOptions(map['options']),
-      correctOptionId: map['correctOptionId']?.toString(),
+      correctOptionId: map['correctOptionId']?.toString() ??
+          map['correct_option_id']?.toString(),
       pairs: _parsePairs(map['pairs']),
       explanation: map['explanation']?.toString(),
+      mediaUrl: map['mediaUrl']?.toString() ?? map['media_url']?.toString(),
+      mediaAsset:
+          map['mediaAsset']?.toString() ?? map['media_asset']?.toString(),
     );
   }
 
@@ -96,16 +131,27 @@ class LessonExerciseModel {
       'correctOptionId': correctOptionId,
       'pairs': pairs.map((pair) => pair.toMap()).toList(),
       'explanation': explanation,
+      'mediaUrl': mediaUrl,
+      'mediaAsset': mediaAsset,
     };
   }
 
   static LessonExerciseType _parseExerciseType(String? rawType) {
     switch (rawType) {
       case 'trueFalse':
+      case 'true_false':
         return LessonExerciseType.trueFalse;
       case 'matching':
+      case 'match':
         return LessonExerciseType.matching;
+      case 'recognizeSymbol':
+      case 'recognize_symbol':
+        return LessonExerciseType.recognizeSymbol;
+      case 'chooseCorrectWriting':
+      case 'choose_correct_writing':
+        return LessonExerciseType.chooseCorrectWriting;
       case 'multipleChoice':
+      case 'multiple_choice':
       default:
         return LessonExerciseType.multipleChoice;
     }

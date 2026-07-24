@@ -5,7 +5,6 @@ import 'package:signwriter_easy_app_oficial/views/screens/learn_practice_screen.
 import 'package:signwriter_easy_app_oficial/views/screens/write_signs_screen.dart';
 import 'package:signwriter_easy_app_oficial/views/screens/translate_signs_screen.dart';
 import 'package:signwriter_easy_app_oficial/views/screens/dictionary_screen.dart';
-import 'package:signwriter_easy_app_oficial/views/screens/favorites_screen.dart';
 import 'package:signwriter_easy_app_oficial/views/screens/profile_screen.dart';
 
 class AppRoutes {
@@ -16,7 +15,6 @@ class AppRoutes {
   static const String writeSigns = '/write-signs';
   static const String translateSigns = '/translate-signs';
   static const String dictionary = '/dictionary';
-  static const String favorites = '/favorites';
   static const String profile = '/profile';
 
   // Mapeamento das rotas
@@ -28,7 +26,6 @@ class AppRoutes {
       writeSigns: (context) => const WriteSignsScreen(),
       translateSigns: (context) => const TranslateSignsScreen(),
       dictionary: (context) => const DictionaryScreen(),
-      favorites: (context) => const FavoritesScreen(),
       profile: (context) => const ProfileScreen(),
     };
   }
@@ -41,10 +38,5 @@ class AppRoutes {
   // Método para navegação com replace (sem voltar)
   static Future<void> navigateReplacement(BuildContext context, String routeName) {
     return Navigator.pushReplacementNamed(context, routeName);
-  }
-
-  // Método para voltar
-  static void goBack(BuildContext context) {
-    Navigator.pop(context);
   }
 }

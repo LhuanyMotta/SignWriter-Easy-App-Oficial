@@ -3,18 +3,19 @@ import 'package:flutter/material.dart';
 import '../models/learning_progress_model.dart';
 import '../models/lesson_category_model.dart';
 import '../models/lesson_model.dart';
-import '../services/learning_content_service.dart';
-import '../services/learning_progress_service.dart';
+import '../services/learning_progress_repository.dart';
+import '../services/learning_repository.dart';
 
 class LearnPracticeViewModel extends ChangeNotifier {
   LearnPracticeViewModel({
-    LearningContentService? contentService,
-    LearningProgressService? progressService,
-  })  : _contentService = contentService ?? LearningContentService(),
-        _progressService = progressService ?? LearningProgressService();
+    LearningRepository? repository,
+    LearningProgressRepository? progressRepository,
+  })  : _repository = repository ?? DefaultLearningRepository(),
+        _progressRepository =
+            progressRepository ?? LearningProgressRepository();
 
-  final LearningContentService _contentService;
-  final LearningProgressService _progressService;
+  final LearningRepository _repository;
+  final LearningProgressRepository _progressRepository;
 
   List<LessonCategoryModel> _categories = [];
   LearningProgressModel _progress = LearningProgressModel.empty();
@@ -51,8 +52,8 @@ class LearnPracticeViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final categories = await _contentService.loadCategories(locale);
-      final progress = await _progressService.loadProgress();
+      final categories = await _repository.loadCategories(locale);
+      final progress = await _progressRepository.loadProgress();
       _categories = categories;
       _progress = progress;
     } catch (e) {
@@ -137,6 +138,28 @@ class LearnPracticeViewModel extends ChangeNotifier {
     return _progress.isLessonCompleted(lessonId);
   }
 
+  /// Primeira lição incompleta no percurso (Continuar aprendendo).
+  ({LessonCategoryModel category, LessonModel lesson})? nextLessonTarget() {
+    for (final category in _categories) {
+      for (final lesson in category.lessons) {
+        if (!isLessonCompleted(lesson.id)) {
+          return (category: category, lesson: lesson);
+        }
+      }
+    }
+    return null;
+  }
+
+  /// Status do módulo: completed / inProgress / pending.
+  String moduleStatus(LessonCategoryModel category) {
+    final completed = completedLessonsForCategory(category);
+    if (completed >= category.lessons.length && category.lessons.isNotEmpty) {
+      return 'completed';
+    }
+    if (completed > 0) return 'inProgress';
+    return 'pending';
+  }
+
   Future<void> completeLesson({
     required String categoryId,
     required String lessonId,
@@ -148,7 +171,7 @@ class LearnPracticeViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _progress = await _progressService.completeLesson(
+      _progress = await _progressRepository.completeLesson(
         categoryId: categoryId,
         lessonId: lessonId,
         correctAnswers: correctAnswers,
@@ -161,6 +184,61 @@ class LearnPracticeViewModel extends ChangeNotifier {
       _isSavingProgress = false;
       notifyListeners();
     }
+  }
+
+  /// Insere ou substitui módulo na lista (authoring local / pós-create).
+  void upsertCategory(LessonCategoryModel category) {
+    final index = _categories.indexWhere((c) => c.id == category.id);
+    if (index >= 0) {
+      _categories = [..._categories]..[index] = category;
+    } else {
+      _categories = [..._categories, category];
+    }
+    notifyListeners();
+  }
+
+  void removeCategory(String categoryId) {
+    _categories =
+        _categories.where((category) => category.id != categoryId).toList();
+    notifyListeners();
+  }
+
+  void upsertLesson({
+    required String categoryId,
+    required LessonModel lesson,
+  }) {
+    final index = _categories.indexWhere((c) => c.id == categoryId);
+    if (index < 0) return;
+
+    final category = _categories[index];
+    final lessons = [...category.lessons];
+    final lessonIndex = lessons.indexWhere((l) => l.id == lesson.id);
+    if (lessonIndex >= 0) {
+      lessons[lessonIndex] = lesson;
+    } else {
+      lessons.add(lesson);
+    }
+
+    _categories = [..._categories]
+      ..[index] = category.copyWith(lessons: lessons);
+    notifyListeners();
+  }
+
+  void removeLesson({
+    required String categoryId,
+    required String lessonId,
+  }) {
+    final index = _categories.indexWhere((c) => c.id == categoryId);
+    if (index < 0) return;
+
+    final category = _categories[index];
+    _categories = [..._categories]
+      ..[index] = category.copyWith(
+        lessons: category.lessons
+            .where((lesson) => lesson.id != lessonId)
+            .toList(),
+      );
+    notifyListeners();
   }
 
   List<String> get _allLessonIds {

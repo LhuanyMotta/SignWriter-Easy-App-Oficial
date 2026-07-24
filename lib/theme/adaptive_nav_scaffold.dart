@@ -5,8 +5,8 @@ import 'responsive.dart';
 /// - Celular (estreito): `BottomNavigationBar`, do jeito que já era.
 /// - Web/desktop (largo): `NavigationRail` lateral, sem nada embaixo.
 ///
-/// Usado pelas telas que ficam nas abas principais (Início, Favoritos,
-/// Perfil...), pra não repetir essa lógica em cada uma.
+/// Usado pelas telas que ficam nas abas principais (Início, Perfil...),
+/// pra não repetir essa lógica em cada uma.
 class AdaptiveNavScaffold extends StatelessWidget {
   final PreferredSizeWidget? appBar;
   final Widget body;
@@ -14,7 +14,6 @@ class AdaptiveNavScaffold extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTabSelected;
   final String homeLabel;
-  final String favoritesLabel;
   final String profileLabel;
 
   const AdaptiveNavScaffold({
@@ -23,7 +22,6 @@ class AdaptiveNavScaffold extends StatelessWidget {
     required this.currentIndex,
     required this.onTabSelected,
     required this.homeLabel,
-    required this.favoritesLabel,
     required this.profileLabel,
     this.appBar,
     this.backgroundColor,
@@ -47,7 +45,6 @@ class AdaptiveNavScaffold extends StatelessWidget {
           onTap: onTabSelected,
           items: [
             BottomNavigationBarItem(icon: const Icon(Icons.home), label: homeLabel),
-            BottomNavigationBarItem(icon: const Icon(Icons.favorite), label: favoritesLabel),
             BottomNavigationBarItem(icon: const Icon(Icons.person), label: profileLabel),
           ],
         ),
@@ -110,12 +107,6 @@ class AdaptiveNavScaffold extends StatelessWidget {
                   icon: const Icon(Icons.home_outlined),
                   selectedIcon: const Icon(Icons.home),
                   label: Text(homeLabel),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                ),
-                NavigationRailDestination(
-                  icon: const Icon(Icons.favorite_outline),
-                  selectedIcon: const Icon(Icons.favorite),
-                  label: Text(favoritesLabel),
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                 ),
                 NavigationRailDestination(

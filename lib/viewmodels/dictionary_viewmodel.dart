@@ -10,6 +10,7 @@ class DictionaryViewModel extends ChangeNotifier {
 
   String _searchQuery = '';
   String _selectedCategory = 'All';
+  bool _showFavoritesOnly = false;
 
   bool _isLoading = false;
 
@@ -19,6 +20,7 @@ class DictionaryViewModel extends ChangeNotifier {
   List<SignModel> get signs => _filteredSigns;
   String get searchQuery => _searchQuery;
   String get selectedCategory => _selectedCategory;
+  bool get showFavoritesOnly => _showFavoritesOnly;
   bool get isLoading => _isLoading;
   List<String> get categories => _categories;
 
@@ -93,10 +95,17 @@ class DictionaryViewModel extends ChangeNotifier {
     _applyFilters();
   }
 
+  void toggleFavoritesOnly() {
+    _showFavoritesOnly = !_showFavoritesOnly;
+    _applyFilters();
+  }
+
   void _applyFilters() {
     _filteredSigns = _signs.where((sign) {
       final matchesCategory =
           _selectedCategory == _allLabel || sign.category == _selectedCategory;
+
+      final matchesFavorite = !_showFavoritesOnly || sign.isFavorite;
 
       final searchLower = _searchQuery.toLowerCase();
 
@@ -104,7 +113,7 @@ class DictionaryViewModel extends ChangeNotifier {
           sign.name.toLowerCase().contains(searchLower) ||
           (sign.description?.toLowerCase().contains(searchLower) ?? false);
 
-      return matchesCategory && matchesSearch;
+      return matchesCategory && matchesFavorite && matchesSearch;
     }).toList();
 
     notifyListeners();
@@ -183,14 +192,7 @@ class DictionaryViewModel extends ChangeNotifier {
         sign.isFavorite = true;
       }
 
-      final filteredIndex =
-          _filteredSigns.indexWhere((item) => item.id == signId);
-
-      if (filteredIndex >= 0) {
-        _filteredSigns[filteredIndex].isFavorite = sign.isFavorite;
-      }
-
-      notifyListeners();
+      _applyFilters();
     } catch (e) {
       debugPrint('Erro ao atualizar favorito: $e');
     }

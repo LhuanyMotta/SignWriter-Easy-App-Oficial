@@ -30,6 +30,11 @@ class LearningContentService {
       // Mantém o conteúdo local disponível quando o Supabase está offline.
     }
 
+    return loadLocalCategories(locale);
+  }
+
+  /// Expõe o JSON local para o repositório mock / fallback.
+  Future<List<LessonCategoryModel>> loadLocalCategories(Locale locale) {
     return _loadLocalCategories(locale);
   }
 
@@ -109,8 +114,17 @@ class LearningContentService {
       return const [];
     }
 
-    final lessonsData =
+    final lessonsRaw =
         await _supabase.from('lessons').select().order('order_index');
+    // Aluno só consome publicados; linhas sem `status` entram como publicadas.
+    final lessonsData = lessonsRaw.where((item) {
+      final row = _asMap(item);
+      final status = row['status']?.toString().toLowerCase();
+      return status == null ||
+          status.isEmpty ||
+          status == 'published';
+    }).toList();
+
     final sectionsData =
         await _supabase.from('lesson_sections').select().order('order_index');
     final exercisesData =
@@ -134,6 +148,9 @@ class LearningContentService {
         ExerciseOptionModel(
           id: row['id']?.toString() ?? '',
           label: _localizedText(row, 'label', lang),
+          mediaUrl: row['media_url']?.toString() ?? row['mediaUrl']?.toString(),
+          mediaAsset:
+              row['media_asset']?.toString() ?? row['mediaAsset']?.toString(),
         ),
       );
     }
@@ -167,6 +184,9 @@ class LearningContentService {
               row['correctOptionId']?.toString(),
           pairs: pairsByExercise[exId] ?? [],
           explanation: _localizedNullableText(row, 'explanation', lang),
+          mediaUrl: row['media_url']?.toString() ?? row['mediaUrl']?.toString(),
+          mediaAsset:
+              row['media_asset']?.toString() ?? row['mediaAsset']?.toString(),
         ),
       );
     }
@@ -210,6 +230,7 @@ class LearningContentService {
           references: _localizedStringList(row, 'references', lang),
           relatedSignIds: _parseStringList(
               row['related_sign_ids'] ?? row['relatedSignIds']),
+          status: row['status']?.toString() ?? 'published',
         ),
       );
     }
@@ -272,6 +293,12 @@ class LearningContentService {
       case 'matching':
       case 'match':
         return LessonExerciseType.matching;
+      case 'recognizeSymbol':
+      case 'recognize_symbol':
+        return LessonExerciseType.recognizeSymbol;
+      case 'chooseCorrectWriting':
+      case 'choose_correct_writing':
+        return LessonExerciseType.chooseCorrectWriting;
       case 'multipleChoice':
       case 'multiple_choice':
       default:

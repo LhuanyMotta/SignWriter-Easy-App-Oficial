@@ -1,8 +1,6 @@
-import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-
-import '../../l10n/l10n.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/written_sign_model.dart';
@@ -280,13 +278,21 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            _SignPreview(layoutJson: sign.layoutJson),
+            _SignPreview(
+              fsw: sign.fsw,
+              previewPngBytes: sign.previewPngBytes,
+            ),
             const SizedBox(height: 12),
             Text('Categoria: ${sign.category}'),
             const SizedBox(height: 4),
             Text('Atualizado em: ${_formatDate(sign.updatedAt)}'),
-            const SizedBox(height: 4),
-            Text('Símbolos: ${_countSymbols(sign.layoutJson)}'),
+            if (sign.hasSignWriting) ...[
+              const SizedBox(height: 4),
+              Text(
+                'FSW definido',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
             if (sign.tags.isNotEmpty) ...[
               const SizedBox(height: 8),
               Wrap(
@@ -387,19 +393,6 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
     final minute = date.minute.toString().padLeft(2, '0');
     return '$day/$month/$year $hour:$minute';
   }
-
-  int _countSymbols(String layoutJson) {
-    try {
-      final decoded = json.decode(layoutJson);
-      if (decoded is Map<String, dynamic> && decoded['symbols'] is List) {
-        return (decoded['symbols'] as List).length;
-      }
-      if (decoded is List) return decoded.length;
-    } catch (_) {
-      return 0;
-    }
-    return 0;
-  }
 }
 
 class _SummaryCard extends StatelessWidget {
@@ -472,124 +465,63 @@ class _StatusBadge extends StatelessWidget {
 }
 
 class _SignPreview extends StatelessWidget {
-  final String layoutJson;
+  final String fsw;
+  final Uint8List? previewPngBytes;
 
-  const _SignPreview({required this.layoutJson});
+  const _SignPreview({
+    required this.fsw,
+    this.previewPngBytes,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final symbols = _parseSymbols(layoutJson);
+    final hasFsw = fsw.trim().isNotEmpty && !fsw.startsWith('SW-MVP:');
+    final png = previewPngBytes;
+
     return Container(
       width: double.infinity,
       height: 120,
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFCF1),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Theme.of(context).dividerColor),
       ),
-      child: symbols.isEmpty
-          ? const Center(child: Icon(Icons.gesture_outlined, size: 36))
-          : LayoutBuilder(
-              builder: (context, constraints) {
-                final maxLeft = (constraints.maxWidth - 40).clamp(0.0, double.infinity);
-                final maxTop = (constraints.maxHeight - 40).clamp(0.0, double.infinity);
-                return Stack(
-                  children: symbols.map((symbol) {
-                    final left = maxLeft * symbol.x;
-                    final top = maxTop * symbol.y;
-                    return Positioned(
-                      left: left,
-                      top: top,
-                      child: Transform(
-                        alignment: Alignment.center,
-                        transform: Matrix4.diagonal3Values(symbol.mirrored ? -1 : 1, 1, 1),
-                        child: RotatedBox(
-                          quarterTurns: symbol.rotationQuarterTurns,
-                          child: Icon(
-                            _iconForSymbol(symbol.symbolId),
-                            size: 28,
-                            color: const Color(0xFF2D78BB),
-                          ),
+      clipBehavior: Clip.antiAlias,
+      child: !hasFsw
+          ? Center(
+              child: Icon(
+                Icons.sign_language_outlined,
+                size: 36,
+                color: Colors.grey.shade400,
+              ),
+            )
+          : (png != null && png.isNotEmpty)
+              ? Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Image.memory(
+                    png,
+                    fit: BoxFit.contain,
+                    gaplessPlayback: true,
+                    errorBuilder: (_, __, ___) => Center(
+                      child: Text(
+                        'FSW',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    );
-                  }).toList(),
-                );
-              },
-            ),
+                    ),
+                  ),
+                )
+              : Center(
+                  child: Text(
+                    'FSW',
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
     );
   }
-
-  static List<_PreviewSymbol> _parseSymbols(String rawLayout) {
-    try {
-      final decoded = json.decode(rawLayout);
-      final rawSymbols = decoded is Map<String, dynamic> ? decoded['symbols'] : decoded;
-      if (rawSymbols is! List) return const [];
-      return rawSymbols.whereType<Map>().map((item) {
-        final map = Map<String, dynamic>.from(item);
-        return _PreviewSymbol(
-          symbolId: (map['symbolId'] ?? '').toString(),
-          x: ((map['x'] as num?) ?? 0.5).toDouble().clamp(0.0, 1.0),
-          y: ((map['y'] as num?) ?? 0.5).toDouble().clamp(0.0, 1.0),
-          rotationQuarterTurns: ((map['rotationQuarterTurns'] as num?) ?? 0).toInt() % 4,
-          mirrored: (map['mirrored'] ?? false) == true,
-        );
-      }).toList();
-    } catch (_) {
-      return const [];
-    }
-  }
-
-  static IconData _iconForSymbol(String symbolId) {
-    switch (symbolId) {
-      case 'hand-open':
-        return Icons.back_hand_outlined;
-      case 'hand-point':
-        return Icons.touch_app_outlined;
-      case 'hand-fist':
-        return Icons.front_hand_outlined;
-      case 'move-up':
-        return Icons.arrow_upward;
-      case 'move-down':
-        return Icons.arrow_downward;
-      case 'move-repeat':
-        return Icons.sync;
-      case 'face-neutral':
-        return Icons.sentiment_neutral;
-      case 'face-happy':
-        return Icons.sentiment_satisfied_alt;
-      case 'face-focus':
-        return Icons.visibility_outlined;
-      case 'body-center':
-        return Icons.accessibility_new;
-      case 'body-lean':
-        return Icons.directions_run;
-      case 'body-head':
-        return Icons.emoji_people;
-      case 'mark-contact':
-        return Icons.radio_button_checked;
-      case 'mark-line':
-        return Icons.horizontal_rule;
-      case 'mark-cross':
-        return Icons.close;
-      default:
-        return Icons.help_outline;
-    }
-  }
-}
-
-class _PreviewSymbol {
-  final String symbolId;
-  final double x;
-  final double y;
-  final int rotationQuarterTurns;
-  final bool mirrored;
-
-  const _PreviewSymbol({
-    required this.symbolId,
-    required this.x,
-    required this.y,
-    required this.rotationQuarterTurns,
-    required this.mirrored,
-  });
 }

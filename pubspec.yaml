@@ -20,12 +20,13 @@ dependencies:
   shared_preferences: ^2.2.2
   supabase_flutter: 2.12.0
   gotrue: 2.18.0
-  fl_chart: ^0.70.0
   flutter_dotenv: ^5.1.0
   share_plus: ^7.2.0
   path_provider: ^2.1.0
   image_picker: ^1.1.2
   speech_to_text: ^7.0.0
+  webview_flutter: ^4.10.0
+  webview_flutter_android: ^4.3.0
 
 dev_dependencies:
   flutter_test:
@@ -41,6 +42,10 @@ flutter:
   assets:
     - assets/images/
     - assets/learning/
+    - assets/signmaker/
+    - assets/signmaker/config/
+    - assets/signmaker/config/alphabet/
+    - assets/signmaker/lib/
     - .env
 
 flutter_launcher_icons:

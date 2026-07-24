@@ -576,23 +576,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorSymbol => 'Symbol';
 
   @override
-  String get favoritesSearchHint => 'Search favorites...';
-  @override
-  String get favoritesRemoveTitle => 'Remove from favorites';
-  @override
-  String get favoritesRemoveContent => 'Do you want to remove this sign from your favorites?';
-  @override
-  String get favoritesClearTitle => 'Clear favorites';
-  @override
-  String get favoritesClearContent => 'Do you want to remove all favorites?';
-  @override
-  String get favoritesCancelButton => 'Cancel';
-  @override
-  String get favoritesRemoveButton => 'Remove';
-  @override
-  String get favoritesClearButton => 'Clear all';
-
-  @override
   String get profileSignOutTitle => 'Sign out';
   @override
   String get profileSignOutContent => 'Are you sure you want to sign out?';
@@ -616,7 +599,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileExportError => 'Error exporting data';
 
 
-  @override String get favoritesAll => 'All';
   @override String get favoritesEmpty => 'No favorites found';
   @override String get translateNoSignFound => 'No sign found for this text.';
   @override String get translateNotFound => 'Not found';

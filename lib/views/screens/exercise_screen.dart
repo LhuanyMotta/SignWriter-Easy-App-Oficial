@@ -206,15 +206,33 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                       color: scheme.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  if (_current.isMultipleChoice || _current.isTrueFalse)
-                    _MultipleChoiceOptions(
-                      exercise: _current,
-                      selectedOptionId: _selectedOptionId,
-                      answered: _answered,
-                      color: cat.color,
-                      onSelect: _selectOption,
+                  if (_current.hasMedia) ...[
+                    const SizedBox(height: 16),
+                    _ExerciseMediaSlot(
+                      mediaUrl: _current.mediaUrl,
+                      mediaAsset: _current.mediaAsset,
+                      accent: cat.color,
+                      tall: _current.isRecognizeSymbol ||
+                          _current.isChooseCorrectWriting,
                     ),
+                  ],
+                  const SizedBox(height: 24),
+                  if (_current.usesOptionSelection)
+                    _current.isChooseCorrectWriting
+                        ? _WritingChoiceOptions(
+                            exercise: _current,
+                            selectedOptionId: _selectedOptionId,
+                            answered: _answered,
+                            color: cat.color,
+                            onSelect: _selectOption,
+                          )
+                        : _MultipleChoiceOptions(
+                            exercise: _current,
+                            selectedOptionId: _selectedOptionId,
+                            answered: _answered,
+                            color: cat.color,
+                            onSelect: _selectOption,
+                          ),
                   if (_current.isMatching)
                     _MatchingOptions(
                       exercise: _current,
@@ -354,6 +372,10 @@ class _ExerciseTypeBadge extends StatelessWidget {
         return 'Verdadeiro ou Falso';
       case LessonExerciseType.matching:
         return 'Associação';
+      case LessonExerciseType.recognizeSymbol:
+        return 'Reconhecer símbolo';
+      case LessonExerciseType.chooseCorrectWriting:
+        return 'Escolher escrita correta';
       default:
         return 'Múltipla Escolha';
     }
@@ -365,6 +387,10 @@ class _ExerciseTypeBadge extends StatelessWidget {
         return Icons.thumbs_up_down_rounded;
       case LessonExerciseType.matching:
         return Icons.compare_arrows_rounded;
+      case LessonExerciseType.recognizeSymbol:
+        return Icons.visibility_rounded;
+      case LessonExerciseType.chooseCorrectWriting:
+        return Icons.draw_rounded;
       default:
         return Icons.radio_button_checked_rounded;
     }
@@ -393,6 +419,151 @@ class _ExerciseTypeBadge extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ─── Mídia do enunciado ───────────────────────────────────────────────────────
+
+class _ExerciseMediaSlot extends StatelessWidget {
+  final String? mediaUrl;
+  final String? mediaAsset;
+  final Color accent;
+  final bool tall;
+
+  const _ExerciseMediaSlot({
+    required this.mediaUrl,
+    required this.mediaAsset,
+    required this.accent,
+    this.tall = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final height = tall ? 200.0 : 140.0;
+    Widget image;
+    if (mediaAsset != null && mediaAsset!.isNotEmpty) {
+      image = Image.asset(
+        mediaAsset!,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => Icon(
+          Icons.image_not_supported_outlined,
+          color: accent.withValues(alpha: 0.5),
+          size: 48,
+        ),
+      );
+    } else if (mediaUrl != null && mediaUrl!.isNotEmpty) {
+      image = Image.network(
+        mediaUrl!,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => Icon(
+          Icons.broken_image_outlined,
+          color: accent.withValues(alpha: 0.5),
+          size: 48,
+        ),
+      );
+    } else {
+      image = Icon(
+        Icons.sign_language_rounded,
+        color: accent.withValues(alpha: 0.45),
+        size: 56,
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      height: height,
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: accent.withValues(alpha: 0.25)),
+      ),
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(12),
+      child: image,
+    );
+  }
+}
+
+// ─── Escolher escrita correta (grade com mídia) ───────────────────────────────
+
+class _WritingChoiceOptions extends StatelessWidget {
+  final LessonExerciseModel exercise;
+  final String? selectedOptionId;
+  final bool answered;
+  final Color color;
+  final ValueChanged<String> onSelect;
+
+  const _WritingChoiceOptions({
+    required this.exercise,
+    required this.selectedOptionId,
+    required this.answered,
+    required this.color,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: exercise.options.map((opt) {
+        final isSelected = selectedOptionId == opt.id;
+        final isCorrect = exercise.correctOptionId == opt.id;
+        final showCorrect = answered && isCorrect;
+        final showWrong = answered && isSelected && !isCorrect;
+
+        Color borderColor = scheme.outline.withValues(alpha: 0.35);
+        if (showCorrect) borderColor = const Color(0xFF16A34A);
+        if (showWrong) borderColor = const Color(0xFFDC2626);
+        if (isSelected && !answered) borderColor = color;
+
+        return SizedBox(
+          width: (MediaQuery.sizeOf(context).width - 52) / 2,
+          child: GestureDetector(
+            onTap: answered ? null : () => onSelect(opt.id),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: showCorrect
+                    ? const Color(0xFF16A34A).withValues(alpha: 0.08)
+                    : showWrong
+                        ? const Color(0xFFDC2626).withValues(alpha: 0.08)
+                        : scheme.surface,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: borderColor, width: 1.5),
+              ),
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 90,
+                    child: opt.hasMedia
+                        ? _ExerciseMediaSlot(
+                            mediaUrl: opt.mediaUrl,
+                            mediaAsset: opt.mediaAsset,
+                            accent: color,
+                          )
+                        : Icon(Icons.draw_outlined,
+                            size: 40, color: color.withValues(alpha: 0.5)),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    opt.label,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
@@ -468,6 +639,19 @@ class _MultipleChoiceOptions extends StatelessWidget {
             ),
             child: Row(
               children: [
+                if (opt.hasMedia) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: SizedBox(
+                      width: 44,
+                      height: 44,
+                      child: opt.mediaAsset != null
+                          ? Image.asset(opt.mediaAsset!, fit: BoxFit.cover)
+                          : Image.network(opt.mediaUrl!, fit: BoxFit.cover),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
                 Expanded(
                   child: Text(
                     opt.label,

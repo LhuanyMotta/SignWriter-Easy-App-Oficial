@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:typed_data';
+
+import 'signmaker_result.dart';
 
 /// Modelo local para sinais autorais criados pelo usuário.
 class WrittenSignModel {
@@ -14,8 +17,11 @@ class WrittenSignModel {
   final String category;
   final List<String> tags;
   final String fsw;
+  final String swu;
   final String layoutJson;
-  final String? previewSvg;
+
+  /// Cache visual PNG (Base64, sem prefixo data:). FSW continua canônico.
+  final String? previewPngBase64;
   final String status;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -30,8 +36,9 @@ class WrittenSignModel {
     required this.category,
     this.tags = const [],
     this.fsw = '',
+    this.swu = '',
     this.layoutJson = '[]',
-    this.previewSvg,
+    this.previewPngBase64,
     this.status = statusDraft,
     required this.createdAt,
     required this.updatedAt,
@@ -40,8 +47,13 @@ class WrittenSignModel {
 
   bool get isDraft => status == statusDraft;
   bool get isPublished => status == statusPublished;
+  bool get hasSignWriting => fsw.trim().isNotEmpty && !fsw.startsWith('SW-MVP:');
+
+  Uint8List? get previewPngBytes =>
+      SignMakerResult.decodePngBase64(previewPngBase64);
 
   factory WrittenSignModel.fromMap(Map<String, dynamic> map) {
+    final pngRaw = map['preview_png_base64'] ?? map['preview_svg'];
     return WrittenSignModel(
       id: map['id'] as String,
       userId: (map['user_id'] ?? 'local_user') as String,
@@ -51,8 +63,11 @@ class WrittenSignModel {
       category: map['category'] as String,
       tags: _parseTags(map['tags']),
       fsw: (map['fsw'] ?? '') as String,
+      swu: (map['swu'] ?? '') as String,
       layoutJson: (map['layout_json'] ?? '[]') as String,
-      previewSvg: map['preview_svg'] as String?,
+      previewPngBase64: SignMakerResult.normalizePngBase64(
+        pngRaw?.toString(),
+      ),
       status: (map['status'] ?? statusDraft) as String,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
@@ -72,8 +87,9 @@ class WrittenSignModel {
       'category': category,
       'tags': json.encode(tags),
       'fsw': fsw,
+      'swu': swu,
       'layout_json': layoutJson,
-      'preview_svg': previewSvg,
+      'preview_png_base64': previewPngBase64,
       'status': status,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -90,8 +106,9 @@ class WrittenSignModel {
     String? category,
     List<String>? tags,
     String? fsw,
+    String? swu,
     String? layoutJson,
-    String? previewSvg,
+    String? previewPngBase64,
     String? status,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -106,8 +123,9 @@ class WrittenSignModel {
       category: category ?? this.category,
       tags: tags ?? this.tags,
       fsw: fsw ?? this.fsw,
+      swu: swu ?? this.swu,
       layoutJson: layoutJson ?? this.layoutJson,
-      previewSvg: previewSvg ?? this.previewSvg,
+      previewPngBase64: previewPngBase64 ?? this.previewPngBase64,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

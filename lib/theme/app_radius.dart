@@ -8,7 +8,7 @@ class AppRadius {
   static const double small = 10.0;
 
   /// Cards de lista/feature — o valor mais usado no app (dicionário,
-  /// favoritos, perfil...). Esse é o padrão pra qualquer "cartão" novo.
+  /// perfil...). Esse é o padrão pra qualquer "cartão" novo.
   static const double card = 16.0;
 
   /// Cards grandes/hero (banners, cabeçalhos destacados).

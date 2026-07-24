@@ -51,10 +51,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       currentIndex: _currentBottomIndex,
       homeLabel: context.l10n.bottomHome,
-      favoritesLabel: context.l10n.bottomFavorites,
       profileLabel: context.l10n.bottomProfile,
       onTabSelected: (index) {
-        setState(() => _currentBottomIndex = index);
+        if (index == 0) {
+          setState(() => _currentBottomIndex = 0);
+        }
         _viewModel.onBottomNavTapped(index, context);
       },
       body: ResponsiveContent(child: _buildHomeTab()),

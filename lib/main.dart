@@ -7,7 +7,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:signwriter_easy_app_oficial/views/screens/profile_screen.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/profile_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/dictionary_viewmodel.dart';
-import 'package:signwriter_easy_app_oficial/viewmodels/favorites_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/learn_practice_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/translate_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/views/screens/home_screen.dart';
@@ -71,9 +70,6 @@ void main() async {
       ),
       ChangeNotifierProvider(
         create: (_) => DictionaryViewModel(),
-      ),
-      ChangeNotifierProvider(
-        create: (_) => FavoritesViewModel(),
       ),
       ChangeNotifierProvider(
         create: (_) => LearnPracticeViewModel(),

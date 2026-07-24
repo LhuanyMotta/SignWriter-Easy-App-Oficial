@@ -1061,16 +1061,6 @@ abstract class AppLocalizations {
   String get editorCross;
   String get editorSymbol;
 
-  // Favoritos
-  String get favoritesSearchHint;
-  String get favoritesRemoveTitle;
-  String get favoritesRemoveContent;
-  String get favoritesClearTitle;
-  String get favoritesClearContent;
-  String get favoritesCancelButton;
-  String get favoritesRemoveButton;
-  String get favoritesClearButton;
-
   // Perfil
   String get profileSignOutTitle;
   String get profileSignOutContent;
@@ -1098,7 +1088,6 @@ abstract class AppLocalizations {
   String get authErrorSignup;
   String get authErrorCreateAccount;
 
-  String get favoritesAll;
   String get favoritesEmpty;
   String get translateNoSignFound;
   String get translateNotFound;

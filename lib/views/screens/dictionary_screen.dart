@@ -125,9 +125,46 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                         height: 42,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          itemCount: viewModel.categories.length,
+                          itemCount: viewModel.categories.length + 1,
                           itemBuilder: (context, index) {
-                            final category = viewModel.categories[index];
+                            if (index == 0) {
+                              final isSelected = viewModel.showFavoritesOnly;
+                              return Padding(
+                                padding: AppSpacing.only(context, right: 8),
+                                child: FilterChip(
+                                  avatar: Icon(
+                                    isSelected
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    size: 16,
+                                    color: isSelected ? Colors.white : Colors.red,
+                                  ),
+                                  label: Text(context.l10n.bottomFavorites),
+                                  selected: isSelected,
+                                  selectedColor: primary,
+                                  backgroundColor: isDark
+                                      ? const Color(0xFF222A33)
+                                      : Colors.white,
+                                  checkmarkColor: Colors.white,
+                                  labelStyle: TextStyle(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : isDark
+                                            ? Colors.grey[300]
+                                            : const Color(0xFF666666),
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                  onSelected: (_) {
+                                    viewModel.toggleFavoritesOnly();
+                                  },
+                                  showCheckmark: false,
+                                ),
+                              );
+                            }
+
+                            final category = viewModel.categories[index - 1];
                             final isSelected =
                                 category == viewModel.selectedCategory;
 
@@ -197,7 +234,6 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
         ),
         currentIndex: 0,
         homeLabel: context.l10n.bottomHome,
-        favoritesLabel: context.l10n.bottomFavorites,
         profileLabel: context.l10n.bottomProfile,
         onTabSelected: (index) => _homeViewModel.onBottomNavTapped(index, context),
       ),
@@ -330,10 +366,13 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
 
   Widget _buildEmptyState(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final message = _viewModel.showFavoritesOnly
+        ? context.l10n.favoritesEmpty
+        : 'Nenhum sinal encontrado';
 
     return Center(
       child: Text(
-        'Nenhum sinal encontrado',
+        message,
         style: TextStyle(
           color: isDark ? Colors.grey[300] : Colors.grey[700],
           fontSize: 18,

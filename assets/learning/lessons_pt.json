@@ -13,14 +13,28 @@
           "summary": "Uma introdução ao sistema de escrita visual criado por Valerie Sutton em 1974.",
           "estimatedMinutes": 8,
           "difficulty": "Iniciante",
+          "objectives": [
+            "Reconhecer o que é SignWriting",
+            "Diferenciar escrita de sinais de desenho livre",
+            "Identificar os elementos básicos registrados"
+          ],
           "sections": [
             {
               "title": "O que é?",
               "body": "O SignWriting é um sistema de escrita visual que representa os movimentos das mãos, expressões faciais e posturas corporais das línguas de sinais.",
+              "bullets": [
+                "Criado por Valerie Sutton em 1974",
+                "Usado em dezenas de países",
+                "Serve para qualquer língua de sinais"
+              ],
               "highlight": "SignWriting é para as línguas de sinais o que o alfabeto é para as línguas faladas!"
             }
           ],
-          "exercises": []
+          "exercises": [],
+          "references": [
+            "Lessons in SignWriting — Valerie Sutton"
+          ],
+          "relatedSignIds": []
         },
         {
           "id": "les-1-2",

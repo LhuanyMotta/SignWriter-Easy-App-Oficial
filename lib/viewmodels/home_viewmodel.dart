@@ -19,10 +19,6 @@ class HomeViewModel {
     AppRoutes.navigateTo(context, AppRoutes.translateSigns);
   }
 
-  void navigateToFavorites(BuildContext context) {
-    AppRoutes.navigateTo(context, AppRoutes.favorites);
-  }
-
   void navigateToProfile(BuildContext context) {
     AppRoutes.navigateTo(context, AppRoutes.profile);
   }
@@ -33,9 +29,6 @@ class HomeViewModel {
         AppRoutes.navigateReplacement(context, AppRoutes.home);
         break;
       case 1:
-        navigateToFavorites(context);
-        break;
-      case 2:
         navigateToProfile(context);
         break;
     }

@@ -85,6 +85,24 @@ class LessonCategoryModel {
     };
   }
 
+  LessonCategoryModel copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? iconKey,
+    String? colorHex,
+    List<LessonModel>? lessons,
+  }) {
+    return LessonCategoryModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      iconKey: iconKey ?? this.iconKey,
+      colorHex: colorHex ?? this.colorHex,
+      lessons: lessons ?? this.lessons,
+    );
+  }
+
   static List<LessonModel> _parseLessons(dynamic value) {
     if (value is List) {
       return value
