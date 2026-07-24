@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/export_data.dart';
 import '../../viewmodels/profile_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../accessibility_settings_view.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_radius.dart';
 import '../../theme/adaptive_nav_scaffold.dart';
 import '../../theme/responsive_content.dart';
-import '../../theme/app_radius.dart';
 import '../../l10n/l10n.dart';
 import '../../routes/app_routes.dart';
 
@@ -24,31 +25,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final HomeViewModel _homeViewModel = HomeViewModel();
 
   @override
-void initState() {
-  super.initState();
+  void initState() {
+    super.initState();
+    _viewModel = Provider.of<ProfileViewModel>(context, listen: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _viewModel.loadInitialData();
+      await _viewModel.recoverLostProfileImage();
+    });
+  }
 
-  _viewModel = Provider.of<ProfileViewModel>(
-    context,
-    listen: false,
-  );
-
-  WidgetsBinding.instance.addPostFrameCallback((_) async {
-    await _viewModel.loadInitialData();
-    await _viewModel.recoverLostProfileImage();
-  });
-}
-
-  Color _cardColor(BuildContext context) => Theme.of(context).cardColor;
-
-  Color _textColor(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-          ? Colors.white
-          : const Color(0xFF333333);
-
-  Color _subtitleColor(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark
-          ? Colors.grey.shade400
-          : Colors.grey.shade600;
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
+  Color get _card => Theme.of(context).cardColor;
+  Color get _text => _isDark ? Colors.white : const Color(0xFF1E1E1E);
+  Color get _sub => _isDark ? Colors.grey.shade400 : Colors.grey.shade600;
+  Color get _primary => Theme.of(context).colorScheme.primary;
 
   @override
   Widget build(BuildContext context) {
@@ -56,32 +46,30 @@ void initState() {
       value: _viewModel,
       child: AdaptiveNavScaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(
-          title: Text(context.l10n.bottomProfile),
-        ),
+        appBar: AppBar(title: Text(context.l10n.bottomProfile)),
         body: ResponsiveContent(
+          maxWidth: 720,
           child: Consumer<ProfileViewModel>(
-            builder: (context, viewModel, child) {
-              if (viewModel.userData == null) {
-                return const Center(
-                  child: CircularProgressIndicator(color: Color(0xFF2D78BB)),
-                );
+            builder: (context, vm, _) {
+              if (vm.userData == null) {
+                return Center(child: CircularProgressIndicator(color: _primary));
               }
-
               return ListView(
-                padding: AppSpacing.all(context, 16),
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
                 children: [
-                  _buildUserCard(context, viewModel),
-                  SizedBox(height: AppSpacing.value(context, 18)),
-                  _sectionTitle(context, context.l10n.settingsTitle),
-                  SizedBox(height: AppSpacing.value(context, 10)),
-                  _buildSettingsCard(context, viewModel),
-                  SizedBox(height: AppSpacing.value(context, 18)),
-                  _sectionTitle(context, context.l10n.accountDataTitle),
-                  SizedBox(height: AppSpacing.value(context, 10)),
-                  _buildAccountCard(context, viewModel),
-                  SizedBox(height: AppSpacing.value(context, 20)),
-                  _buildLogoutButton(context, viewModel),
+                  _heroCard(vm),
+                  const SizedBox(height: 20),
+                  _bioCard(vm),
+                  const SizedBox(height: 20),
+                  _label(context.l10n.settingsTitle),
+                  const SizedBox(height: 10),
+                  _settingsCard(vm),
+                  const SizedBox(height: 20),
+                  _label(context.l10n.accountDataTitle),
+                  const SizedBox(height: 10),
+                  _accountCard(vm),
+                  const SizedBox(height: 24),
+                  _logoutBtn(vm),
                 ],
               );
             },
@@ -91,109 +79,125 @@ void initState() {
         homeLabel: context.l10n.bottomHome,
         favoritesLabel: context.l10n.bottomFavorites,
         profileLabel: context.l10n.bottomProfile,
-        onTabSelected: (index) => _homeViewModel.onBottomNavTapped(index, context),
+        onTabSelected: (i) => _homeViewModel.onBottomNavTapped(i, context),
       ),
     );
   }
 
-  Widget _buildUserCard(BuildContext context, ProfileViewModel viewModel) {
-    final userData = viewModel.userData ?? {};
-    final name = userData['name'] as String? ?? 'Usuário';
-    final email = userData['email'] as String? ?? '';
-    final bio = userData['bio'] as String? ?? '';
-    final avatarUrl = userData['avatar_url'] as String?;
+  // ── Hero card ────────────────────────────────────────────────────────────
 
-    if (avatarUrl != null && avatarUrl.isNotEmpty) {
-      precacheImage(NetworkImage(avatarUrl), context);
-    }
+  Widget _heroCard(ProfileViewModel vm) {
+    final data = vm.userData ?? {};
+    final name = (data['name'] as String? ?? 'Usuário').trim();
+    final email = data['email'] as String? ?? '';
+    final avatarUrl = data['avatar_url'] as String?;
+    final hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty;
 
     return Container(
-      padding: AppSpacing.all(context, 18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: _cardColor(context),
-        borderRadius: BorderRadius.circular(AppRadius.card),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [_primary, _primary.withValues(alpha: 0.78)],
+        ),
+        borderRadius: BorderRadius.circular(AppRadius.large),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
-              Theme.of(context).brightness == Brightness.dark ? 0.25 : 0.08,
-            ),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
+            color: _primary.withValues(alpha: 0.28),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Row(
         children: [
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 38,
-                backgroundColor: const Color(0xFF2D78BB),
-                backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
-                    ? NetworkImage(avatarUrl)
-                    : null,
-                child: avatarUrl == null || avatarUrl.isEmpty
-                    ? Text(
-                        name.isNotEmpty ? name[0].toUpperCase() : 'U',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    : null,
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: InkWell(
-                  onTap: () => _showImageSourceSheet(context, viewModel),
-                  child: Container(
-                    padding: AppSpacing.all(context, 7),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF4EB1F0),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+          // Avatar com botão de câmera
+          GestureDetector(
+            onTap: () => _showAvatarSheet(vm, hasAvatar),
+            child: Stack(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.5), width: 3),
+                  ),
+                  child: CircleAvatar(
+                    radius: 44,
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                    backgroundImage:
+                        hasAvatar ? NetworkImage(avatarUrl!) : null,
+                    child: !hasAvatar
+                        ? Text(
+                            name.isNotEmpty ? name[0].toUpperCase() : 'U',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 36,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : null,
                   ),
                 ),
-              ),
-            ],
+                Positioned(
+                  bottom: 2,
+                  right: 2,
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 6,
+                        )
+                      ],
+                    ),
+                    child: Icon(Icons.camera_alt, size: 14, color: _primary),
+                  ),
+                ),
+              ],
+            ),
           ),
-          SizedBox(width: AppSpacing.value(context, 16)),
+          const SizedBox(width: 18),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   name,
-                  style: TextStyle(
+                  style: const TextStyle(
+                    color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: _textColor(context),
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: AppSpacing.value(context, 4)),
+                const SizedBox(height: 3),
                 Text(
                   email,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: _subtitleColor(context),
+                  style:
+                      TextStyle(color: Colors.white.withValues(alpha: 0.80), fontSize: 13),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 14),
+                OutlinedButton.icon(
+                  onPressed: () => _showEditSheet(vm),
+                  icon: const Icon(Icons.edit_outlined, size: 14, color: Colors.white),
+                  label: const Text('Editar perfil',
+                      style: TextStyle(color: Colors.white, fontSize: 13)),
+                  style: OutlinedButton.styleFrom(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    side: BorderSide(color: Colors.white.withValues(alpha: 0.6)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
-                if (bio.isNotEmpty) ...[
-                  SizedBox(height: AppSpacing.value(context, 8)),
-                  Text(
-                    bio,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: _subtitleColor(context),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
@@ -202,125 +206,182 @@ void initState() {
     );
   }
 
-  Widget _sectionTitle(BuildContext context, String title) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.primary,
-      ),
-    );
-  }
+  // ── Bio card ────────────────────────────────────────────────────────────
 
-  Widget _buildSettingsCard(BuildContext context, ProfileViewModel viewModel) {
+  Widget _bioCard(ProfileViewModel vm) {
+    final bio = (vm.userData?['bio'] as String? ?? '').trim();
     return Container(
       decoration: BoxDecoration(
-        color: _cardColor(context),
-        borderRadius: BorderRadius.circular(16),
+        color: _card,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(
+            color: _isDark ? Colors.white10 : Colors.grey.shade200),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _settingsTile(
-            context,
-            icon: Icons.accessibility_new,
-            title: context.l10n.accessibilityTitle,
-            subtitle: context.l10n.accessibilitySubtitle,
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AccessibilitySettingsView(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 8, 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Sobre mim',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14, color: _text)),
+                TextButton.icon(
+                  onPressed: () => _showEditSheet(vm),
+                  icon: Icon(Icons.edit_outlined, size: 14, color: _primary),
+                  label: Text('Editar',
+                      style: TextStyle(color: _primary, fontSize: 13)),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                 ),
-              );
-            },
-          ),
-          const Divider(height: 1),
-          SwitchListTile(
-            secondary: const Icon(Icons.notifications_outlined, color: Color(0xFF2D78BB)),
-            title: Text(
-              context.l10n.notificationsTitle,
-              style: TextStyle(
-                color: _textColor(context),
-                fontWeight: FontWeight.w600,
-              ),
+              ],
             ),
-            subtitle: Text(
-              context.l10n.notificationsSubtitle,
-              style: TextStyle(color: _subtitleColor(context)),
-            ),
-            value: viewModel.notificationsEnabled,
-            activeColor: const Color(0xFF2D78BB),
-            onChanged: viewModel.toggleNotifications,
           ),
-          const Divider(height: 1),
-          
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: bio.isNotEmpty
+                ? Text(bio, style: TextStyle(color: _sub, height: 1.5))
+                : GestureDetector(
+                    onTap: () => _showEditSheet(vm),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: _isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: _isDark ? Colors.white12 : Colors.grey.shade200,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.add, size: 15, color: _primary),
+                          const SizedBox(width: 8),
+                          Text('Adicionar uma bio',
+                              style: TextStyle(color: _primary, fontSize: 13)),
+                        ],
+                      ),
+                    ),
+                  ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildAccountCard(BuildContext context, ProfileViewModel viewModel) {
+  // ── Settings ────────────────────────────────────────────────────────────
+
+  Widget _settingsCard(ProfileViewModel vm) {
     return Container(
       decoration: BoxDecoration(
-        color: _cardColor(context),
-        borderRadius: BorderRadius.circular(16),
+        color: _card,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(
+            color: _isDark ? Colors.white10 : Colors.grey.shade200),
       ),
       child: Column(
         children: [
-          _settingsTile(
-            context,
+          _tile(
+            icon: Icons.accessibility_new_rounded,
+            title: context.l10n.accessibilityTitle,
+            subtitle: context.l10n.accessibilitySubtitle,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const AccessibilitySettingsView()),
+            ),
+          ),
+          _divider(),
+          SwitchListTile(
+            secondary: Icon(Icons.notifications_outlined, color: _primary),
+            title: Text(context.l10n.notificationsTitle,
+                style: TextStyle(color: _text, fontWeight: FontWeight.w600)),
+            subtitle: Text(context.l10n.notificationsSubtitle,
+                style: TextStyle(color: _sub)),
+            value: vm.notificationsEnabled,
+            activeColor: _primary,
+            onChanged: vm.toggleNotifications,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Account ─────────────────────────────────────────────────────────────
+
+  Widget _accountCard(ProfileViewModel vm) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _card,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(
+            color: _isDark ? Colors.white10 : Colors.grey.shade200),
+      ),
+      child: Column(
+        children: [
+          _tile(
             icon: Icons.download_outlined,
             title: context.l10n.exportDataTitle,
             subtitle: context.l10n.exportDataSubtitle,
-            color: const Color(0xFF2D78BB),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => _exportUserData(context, viewModel),
+            onTap: () => _doExport(vm),
           ),
-          const Divider(height: 1),
-          _settingsTile(
-            context,
+          _divider(),
+          _tile(
             icon: Icons.delete_outline,
             title: context.l10n.deleteAccountTitle,
             subtitle: context.l10n.deleteAccountSubtitle,
             color: Colors.red,
-            trailing: const Icon(Icons.chevron_right, color: Colors.red),
-            onTap: () => _confirmDeleteAccount(context, viewModel),
+            onTap: () => _confirmDelete(vm),
           ),
         ],
       ),
     );
   }
 
-  Widget _settingsTile(
-    BuildContext context, {
+  Widget _tile({
     required IconData icon,
     required String title,
     required String subtitle,
-    required Widget trailing,
     required VoidCallback onTap,
-    Color color = const Color(0xFF2D78BB),
+    Color? color,
   }) {
+    final c = color ?? _primary;
     return ListTile(
-      leading: Icon(icon, color: color),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: color == Colors.red ? Colors.red : _textColor(context),
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(color: _subtitleColor(context)),
-      ),
-      trailing: trailing,
+      leading: Icon(icon, color: c),
+      title: Text(title,
+          style: TextStyle(
+              color: color == Colors.red ? Colors.red : _text,
+              fontWeight: FontWeight.w600)),
+      subtitle: Text(subtitle, style: TextStyle(color: _sub)),
+      trailing: Icon(Icons.chevron_right, color: _sub),
       onTap: onTap,
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context, ProfileViewModel viewModel) {
+  Widget _divider() => Divider(
+        height: 1,
+        color: _isDark ? Colors.white10 : Colors.grey.shade200,
+        indent: 16,
+        endIndent: 16,
+      );
+
+  Widget _label(String text) => Text(text,
+      style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.4,
+          color: _sub));
+
+  // ── Logout ──────────────────────────────────────────────────────────────
+
+  Widget _logoutBtn(ProfileViewModel vm) {
     return SizedBox(
       height: 54,
       child: ElevatedButton.icon(
@@ -331,10 +392,9 @@ void initState() {
               title: Text(context.l10n.profileSignOutTitle),
               content: Text(context.l10n.profileSignOutContent),
               actions: [
-                TextButton(  
-                  onPressed: () => Navigator.pop(context, false),
-                  child: Text(context.l10n.cancel),
-                ),
+                TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: Text(context.l10n.cancel)),
                 ElevatedButton(
                   onPressed: () => Navigator.pop(context, true),
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -343,14 +403,11 @@ void initState() {
               ],
             ),
           );
-
           if (confirmed == true && mounted) {
-            final success = await viewModel.logout();
-            if (success && mounted) {
-                      Navigator.of(context).pushNamedAndRemoveUntil(
-                        AppRoutes.auth,
-                        (route) => false,
-                      );
+            final ok = await vm.logout();
+            if (ok && mounted) {
+              Navigator.of(context)
+                  .pushNamedAndRemoveUntil(AppRoutes.auth, (_) => false);
             }
           }
         },
@@ -359,131 +416,222 @@ void initState() {
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.red,
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14)),
         ),
       ),
     );
   }
 
-  Future<void> _showImageSourceSheet(
-    BuildContext context,
-    ProfileViewModel viewModel,
-  ) async {
-    final source = await showModalBottomSheet<ImageSource>(
+  // ── Sheets ───────────────────────────────────────────────────────────────
+
+  Future<void> _showAvatarSheet(ProfileViewModel vm, bool hasAvatar) async {
+    final action = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: _cardColor(context),
+      backgroundColor: _card,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) {
-        return SafeArea(
-          child: Padding(
-            padding: AppSpacing.all(context, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Selecionar Foto',
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40, height: 4,
+                margin: const EdgeInsets.only(bottom: 14),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+              Text('Foto de Perfil',
                   style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: _textColor(context),
-                  ),
-                ),
-                SizedBox(height: AppSpacing.value(context, 16)),
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: _text)),
+              const SizedBox(height: 12),
+              ListTile(
+                leading: CircleAvatar(
+                    backgroundColor: _primary,
+                    child: const Icon(Icons.photo_library, color: Colors.white)),
+                title: Text(context.l10n.profileGallery,
+                    style: TextStyle(
+                        color: _text, fontWeight: FontWeight.w600)),
+                onTap: () => Navigator.pop(context, 'gallery'),
+              ),
+              ListTile(
+                leading: CircleAvatar(
+                    backgroundColor: _primary.withValues(alpha: 0.7),
+                    child: const Icon(Icons.camera_alt, color: Colors.white)),
+                title: Text(context.l10n.profileCamera,
+                    style: TextStyle(
+                        color: _text, fontWeight: FontWeight.w600)),
+                onTap: () => Navigator.pop(context, 'camera'),
+              ),
+              if (hasAvatar) ...[
+                Divider(color: _isDark ? Colors.white12 : Colors.grey.shade200),
                 ListTile(
                   leading: const CircleAvatar(
-                    backgroundColor: Color(0xFF2D78BB),
-                    child: Icon(Icons.photo_library, color: Colors.white),
-                  ),
-                  title: Text(context.l10n.profileGallery, style: TextStyle(color: _textColor(context))),
-                  onTap: () => Navigator.pop(context, ImageSource.gallery),
-                ),
-                ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: Color(0xFF4EB1F0),
-                    child: Icon(Icons.camera_alt, color: Colors.white),
-                  ),
-                  title: Text(context.l10n.profileCamera, style: TextStyle(color: _textColor(context))),
-                  onTap: () => Navigator.pop(context, ImageSource.camera),
+                      backgroundColor: Colors.red,
+                      child: Icon(Icons.delete_outline, color: Colors.white)),
+                  title: const Text('Remover foto',
+                      style: TextStyle(
+                          color: Colors.red, fontWeight: FontWeight.w600)),
+                  onTap: () => Navigator.pop(context, 'remove'),
                 ),
               ],
-            ),
+              const SizedBox(height: 8),
+            ],
           ),
-        );
-      },
-    );
-
-    if (source == null) return;
-
-    final success = await viewModel.uploadProfileImage(source: source);
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? 'Foto de perfil atualizada com sucesso!'
-              : viewModel.errorMessage ?? context.l10n.profileErrorUpdatePhoto,
         ),
-        backgroundColor: success ? Colors.green : Colors.red,
       ),
     );
+
+    if (action == null || !mounted) return;
+
+    if (action == 'remove') {
+      final ok = await vm.removeProfileImage();
+      if (!mounted) return;
+      _snack(ok ? 'Foto removida!' : vm.errorMessage ?? 'Erro ao remover.', ok);
+      return;
+    }
+
+    final source =
+        action == 'gallery' ? ImageSource.gallery : ImageSource.camera;
+    final ok = await vm.uploadProfileImage(source: source);
+    if (!mounted) return;
+    _snack(ok ? 'Foto atualizada!' : vm.errorMessage ?? context.l10n.profileErrorUpdatePhoto, ok);
   }
 
-  Future<void> _exportUserData(
-    BuildContext context,
-    ProfileViewModel viewModel,
-  ) async {
+  Future<void> _showEditSheet(ProfileViewModel vm) async {
+    final data = vm.userData ?? {};
+    final nameCtrl = TextEditingController(text: data['name'] as String? ?? '');
+    final bioCtrl = TextEditingController(text: data['bio'] as String? ?? '');
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: _card,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (sheetCtx) => Padding(
+        padding: EdgeInsets.fromLTRB(
+            20, 12, 20, MediaQuery.of(sheetCtx).viewInsets.bottom + 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                margin: const EdgeInsets.only(bottom: 18),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+            ),
+            Text('Editar Perfil',
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: _text)),
+            const SizedBox(height: 20),
+            TextField(
+              controller: nameCtrl,
+              decoration: InputDecoration(
+                labelText: 'Nome',
+                prefixIcon: Icon(Icons.person_outline, color: _primary),
+              ),
+              textCapitalization: TextCapitalization.words,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: bioCtrl,
+              decoration: InputDecoration(
+                labelText: 'Bio',
+                hintText: 'Fale um pouco sobre você...',
+                prefixIcon: Icon(Icons.edit_note, color: _primary),
+                alignLabelWithHint: true,
+              ),
+              maxLines: 3,
+              maxLength: 160,
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  // Pega o email direto do auth — fonte confiável e imutável
+                  final authEmail =
+                      Supabase.instance.client.auth.currentUser?.email ?? '';
+                  final ok = await vm.updateProfile(
+                    name: nameCtrl.text.trim(),
+                    email: authEmail,
+                    bio: bioCtrl.text.trim(),
+                  );
+                  if (!mounted) return;
+                  Navigator.pop(sheetCtx);
+                  _snack(
+                    ok ? 'Perfil atualizado!' : 'Erro: ${vm.errorMessage ?? "verifique a conexão"}',
+                    ok,
+                  );
+                },
+                child: const Text('Salvar alterações'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    nameCtrl.dispose();
+    bioCtrl.dispose();
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  void _snack(String msg, bool ok) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(msg),
+      backgroundColor: ok ? Colors.green : Colors.red,
+    ));
+  }
+
+  Future<void> _doExport(ProfileViewModel vm) async {
     try {
-      final jsonData = await viewModel.exportUserData();
-      await shareExportedUserData(
-        jsonData,
-        shareText: 'Meus dados do SignWriter Fácil',
-        shareSubject: 'Exportação de dados - SignWriter Fácil',
-      );
+      final data = await vm.exportUserData();
+      await shareExportedUserData(data,
+          shareText: 'Meus dados do SignWriter Fácil',
+          shareSubject: 'Exportação - SignWriter Fácil');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro ao exportar dados: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _snack('Erro ao exportar: $e', false);
     }
   }
 
-  void _confirmDeleteAccount(BuildContext context, ProfileViewModel viewModel) {
+  void _confirmDelete(ProfileViewModel vm) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: Text(context.l10n.profileDeleteTitle),
         content: const Text(
-          'Tem certeza que deseja excluir sua conta? Esta ação é irreversível.',
-        ),
+            'Esta ação é irreversível. Todos os seus dados serão apagados.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(context.l10n.cancel),
-          ),
+              onPressed: () => Navigator.pop(context),
+              child: Text(context.l10n.cancel)),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              final success = await viewModel.deleteAccount();
+              final ok = await vm.deleteAccount();
               if (!mounted) return;
-              if (success) {
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.auth,
-                    (route) => false,
-                  );
+              if (ok) {
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil(AppRoutes.auth, (_) => false);
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(viewModel.errorMessage ?? context.l10n.profileErrorDeleteAccount),
-                    backgroundColor: Colors.red,
-                  ),
-                );
+                _snack(vm.errorMessage ?? context.l10n.profileErrorDeleteAccount, false);
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),

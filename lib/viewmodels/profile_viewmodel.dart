@@ -250,13 +250,98 @@ Future<void> setThemeMode(
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('id', user.id);
 
-      await _loadUserData();
+      // Atualiza cache local — não recarrega do banco pra evitar que
+      // _loadUserData sobrescreva os dados novos com os dados antigos do auth.
+      if (_userData != null) {
+        _userData = Map<String, dynamic>.from(_userData!);
+        _userData!['name'] = name;
+        _userData!['email'] = email;
+        _userData!['bio'] = bio ?? '';
+      }
 
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
       _errorMessage = 'Erro ao atualizar perfil: $e';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+
+  Future<bool> removeProfileImage() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        _errorMessage = 'Usuário não autenticado';
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+
+      // Tenta deletar o arquivo do Storage usando múltiplas estratégias
+      Future<void> tryDelete(String path) async {
+        try {
+          await _supabase.storage.from('avatars').remove([path]);
+        } catch (_) {}
+      }
+
+      // Estratégia 1: usa o path guardado no cache durante o upload
+      final cachedPath = _userData?['_storage_path'] as String?;
+      if (cachedPath != null) {
+        await tryDelete(cachedPath);
+      }
+
+      // Estratégia 2: extrai o path da URL salva no banco
+      final avatarUrl = _userData?['avatar_url'] as String?;
+      if (avatarUrl != null && avatarUrl.isNotEmpty) {
+        try {
+          final uri = Uri.parse(avatarUrl);
+          final segments = uri.pathSegments;
+          final idx = segments.indexOf('avatars');
+          if (idx >= 0 && idx < segments.length - 1) {
+            final path = segments.sublist(idx + 1).join('/');
+            await tryDelete(path);
+          }
+        } catch (_) {}
+      }
+
+      // Estratégia 3: tenta todas as extensões comuns com e sem pasta
+      for (final ext in ['jpg', 'jpeg', 'png', 'webp']) {
+        await tryDelete('profiles/${user.id}.$ext');
+        await tryDelete('${user.id}.$ext');
+      }
+
+      // Limpa avatar_url no banco
+      try {
+        await _supabase.from('profiles').update({
+          'avatar_url': null,
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('id', user.id);
+      } catch (_) {
+        await _supabase.from('profiles').upsert({
+          'id': user.id,
+          'avatar_url': null,
+          'updated_at': DateTime.now().toIso8601String(),
+        });
+      }
+
+      if (_userData != null) {
+        _userData = Map<String, dynamic>.from(_userData!);
+        _userData!['avatar_url'] = null;
+        _userData!.remove('_storage_path');
+      }
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = 'Erro ao remover foto: $e';
       _isLoading = false;
       notifyListeners();
       return false;
@@ -319,7 +404,6 @@ Future<void> setThemeMode(
 
     try {
       final user = _supabase.auth.currentUser;
-
       if (user == null) {
         _errorMessage = 'Usuário não autenticado';
         _isLoading = false;
@@ -328,9 +412,12 @@ Future<void> setThemeMode(
       }
 
       final bytes = await pickedImage.readAsBytes();
-      final fileExt = pickedImage.path.split('.').last;
+      final fileExt = pickedImage.path.contains('.')
+          ? pickedImage.path.split('.').last.toLowerCase()
+          : 'jpg';
       final filePath = 'profiles/${user.id}.$fileExt';
 
+      // 1. Upload para o Storage
       await _supabase.storage.from('avatars').uploadBinary(
             filePath,
             bytes,
@@ -340,12 +427,38 @@ Future<void> setThemeMode(
       final imageUrl =
           _supabase.storage.from('avatars').getPublicUrl(filePath);
 
-      await _supabase.from('profiles').update({
-        'avatar_url': imageUrl,
-        'updated_at': DateTime.now().toIso8601String(),
-      }).eq('id', user.id);
+      // 2. Salva avatar_url no banco — tenta update primeiro, depois upsert
+      bool dbOk = false;
+      String dbError = '';
+      try {
+        await _supabase.from('profiles').update({
+          'avatar_url': imageUrl,
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('id', user.id);
+        dbOk = true;
+      } catch (e1) {
+        try {
+          await _supabase.from('profiles').upsert({
+            'id': user.id,
+            'avatar_url': imageUrl,
+            'updated_at': DateTime.now().toIso8601String(),
+          });
+          dbOk = true;
+        } catch (e2) {
+          dbError = e2.toString();
+        }
+      }
 
-      await _loadUserData();
+      // 3. Atualiza cache local com a nova URL e o path para deleção futura
+      if (_userData != null) {
+        _userData = Map<String, dynamic>.from(_userData!);
+        _userData!['avatar_url'] = imageUrl;
+        _userData!['_storage_path'] = filePath; // guarda o path real
+      }
+
+      if (!dbOk) {
+        _errorMessage = 'Foto enviada mas erro ao salvar no banco: $dbError';
+      }
 
       _isLoading = false;
       notifyListeners();
@@ -357,7 +470,6 @@ Future<void> setThemeMode(
       return false;
     }
   }
-
   Future<bool> logout() async {
     try {
       await _supabase.auth.signOut();
