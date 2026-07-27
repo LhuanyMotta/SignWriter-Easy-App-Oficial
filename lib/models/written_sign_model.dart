@@ -55,24 +55,26 @@ class WrittenSignModel {
   factory WrittenSignModel.fromMap(Map<String, dynamic> map) {
     final pngRaw = map['preview_png_base64'] ?? map['preview_svg'];
     return WrittenSignModel(
-      id: map['id'] as String,
-      userId: (map['user_id'] ?? 'local_user') as String,
-      title: map['title'] as String,
-      glossPt: map['gloss_pt'] as String,
-      description: map['description'] as String?,
-      category: map['category'] as String,
+      id: map['id']?.toString() ?? '',
+      userId: map['user_id']?.toString() ?? 'local_user',
+      title: map['title']?.toString() ?? '',
+      glossPt: map['gloss_pt']?.toString() ?? map['title']?.toString() ?? '',
+      description: map['description']?.toString(),
+      category: map['category']?.toString() ?? 'Geral',
       tags: _parseTags(map['tags']),
-      fsw: (map['fsw'] ?? '') as String,
-      swu: (map['swu'] ?? '') as String,
-      layoutJson: (map['layout_json'] ?? '[]') as String,
+      fsw: map['fsw']?.toString() ?? '',
+      swu: map['swu']?.toString() ?? '',
+      layoutJson: map['layout_json']?.toString() ?? '[]',
       previewPngBase64: SignMakerResult.normalizePngBase64(
         pngRaw?.toString(),
       ),
-      status: (map['status'] ?? statusDraft) as String,
-      createdAt: DateTime.parse(map['created_at'] as String),
-      updatedAt: DateTime.parse(map['updated_at'] as String),
+      status: map['status']?.toString() ?? statusDraft,
+      createdAt: DateTime.tryParse(map['created_at']?.toString() ?? '') ??
+          DateTime.now(),
+      updatedAt: DateTime.tryParse(map['updated_at']?.toString() ?? '') ??
+          DateTime.now(),
       publishedAt: map['published_at'] != null
-          ? DateTime.parse(map['published_at'] as String)
+          ? DateTime.tryParse(map['published_at'].toString())
           : null,
     );
   }

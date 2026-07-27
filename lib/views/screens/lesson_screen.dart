@@ -9,9 +9,10 @@ import '../../theme/app_radius.dart';
 import '../../theme/responsive_content.dart';
 import '../../viewmodels/learn_practice_viewmodel.dart';
 import '../widgets/learning/lesson_block_highlight.dart';
-import '../widgets/learning/lesson_block_media_placeholder.dart';
 import '../widgets/learning/lesson_block_text.dart';
 import '../widgets/learning/lesson_inline_field.dart';
+import '../widgets/learning/lesson_media_view.dart';
+import '../widgets/learning/lesson_sources_section.dart';
 import 'exercise_screen.dart';
 
 class LessonScreen extends StatefulWidget {
@@ -45,7 +46,7 @@ class LessonScreen extends StatefulWidget {
         'Objetivo 2 — toque para editar',
       ],
       status: 'draft',
-      explicitBlocks: [
+      blocks: [
         const LessonBlockModel(
           id: 'new-heading-1',
           type: LessonBlockType.heading,
@@ -91,6 +92,7 @@ class _LessonScreenState extends State<LessonScreen> {
   late String _status;
   late LessonBlockModel _observeBlock;
   bool _saving = false;
+  bool _dirty = false;
 
   bool get _editMode => widget.isEditing || widget.isCreating;
 
@@ -106,13 +108,14 @@ class _LessonScreenState extends State<LessonScreen> {
     _summary = lesson.summary;
     _objectives = List<String>.from(lesson.objectives);
     _blocks = List<LessonBlockModel>.from(lesson.blocks);
-    _status = lesson.status;
+    _status = lesson.status.isEmpty ? 'draft' : lesson.status;
     _observeBlock = LessonBlockModel(
       id: 'observe-${lesson.id.isEmpty ? 'new' : lesson.id}',
       type: LessonBlockType.signwriting,
       mediaAsset: 'assets/images/signwriter_logo.png',
       caption: 'Observe a escrita do sinal',
     );
+    _dirty = false;
   }
 
   void _onScroll() {
@@ -182,7 +185,7 @@ class _LessonScreenState extends State<LessonScreen> {
         .join('\n\n');
   }
 
-  Future<void> _save() async {
+  Future<void> _save({required String status}) async {
     final title = _title.trim();
     final summary = _summary.trim();
     if (title.isEmpty || summary.isEmpty) {
@@ -192,8 +195,10 @@ class _LessonScreenState extends State<LessonScreen> {
       return;
     }
 
-    setState(() => _saving = true);
-    final sections = LearningAuthoringService.sectionsFromBlocks(_blocks);
+    setState(() {
+      _saving = true;
+      _status = status;
+    });
     final body = _bodyFallback.isNotEmpty ? _bodyFallback : summary;
     final objectives = _objectives
         .map((e) => e.trim())
@@ -209,26 +214,30 @@ class _LessonScreenState extends State<LessonScreen> {
         title: title,
         summary: summary,
         body: body,
-        status: _status,
+        status: status,
         objectives: objectives,
-        sections: sections,
+        blocks: _blocks,
       );
       remoteOk = remoteId != null;
     } else {
       remoteOk = await _authoring.updateLesson(
         lessonId: widget.lesson.id,
+        categoryId: widget.category.id,
         title: title,
         summary: summary,
         body: body,
-        status: _status,
+        status: status,
         objectives: objectives,
-        sections: sections,
+        blocks: _blocks,
       );
       remoteId = widget.lesson.id;
     }
 
     if (!mounted) return;
-    setState(() => _saving = false);
+    setState(() {
+      _saving = false;
+      if (remoteOk) _dirty = false;
+    });
 
     final lessonId = remoteId ??
         (widget.lesson.id.isNotEmpty
@@ -242,39 +251,62 @@ class _LessonScreenState extends State<LessonScreen> {
       estimatedMinutes: widget.lesson.estimatedMinutes,
       difficulty: widget.lesson.difficulty,
       objectives: objectives,
-      sections: sections,
+      blocks: List<LessonBlockModel>.from(_blocks),
       exercises: widget.lesson.exercises,
       references: widget.lesson.references,
       relatedSignIds: widget.lesson.relatedSignIds,
-      explicitBlocks: List<LessonBlockModel>.from(_blocks),
-      status: _status,
+      sources: widget.lesson.sources,
+      media: widget.lesson.media,
+      status: status,
+      version: widget.lesson.version,
     );
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           remoteOk
-              ? 'Lição salva.'
-              : 'Lição mantida neste dispositivo. Banco ainda pode estar bloqueado (RLS).',
+              ? (status == 'published'
+                  ? 'Lição publicada.'
+                  : 'Rascunho salvo no banco.')
+              : 'Não foi possível salvar no banco (RLS/rede).',
         ),
         backgroundColor: remoteOk ? Colors.green : Colors.orange,
       ),
     );
-    Navigator.of(context).pop(savedLesson);
+    if (remoteOk) {
+      Navigator.of(context).pop(savedLesson);
+    }
   }
 
-  void _mediaSoon() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Troca de mídia via SignBank/FSW em breve. Por enquanto edite a legenda.',
+  Future<bool> _confirmDiscardIfNeeded() async {
+    if (!_editMode || !_dirty || _saving) return true;
+    final leave = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Descartar alterações?'),
+        content: const Text(
+          'Há alterações não salvas. Se sair agora, o rascunho não será atualizado no banco.',
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Continuar editando'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Sair'),
+          ),
+        ],
       ),
     );
+    return leave == true;
   }
 
   void _updateBlock(int index, LessonBlockModel updated) {
-    setState(() => _blocks[index] = updated);
+    setState(() {
+      _blocks[index] = updated;
+      _dirty = true;
+    });
   }
 
   @override
@@ -284,7 +316,16 @@ class _LessonScreenState extends State<LessonScreen> {
     final scheme = Theme.of(context).colorScheme;
     final displayTitle = _title;
 
-    return Scaffold(
+    return PopScope(
+      canPop: !_editMode || !_dirty || _saving,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final leave = await _confirmDiscardIfNeeded();
+        if (leave && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
       body: ResponsiveContent(
         maxWidth: 720,
         child: CustomScrollView(
@@ -297,42 +338,28 @@ class _LessonScreenState extends State<LessonScreen> {
               foregroundColor: Colors.white,
               actions: _editMode
                   ? [
-                      PopupMenuButton<String>(
-                        tooltip: 'Status',
-                        initialValue: _status,
-                        onSelected: (value) =>
-                            setState(() => _status = value),
-                        itemBuilder: (_) => const [
-                          PopupMenuItem(
-                            value: 'draft',
-                            child: Text('Rascunho'),
-                          ),
-                          PopupMenuItem(
-                            value: 'published',
-                            child: Text('Publicado'),
-                          ),
-                        ],
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Chip(
-                            label: Text(
-                              _status == 'published' ? 'Publicado' : 'Rascunho',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                              ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Chip(
+                          label: Text(
+                            _status == 'published' ? 'Publicado' : 'Rascunho',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
                             ),
-                            visualDensity: VisualDensity.compact,
-                            backgroundColor:
-                                Colors.white.withValues(alpha: 0.2),
-                            labelStyle: const TextStyle(color: Colors.white),
-                            side: BorderSide.none,
                           ),
+                          visualDensity: VisualDensity.compact,
+                          backgroundColor:
+                              Colors.white.withValues(alpha: 0.2),
+                          labelStyle: const TextStyle(color: Colors.white),
+                          side: BorderSide.none,
                         ),
                       ),
                       TextButton(
-                        onPressed: _saving ? null : _save,
-                        child: _saving
+                        onPressed: _saving
+                            ? null
+                            : () => _save(status: 'draft'),
+                        child: _saving && _status == 'draft'
                             ? const SizedBox(
                                 width: 18,
                                 height: 18,
@@ -342,7 +369,7 @@ class _LessonScreenState extends State<LessonScreen> {
                                 ),
                               )
                             : const Text(
-                                'Salvar',
+                                'Salvar rascunho',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w700,
@@ -399,7 +426,10 @@ class _LessonScreenState extends State<LessonScreen> {
                           ),
                           cursorColor: Colors.white,
                           showUnderline: false,
-                          onChanged: (v) => setState(() => _title = v),
+                          onChanged: (v) => setState(() {
+                            _title = v;
+                            _dirty = true;
+                          }),
                         )
                       else
                         Text(
@@ -467,22 +497,22 @@ class _LessonScreenState extends State<LessonScreen> {
                     objectives: _objectives,
                     color: cat.color,
                     isEditing: _editMode,
-                    onSummaryChanged: (v) => setState(() => _summary = v),
+                    onSummaryChanged: (v) => setState(() {
+                      _summary = v;
+                      _dirty = true;
+                    }),
                     onObjectivesChanged: (v) =>
-                        setState(() => _objectives = v),
+                        setState(() {
+                          _objectives = v;
+                          _dirty = true;
+                        }),
                   ),
                   const SizedBox(height: 20),
 
                   _StepLabel(number: 2, label: 'Observe', color: cat.color),
-                  LessonBlockMediaPlaceholder(
-                    accent: cat.color,
-                    label: widget.lesson.relatedSignIds.isNotEmpty
-                        ? 'Sinal relacionado (SignBank)'
-                        : 'Placeholder visual — FSW/SignBank em breve',
+                  LessonMediaView.fromBlock(
                     block: _observeBlock,
-                    isEditing: _editMode,
-                    onChanged: (b) => setState(() => _observeBlock = b),
-                    onReplaceMedia: _editMode ? _mediaSoon : null,
+                    accent: cat.color,
                   ),
 
                   _StepLabel(number: 3, label: 'Entenda', color: cat.color),
@@ -498,7 +528,10 @@ class _LessonScreenState extends State<LessonScreen> {
                             ),
                             minLines: 3,
                             cursorColor: cat.color,
-                            onChanged: (v) => setState(() => _summary = v),
+                            onChanged: (v) => setState(() {
+                              _summary = v;
+                              _dirty = true;
+                            }),
                           )
                         : Text(
                             _summary,
@@ -521,23 +554,23 @@ class _LessonScreenState extends State<LessonScreen> {
                           );
                         case LessonBlockType.image:
                         case LessonBlockType.signwriting:
-                          return LessonBlockMediaPlaceholder(
+                          return LessonMediaView.fromBlock(
                             block: block,
                             accent: cat.color,
-                            isEditing: _editMode,
-                            onChanged: (b) => _updateBlock(index, b),
-                            onReplaceMedia: _editMode ? _mediaSoon : null,
                           );
                         case LessonBlockType.comparison:
-                          return LessonBlockComparisonPlaceholder(
+                          return LessonComparisonView(
+                            block: block,
                             accent: cat.color,
-                            isEditing: _editMode,
                           );
                         case LessonBlockType.heading:
                         case LessonBlockType.text:
                         case LessonBlockType.bullets:
+                        case LessonBlockType.unknown:
                           return LessonBlockText(
-                            block: block,
+                            block: block.type == LessonBlockType.unknown
+                                ? block.copyWith(type: LessonBlockType.text)
+                                : block,
                             accent: cat.color,
                             isEditing: _editMode,
                             onChanged: (b) => _updateBlock(index, b),
@@ -552,6 +585,7 @@ class _LessonScreenState extends State<LessonScreen> {
                       child: TextButton.icon(
                         onPressed: () {
                           setState(() {
+                            _dirty = true;
                             _blocks = [
                               ..._blocks,
                               LessonBlockModel(
@@ -575,9 +609,18 @@ class _LessonScreenState extends State<LessonScreen> {
 
                   const SizedBox(height: 12),
                   _StepLabel(number: 4, label: 'Compare', color: cat.color),
-                  LessonBlockComparisonPlaceholder(
+                  LessonComparisonView(
+                    block: LessonBlockModel(
+                      id: 'compare-${widget.lesson.id}',
+                      type: LessonBlockType.comparison,
+                      payload: const {
+                        'leftTitle': 'Correto',
+                        'rightTitle': 'Incorreto',
+                        'leftBody': 'Exemplo de escrita adequada',
+                        'rightBody': 'Exemplo a evitar',
+                      },
+                    ),
                     accent: cat.color,
-                    isEditing: _editMode,
                   ),
 
                   _StepLabel(number: 5, label: 'Pratique', color: cat.color),
@@ -587,6 +630,12 @@ class _LessonScreenState extends State<LessonScreen> {
                     color: cat.color,
                     onTap: _startExercises,
                     isEditing: _editMode,
+                  ),
+
+                  const SizedBox(height: 16),
+                  LessonSourcesSection(
+                    sources: widget.lesson.sources,
+                    legacyReferences: widget.lesson.references,
                   ),
                   const SizedBox(height: 20),
 
@@ -627,12 +676,23 @@ class _LessonScreenState extends State<LessonScreen> {
                   ],
                   if (_editMode) ...[
                     const SizedBox(height: 24),
-                    FilledButton.icon(
-                      onPressed: _saving ? null : _save,
-                      icon: const Icon(Icons.save_rounded),
-                      label: Text(
-                        widget.isCreating ? 'Criar lição' : 'Salvar alterações',
+                    OutlinedButton.icon(
+                      onPressed:
+                          _saving ? null : () => _save(status: 'draft'),
+                      icon: const Icon(Icons.save_outlined),
+                      label: const Text('Salvar rascunho'),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                        foregroundColor: cat.color,
+                        side: BorderSide(color: cat.color),
                       ),
+                    ),
+                    const SizedBox(height: 10),
+                    FilledButton.icon(
+                      onPressed:
+                          _saving ? null : () => _save(status: 'published'),
+                      icon: const Icon(Icons.publish_rounded),
+                      label: const Text('Publicar lição'),
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(48),
                         backgroundColor: cat.color,
@@ -645,6 +705,7 @@ class _LessonScreenState extends State<LessonScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 }

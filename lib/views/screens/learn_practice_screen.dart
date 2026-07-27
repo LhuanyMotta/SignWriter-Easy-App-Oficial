@@ -37,13 +37,21 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen>
       curve: Curves.easeOut,
     );
     _headerController.forward();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadAuthorAccess());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap());
   }
 
-  Future<void> _loadAuthorAccess() async {
-    final canManage = await _authorization.canEditLearningContent();
+  Future<void> _bootstrap() async {
+    await _authorization.clearLocalAuthorUiOverride();
+    final canManage = await _authorization.hasEditorialRole();
     if (!mounted) return;
     setState(() => _canManageLessons = canManage);
+
+    final locale = Localizations.localeOf(context);
+    _languageCode = locale.languageCode;
+    await context.read<LearnPracticeViewModel>().initialize(
+          locale,
+          includeDrafts: canManage,
+        );
   }
 
   @override
@@ -51,11 +59,19 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen>
     super.didChangeDependencies();
     final locale = Localizations.localeOf(context);
     if (_languageCode == locale.languageCode) return;
+    if (_languageCode.isEmpty) {
+      // Primeiro load fica a cargo de _bootstrap (com includeDrafts certo).
+      _languageCode = locale.languageCode;
+      return;
+    }
 
     _languageCode = locale.languageCode;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.read<LearnPracticeViewModel>().initialize(locale);
+      context.read<LearnPracticeViewModel>().initialize(
+            locale,
+            includeDrafts: _canManageLessons,
+          );
     });
   }
 
@@ -92,6 +108,30 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen>
                   total: vm.totalLessons,
                 ),
               ),
+              if (vm.isOfflineCache)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: Material(
+                      color: Colors.orange.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                      child: ListTile(
+                        leading: const Icon(Icons.cloud_off_rounded,
+                            color: Colors.orange),
+                        title: const Text('Conteúdo offline'),
+                        subtitle: Text(
+                          vm.cacheSyncedAt == null
+                              ? 'Exibindo a última versão salva neste dispositivo.'
+                              : 'Última sincronização: ${vm.cacheSyncedAt!.toLocal()}',
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.refresh_rounded),
+                          onPressed: vm.reload,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               if (vm.categories.isEmpty && !_canManageLessons)
                 const SliverFillRemaining(child: _EmptyState())
               else ...[
@@ -813,6 +853,7 @@ class _PathNode extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDone = status == 'completed';
     final isActive = status == 'inProgress';
+    final isDraft = status == 'draft';
     return Container(
       width: 32,
       height: 32,
@@ -821,8 +862,11 @@ class _PathNode extends StatelessWidget {
             ? Colors.green
             : isActive
                 ? color
-                : color.withValues(alpha: 0.15),
+                : isDraft
+                    ? Colors.orange.withValues(alpha: 0.15)
+                    : color.withValues(alpha: 0.15),
         shape: BoxShape.circle,
+        border: isDraft ? Border.all(color: Colors.orange, width: 1.5) : null,
       ),
       alignment: Alignment.center,
       child: isDone
@@ -830,7 +874,11 @@ class _PathNode extends StatelessWidget {
           : Text(
               '$index',
               style: TextStyle(
-                color: isActive ? Colors.white : color,
+                color: isActive
+                    ? Colors.white
+                    : isDraft
+                        ? Colors.orange.shade800
+                        : color,
                 fontWeight: FontWeight.w800,
                 fontSize: 13,
               ),
@@ -850,11 +898,13 @@ class _ModuleStatusChip extends StatelessWidget {
     final label = switch (status) {
       'completed' => 'Concluído',
       'inProgress' => 'Em andamento',
+      'draft' => 'Rascunho',
       _ => 'Pendente',
     };
     final chipColor = switch (status) {
       'completed' => Colors.green,
       'inProgress' => color,
+      'draft' => Colors.orange,
       _ => Colors.grey,
     };
 
@@ -954,6 +1004,13 @@ class _LessonTile extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       _DifficultyBadge(difficulty: lesson.difficulty),
+                      if (lesson.isDraft) ...[
+                        const SizedBox(width: 6),
+                        const _LessonChip(
+                          icon: Icons.edit_note_rounded,
+                          label: 'Rascunho',
+                        ),
+                      ],
                     ],
                   ),
                   if (isCompleted && score > 0) ...[
@@ -1450,6 +1507,7 @@ Future<void> _addModule(
     iconKey: 'school',
     colorHex: '#2D78BB',
     lessons: const [],
+    status: 'draft',
   );
   vm.upsertCategory(category);
 

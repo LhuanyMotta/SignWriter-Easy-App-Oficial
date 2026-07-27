@@ -2,6 +2,23 @@
 .env
 .env.*
 
+# Secrets / credentials
+*.pem
+*.p12
+*.key
+credentials.json
+**/service_account*.json
+google-services.json
+GoogleService-Info.plist
+
+# Cursor local config (MCP etc.)
+.cursor/
+
+# Markdown (não versionar), exceto allowlist
+*.md
+!/README.md
+# Para permitir outro .md no futuro, adicione: !/caminho/arquivo.md
+
 # Miscellaneous
 *.class
 *.log

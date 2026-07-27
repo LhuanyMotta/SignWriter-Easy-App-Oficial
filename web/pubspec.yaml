@@ -39,7 +39,10 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/learning/
+    - assets/signmaker/
+    - assets/signmaker/config/
+    - assets/signmaker/config/alphabet/
+    - assets/signmaker/lib/
     - .env
 
 flutter_launcher_icons:

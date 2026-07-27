@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/learning_progress_model.dart';
@@ -20,7 +21,11 @@ class LearningProgressService {
       if (decoded is Map<String, dynamic>) {
         return LearningProgressModel.fromMap(decoded);
       }
-    } catch (_) {
+      if (decoded is Map) {
+        return LearningProgressModel.fromMap(Map<String, dynamic>.from(decoded));
+      }
+    } catch (error, stack) {
+      debugPrint('Falha ao ler progresso local: $error\n$stack');
       return LearningProgressModel.empty();
     }
 
@@ -32,10 +37,15 @@ class LearningProgressService {
     required String lessonId,
     required int correctAnswers,
     required int totalQuestions,
+    String? lastBlockId,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final current = await loadProgress();
     final previous = current.lessonProgress(lessonId);
+    final bestScore = totalQuestions > 0
+        ? (correctAnswers / totalQuestions).clamp(0.0, 1.0)
+        : 1.0;
+    final previousBest = previous?.bestScore ?? 0;
 
     final updated = current.upsertLesson(
       LessonProgressEntry(
@@ -46,6 +56,10 @@ class LearningProgressService {
         totalQuestions: totalQuestions,
         attempts: (previous?.attempts ?? 0) + 1,
         completedAt: DateTime.now(),
+        status: 'completed',
+        bestScore: bestScore > previousBest ? bestScore : previousBest,
+        lastBlockId: lastBlockId ?? previous?.lastBlockId,
+        updatedAt: DateTime.now(),
       ),
     );
 

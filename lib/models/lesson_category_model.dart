@@ -9,6 +9,7 @@ class LessonCategoryModel {
   final String iconKey;
   final String colorHex;
   final List<LessonModel> lessons;
+  final String status;
 
   const LessonCategoryModel({
     required this.id,
@@ -17,7 +18,10 @@ class LessonCategoryModel {
     required this.iconKey,
     required this.colorHex,
     this.lessons = const [],
+    this.status = 'published',
   });
+
+  bool get isDraft => status.toLowerCase() == 'draft';
 
   IconData get icon {
     switch (iconKey) {
@@ -71,6 +75,7 @@ class LessonCategoryModel {
       iconKey: map['icon']?.toString() ?? 'school',
       colorHex: map['color']?.toString() ?? '#2D78BB',
       lessons: _parseLessons(map['lessons']),
+      status: map['status']?.toString() ?? 'published',
     );
   }
 
@@ -81,6 +86,7 @@ class LessonCategoryModel {
       'description': description,
       'icon': iconKey,
       'color': colorHex,
+      'status': status,
       'lessons': lessons.map((lesson) => lesson.toMap()).toList(),
     };
   }
@@ -92,6 +98,7 @@ class LessonCategoryModel {
     String? iconKey,
     String? colorHex,
     List<LessonModel>? lessons,
+    String? status,
   }) {
     return LessonCategoryModel(
       id: id ?? this.id,
@@ -100,6 +107,7 @@ class LessonCategoryModel {
       iconKey: iconKey ?? this.iconKey,
       colorHex: colorHex ?? this.colorHex,
       lessons: lessons ?? this.lessons,
+      status: status ?? this.status,
     );
   }
 

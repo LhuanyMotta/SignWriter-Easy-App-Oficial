@@ -1,8 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Consulta papéis do usuário. Em debug, permite override local.
+/// Consulta papéis do usuário. `user_roles` é a única fonte de autorização editorial.
 class AuthorizationService {
   AuthorizationService({SupabaseClient? supabase})
       : _supabase = supabase ?? Supabase.instance.client;
@@ -10,24 +9,33 @@ class AuthorizationService {
   final SupabaseClient _supabase;
   static const _mockAuthorKey = 'mock_can_edit_learning_content';
 
-  /// Allowlist de e-mails author em debug (enquanto `user_roles` não existir).
-  static const debugAuthorEmails = <String>{
-    // Adicione e-mails de teste aqui se necessário.
-  };
-
-  Future<bool> canEditLearningContent() async {
+  /// Preferência legada (não libera UI nem escrita). Mantida só para limpeza/compat.
+  Future<bool> isLocalAuthorUiEnabled() async {
     final prefs = await SharedPreferences.getInstance();
-    if (prefs.getBool(_mockAuthorKey) == true) return true;
+    return prefs.getBool(_mockAuthorKey) ?? false;
+  }
 
+  Future<void> setLocalAuthorUiEnabled(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_mockAuthorKey, enabled);
+  }
+
+  /// Apaga override local antigo que podia mostrar botões sem role no banco.
+  Future<void> clearLocalAuthorUiOverride() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_mockAuthorKey);
+  }
+
+  /// Ferramentas editoriais na UI: só com papel real em `user_roles`.
+  /// Escrita no Supabase continua sujeita a RLS + o mesmo papel.
+  Future<bool> canEditLearningContent() async {
+    return hasEditorialRole();
+  }
+
+  /// Papel editorial real no banco (`author` | `reviewer` | `admin`).
+  Future<bool> hasEditorialRole() async {
     final user = _supabase.auth.currentUser;
     if (user == null) return false;
-
-    final email = user.email?.toLowerCase();
-    if (kDebugMode &&
-        email != null &&
-        debugAuthorEmails.contains(email)) {
-      return true;
-    }
 
     try {
       final rows = await _supabase
@@ -41,25 +49,18 @@ class AuthorizationService {
           return true;
         }
       }
-    } catch (_) {
-      // Tabela ainda não existe — em debug permite testar a gestão.
-      if (kDebugMode) return true;
+      return false;
+    } on PostgrestException catch (error) {
+      // Erro RLS/autorização — não libera edição.
+      if (error.code == '42501') return false;
+      rethrow;
     }
-
-    // Enquanto o banco não tiver papéis, debug + logado libera a UI de gestão.
-    if (kDebugMode) return true;
-
-    return false;
   }
 
-  /// Ativa/desativa modo author local (útil para testar o Estúdio).
-  Future<void> setMockAuthorEnabled(bool enabled) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_mockAuthorKey, enabled);
-  }
+  /// @deprecated Use [setLocalAuthorUiEnabled].
+  Future<void> setMockAuthorEnabled(bool enabled) =>
+      setLocalAuthorUiEnabled(enabled);
 
-  Future<bool> isMockAuthorEnabled() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_mockAuthorKey) ?? false;
-  }
+  /// @deprecated Use [isLocalAuthorUiEnabled].
+  Future<bool> isMockAuthorEnabled() => isLocalAuthorUiEnabled();
 }

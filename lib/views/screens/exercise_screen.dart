@@ -206,11 +206,12 @@ class _ExerciseScreenState extends State<ExerciseScreen>
                       color: scheme.onSurface,
                     ),
                   ),
-                  if (_current.hasMedia) ...[
+                  if (_current.hasMedia || _current.hasFsw) ...[
                     const SizedBox(height: 16),
                     _ExerciseMediaSlot(
                       mediaUrl: _current.mediaUrl,
                       mediaAsset: _current.mediaAsset,
+                      fsw: _current.fsw,
                       accent: cat.color,
                       tall: _current.isRecognizeSymbol ||
                           _current.isChooseCorrectWriting,
@@ -428,12 +429,14 @@ class _ExerciseTypeBadge extends StatelessWidget {
 class _ExerciseMediaSlot extends StatelessWidget {
   final String? mediaUrl;
   final String? mediaAsset;
+  final String? fsw;
   final Color accent;
   final bool tall;
 
   const _ExerciseMediaSlot({
     required this.mediaUrl,
     required this.mediaAsset,
+    this.fsw,
     required this.accent,
     this.tall = false,
   });
@@ -441,27 +444,38 @@ class _ExerciseMediaSlot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final height = tall ? 200.0 : 140.0;
+    final hasFsw = fsw != null && fsw!.trim().isNotEmpty;
     Widget image;
     if (mediaAsset != null && mediaAsset!.isNotEmpty) {
       image = Image.asset(
         mediaAsset!,
         fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => Icon(
-          Icons.image_not_supported_outlined,
-          color: accent.withValues(alpha: 0.5),
-          size: 48,
-        ),
+        errorBuilder: (_, __, ___) => hasFsw
+            ? _FswFallback(fsw: fsw!, accent: accent)
+            : Icon(
+                Icons.image_not_supported_outlined,
+                color: accent.withValues(alpha: 0.5),
+                size: 48,
+              ),
       );
     } else if (mediaUrl != null && mediaUrl!.isNotEmpty) {
       image = Image.network(
         mediaUrl!,
         fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => Icon(
-          Icons.broken_image_outlined,
-          color: accent.withValues(alpha: 0.5),
-          size: 48,
-        ),
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return const Center(child: CircularProgressIndicator());
+        },
+        errorBuilder: (_, __, ___) => hasFsw
+            ? _FswFallback(fsw: fsw!, accent: accent)
+            : Icon(
+                Icons.broken_image_outlined,
+                color: accent.withValues(alpha: 0.5),
+                size: 48,
+              ),
       );
+    } else if (hasFsw) {
+      image = _FswFallback(fsw: fsw!, accent: accent);
     } else {
       image = Icon(
         Icons.sign_language_rounded,
@@ -470,17 +484,43 @@ class _ExerciseMediaSlot extends StatelessWidget {
       );
     }
 
-    return Container(
-      width: double.infinity,
-      height: height,
-      decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: accent.withValues(alpha: 0.25)),
+    return Semantics(
+      label: hasFsw ? 'SignWriting: $fsw' : 'Mídia do exercício',
+      child: Container(
+        width: double.infinity,
+        height: height,
+        decoration: BoxDecoration(
+          color: accent.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: accent.withValues(alpha: 0.25)),
+        ),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.all(12),
+        child: image,
       ),
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(12),
-      child: image,
+    );
+  }
+}
+
+class _FswFallback extends StatelessWidget {
+  final String fsw;
+  final Color accent;
+
+  const _FswFallback({required this.fsw, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.sign_language_rounded, color: accent, size: 28),
+        const SizedBox(height: 8),
+        SelectableText(
+          fsw,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontFamily: 'monospace', fontSize: 11),
+        ),
+      ],
     );
   }
 }
@@ -540,10 +580,11 @@ class _WritingChoiceOptions extends StatelessWidget {
                 children: [
                   SizedBox(
                     height: 90,
-                    child: opt.hasMedia
+                    child: (opt.hasMedia || opt.hasFsw)
                         ? _ExerciseMediaSlot(
                             mediaUrl: opt.mediaUrl,
                             mediaAsset: opt.mediaAsset,
+                            fsw: opt.fsw,
                             accent: color,
                           )
                         : Icon(Icons.draw_outlined,
@@ -639,15 +680,18 @@ class _MultipleChoiceOptions extends StatelessWidget {
             ),
             child: Row(
               children: [
-                if (opt.hasMedia) ...[
+                if (opt.hasMedia || opt.hasFsw) ...[
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: SizedBox(
                       width: 44,
                       height: 44,
-                      child: opt.mediaAsset != null
-                          ? Image.asset(opt.mediaAsset!, fit: BoxFit.cover)
-                          : Image.network(opt.mediaUrl!, fit: BoxFit.cover),
+                      child: _ExerciseMediaSlot(
+                        mediaUrl: opt.mediaUrl,
+                        mediaAsset: opt.mediaAsset,
+                        fsw: opt.fsw,
+                        accent: color,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -741,7 +785,7 @@ class _MatchingOptions extends StatelessWidget {
                     bg = color.withValues(alpha: 0.1);
                     border = color;
                   } else if (isMatched) {
-                    bg = scheme.surfaceVariant ?? scheme.surface;
+                    bg = scheme.surfaceContainerHighest;
                     border = scheme.outline.withValues(alpha: 0.3);
                   } else {
                     bg = scheme.surface;
@@ -760,14 +804,28 @@ class _MatchingOptions extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: border, width: 1.5),
                       ),
-                      child: Text(
-                        pair.left,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: scheme.onSurface,
-                        ),
-                        textAlign: TextAlign.center,
+                      child: Column(
+                        children: [
+                          if (pair.hasLeftVisual)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: _ExerciseMediaSlot(
+                                mediaUrl: pair.leftMediaUrl,
+                                mediaAsset: null,
+                                fsw: pair.leftFsw,
+                                accent: color,
+                              ),
+                            ),
+                          Text(
+                            pair.left,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: scheme.onSurface,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
                     ),
                   );
@@ -795,6 +853,9 @@ class _MatchingOptions extends StatelessWidget {
                   final isCorrect = isMatched &&
                       matchedLeft != null &&
                       _isPairCorrect(matchedLeft, right);
+                  final pairForRight = exercise.pairs
+                      .where((p) => p.right == right)
+                      .firstOrNull;
 
                   Color bg;
                   Color border;
@@ -809,7 +870,7 @@ class _MatchingOptions extends StatelessWidget {
                     bg = color.withValues(alpha: 0.1);
                     border = color;
                   } else if (isMatched) {
-                    bg = scheme.surfaceVariant ?? scheme.surface;
+                    bg = scheme.surfaceContainerHighest;
                     border = scheme.outline.withValues(alpha: 0.3);
                   } else {
                     bg = scheme.surface;
@@ -828,14 +889,29 @@ class _MatchingOptions extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: border, width: 1.5),
                       ),
-                      child: Text(
-                        right,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: scheme.onSurface,
-                        ),
-                        textAlign: TextAlign.center,
+                      child: Column(
+                        children: [
+                          if (pairForRight != null &&
+                              pairForRight.hasRightVisual)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 6),
+                              child: _ExerciseMediaSlot(
+                                mediaUrl: pairForRight.rightMediaUrl,
+                                mediaAsset: null,
+                                fsw: pairForRight.rightFsw,
+                                accent: color,
+                              ),
+                            ),
+                          Text(
+                            right,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: scheme.onSurface,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
                     ),
                   );

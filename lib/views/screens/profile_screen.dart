@@ -6,7 +6,6 @@ import '../../services/export_data.dart';
 import '../../viewmodels/profile_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../accessibility_settings_view.dart';
-import '../../theme/app_spacing.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/adaptive_nav_scaffold.dart';
 import '../../theme/responsive_content.dart';
@@ -75,9 +74,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
           ),
         ),
-        currentIndex: 2,
+        currentIndex: 1,
         homeLabel: context.l10n.bottomHome,
-        favoritesLabel: context.l10n.bottomFavorites,
         profileLabel: context.l10n.bottomProfile,
         onTabSelected: (i) => _homeViewModel.onBottomNavTapped(i, context),
       ),

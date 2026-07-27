@@ -6,6 +6,10 @@ class LessonProgressEntry {
   final int totalQuestions;
   final int attempts;
   final DateTime? completedAt;
+  final String status;
+  final double bestScore;
+  final String? lastBlockId;
+  final DateTime? updatedAt;
 
   const LessonProgressEntry({
     required this.lessonId,
@@ -15,24 +19,44 @@ class LessonProgressEntry {
     required this.totalQuestions,
     required this.attempts,
     this.completedAt,
+    this.status = 'not_started',
+    this.bestScore = 0,
+    this.lastBlockId,
+    this.updatedAt,
   });
 
   double get scoreRatio {
+    if (bestScore > 0) return bestScore.clamp(0.0, 1.0);
     if (totalQuestions <= 0) return completed ? 1 : 0;
     return correctAnswers / totalQuestions;
   }
 
   factory LessonProgressEntry.fromMap(Map<String, dynamic> map) {
+    final completed = map['completed'] == true ||
+        map['status']?.toString() == 'completed';
+    final totalQuestions = _parseInt(map['totalQuestions'] ?? map['total_questions']);
+    final correctAnswers =
+        _parseInt(map['correctAnswers'] ?? map['correct_answers']);
+    final bestScore = _parseDouble(map['bestScore'] ?? map['best_score']);
+    final derivedBest = bestScore > 0
+        ? bestScore
+        : (totalQuestions > 0 ? correctAnswers / totalQuestions : (completed ? 1.0 : 0.0));
+
     return LessonProgressEntry(
-      lessonId: map['lessonId']?.toString() ?? '',
-      categoryId: map['categoryId']?.toString() ?? '',
-      completed: map['completed'] == true,
-      correctAnswers: _parseInt(map['correctAnswers']),
-      totalQuestions: _parseInt(map['totalQuestions']),
+      lessonId: map['lessonId']?.toString() ?? map['lesson_id']?.toString() ?? '',
+      categoryId:
+          map['categoryId']?.toString() ?? map['category_id']?.toString() ?? '',
+      completed: completed,
+      correctAnswers: correctAnswers,
+      totalQuestions: totalQuestions,
       attempts: _parseInt(map['attempts']),
-      completedAt: map['completedAt'] != null
-          ? DateTime.tryParse(map['completedAt'].toString())
-          : null,
+      completedAt: _parseDate(map['completedAt'] ?? map['completed_at']),
+      status: map['status']?.toString() ??
+          (completed ? 'completed' : 'not_started'),
+      bestScore: derivedBest,
+      lastBlockId:
+          map['lastBlockId']?.toString() ?? map['last_block_id']?.toString(),
+      updatedAt: _parseDate(map['updatedAt'] ?? map['updated_at']),
     );
   }
 
@@ -45,6 +69,10 @@ class LessonProgressEntry {
       'totalQuestions': totalQuestions,
       'attempts': attempts,
       'completedAt': completedAt?.toIso8601String(),
+      'status': status,
+      'bestScore': bestScore,
+      'lastBlockId': lastBlockId,
+      'updatedAt': updatedAt?.toIso8601String(),
     };
   }
 
@@ -56,6 +84,10 @@ class LessonProgressEntry {
     int? totalQuestions,
     int? attempts,
     DateTime? completedAt,
+    String? status,
+    double? bestScore,
+    String? lastBlockId,
+    DateTime? updatedAt,
   }) {
     return LessonProgressEntry(
       lessonId: lessonId ?? this.lessonId,
@@ -65,12 +97,26 @@ class LessonProgressEntry {
       totalQuestions: totalQuestions ?? this.totalQuestions,
       attempts: attempts ?? this.attempts,
       completedAt: completedAt ?? this.completedAt,
+      status: status ?? this.status,
+      bestScore: bestScore ?? this.bestScore,
+      lastBlockId: lastBlockId ?? this.lastBlockId,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
   static int _parseInt(dynamic value) {
     if (value is int) return value;
     return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static double _parseDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static DateTime? _parseDate(dynamic value) {
+    if (value == null) return null;
+    return DateTime.tryParse(value.toString());
   }
 }
 

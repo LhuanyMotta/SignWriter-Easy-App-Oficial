@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/written_sign_model.dart';
 
+/// Persistência de sinais autorais em `written_signs` (RLS por proprietário).
 class WrittenSignsService {
   final SupabaseClient _supabase = Supabase.instance.client;
   static final List<WrittenSignModel> _localSigns = [];
@@ -24,12 +26,12 @@ class WrittenSignsService {
             ),
           )
           .toList();
-    } catch (_) {
-      final localUserSigns = _localSigns
-          .where((sign) => sign.userId == user.id)
-          .toList()
-        ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-      return localUserSigns;
+    } on PostgrestException catch (error, stack) {
+      debugPrint('getWrittenSigns remoto falhou, usando local: $error\n$stack');
+      return _localForUser(user.id);
+    } catch (error, stack) {
+      debugPrint('getWrittenSigns erro: $error\n$stack');
+      return _localForUser(user.id);
     }
   }
 
@@ -47,11 +49,12 @@ class WrittenSignsService {
       _localSigns.add(localSign);
     }
 
-    // Persistência remota temporariamente desativada.
-    // Manter este bloco para reativação futura do salvamento no Supabase:
-    //
-    // final payload = sign.copyWith(userId: user.id).toMap();
-    // await _supabase.from('written_signs').upsert(payload);
+    final payload = _toRemotePayload(localSign);
+    try {
+      await _supabase.from('written_signs').upsert(payload);
+    } on PostgrestException catch (error, stack) {
+      debugPrint('saveWrittenSign RLS/erro (mantido local): $error\n$stack');
+    }
   }
 
   Future<void> deleteWrittenSign(String id) async {
@@ -68,8 +71,33 @@ class WrittenSignsService {
           .delete()
           .eq('id', id)
           .eq('user_id', user.id);
-    } catch (_) {
-      // Ignore enquanto a tabela remota não estiver disponível.
+    } on PostgrestException catch (error, stack) {
+      debugPrint('deleteWrittenSign: $error\n$stack');
     }
+  }
+
+  List<WrittenSignModel> _localForUser(String userId) {
+    return _localSigns.where((sign) => sign.userId == userId).toList()
+      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+  }
+
+  Map<String, dynamic> _toRemotePayload(WrittenSignModel sign) {
+    return {
+      'id': sign.id,
+      'user_id': sign.userId,
+      'title': sign.title,
+      'gloss_pt': sign.glossPt,
+      'description': sign.description,
+      'category': sign.category,
+      'tags': sign.tags,
+      'fsw': sign.fsw,
+      'swu': sign.swu,
+      'layout_json': sign.layoutJson,
+      'preview_png_base64': sign.previewPngBase64,
+      'status': sign.status,
+      'created_at': sign.createdAt.toIso8601String(),
+      'updated_at': sign.updatedAt.toIso8601String(),
+      'published_at': sign.publishedAt?.toIso8601String(),
+    };
   }
 }

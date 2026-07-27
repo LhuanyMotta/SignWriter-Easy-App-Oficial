@@ -21,26 +21,41 @@ class LearnPracticeViewModel extends ChangeNotifier {
   LearningProgressModel _progress = LearningProgressModel.empty();
   bool _isLoading = false;
   bool _isSavingProgress = false;
+  bool _isOfflineCache = false;
+  DateTime? _cacheSyncedAt;
   String _errorMessage = '';
   String _loadedLanguageCode = '';
+  bool _includeDrafts = false;
 
   List<LessonCategoryModel> get categories => _categories;
   LearningProgressModel get progress => _progress;
   bool get isLoading => _isLoading;
   bool get isSavingProgress => _isSavingProgress;
+  bool get isOfflineCache => _isOfflineCache;
+  DateTime? get cacheSyncedAt => _cacheSyncedAt;
   String get errorMessage => _errorMessage;
+  bool get includeDrafts => _includeDrafts;
 
-  Future<void> initialize(Locale locale) async {
+  Future<void> initialize(
+    Locale locale, {
+    bool includeDrafts = false,
+  }) async {
     final languageCode = locale.languageCode.toLowerCase();
-    if (_loadedLanguageCode == languageCode && _categories.isNotEmpty) {
+    if (_loadedLanguageCode == languageCode &&
+        _categories.isNotEmpty &&
+        _includeDrafts == includeDrafts) {
       return;
     }
 
+    _includeDrafts = includeDrafts;
     _loadedLanguageCode = languageCode;
     await _loadData(Locale(languageCode));
   }
 
-  Future<void> reload() async {
+  Future<void> reload({bool? includeDrafts}) async {
+    if (includeDrafts != null) {
+      _includeDrafts = includeDrafts;
+    }
     final locale =
         Locale(_loadedLanguageCode.isEmpty ? 'pt' : _loadedLanguageCode);
     await _loadData(locale);
@@ -52,12 +67,24 @@ class LearnPracticeViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final categories = await _repository.loadCategories(locale);
-      final progress = await _progressRepository.loadProgress();
-      _categories = categories;
-      _progress = progress;
+      final repo = _repository;
+      if (repo is DefaultLearningRepository) {
+        final snapshot = await repo.loadCourse(
+          locale,
+          includeDrafts: _includeDrafts,
+        );
+        _categories = snapshot.categories;
+        _isOfflineCache = snapshot.fromCache;
+        _cacheSyncedAt = snapshot.syncedAt;
+      } else {
+        _categories = await repo.loadCategories(locale);
+        _isOfflineCache = false;
+        _cacheSyncedAt = null;
+      }
+      _progress = await _progressRepository.loadProgress();
     } catch (e) {
       _errorMessage = e.toString();
+      _categories = [];
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -91,7 +118,8 @@ class LearnPracticeViewModel extends ChangeNotifier {
   int get totalLessons {
     return _categories.fold<int>(
       0,
-      (sum, category) => sum + category.lessons.length,
+      (sum, category) =>
+          sum + category.lessons.where((lesson) => lesson.isPublished).length,
     );
   }
 
@@ -100,10 +128,12 @@ class LearnPracticeViewModel extends ChangeNotifier {
       0,
       (sum, category) =>
           sum +
-          category.lessons.fold<int>(
-            0,
-            (lessonSum, lesson) => lessonSum + lesson.exercises.length,
-          ),
+          category.lessons
+              .where((lesson) => lesson.isPublished)
+              .fold<int>(
+                0,
+                (lessonSum, lesson) => lessonSum + lesson.exercises.length,
+              ),
     );
   }
 
@@ -120,13 +150,13 @@ class LearnPracticeViewModel extends ChangeNotifier {
 
   int completedLessonsForCategory(LessonCategoryModel category) {
     return _progress.completedLessonsCount(
-      category.lessons.map((lesson) => lesson.id),
+      category.lessons.where((l) => l.isPublished).map((lesson) => lesson.id),
     );
   }
 
   double categoryProgress(LessonCategoryModel category) {
     return _progress.completionRate(
-      category.lessons.map((lesson) => lesson.id),
+      category.lessons.where((l) => l.isPublished).map((lesson) => lesson.id),
     );
   }
 
@@ -139,9 +169,11 @@ class LearnPracticeViewModel extends ChangeNotifier {
   }
 
   /// Primeira lição incompleta no percurso (Continuar aprendendo).
+  /// Em modo aluno ignora rascunhos; com includeDrafts, também.
   ({LessonCategoryModel category, LessonModel lesson})? nextLessonTarget() {
     for (final category in _categories) {
       for (final lesson in category.lessons) {
+        if (lesson.isDraft) continue;
         if (!isLessonCompleted(lesson.id)) {
           return (category: category, lesson: lesson);
         }
@@ -152,8 +184,15 @@ class LearnPracticeViewModel extends ChangeNotifier {
 
   /// Status do módulo: completed / inProgress / pending.
   String moduleStatus(LessonCategoryModel category) {
+    final published =
+        category.lessons.where((lesson) => lesson.isPublished).toList();
+    if (published.isEmpty) {
+      return category.isDraft || category.lessons.any((l) => l.isDraft)
+          ? 'draft'
+          : 'pending';
+    }
     final completed = completedLessonsForCategory(category);
-    if (completed >= category.lessons.length && category.lessons.isNotEmpty) {
+    if (completed >= published.length) {
       return 'completed';
     }
     if (completed > 0) return 'inProgress';
@@ -244,6 +283,7 @@ class LearnPracticeViewModel extends ChangeNotifier {
   List<String> get _allLessonIds {
     return _categories
         .expand((category) => category.lessons)
+        .where((lesson) => lesson.isPublished)
         .map((lesson) => lesson.id)
         .toList();
   }
