@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/written_sign_model.dart';
-import '../../viewmodels/write_signs_viewmodel.dart';
+import '../../routes/app_routes.dart';
 import '../../theme/responsive_content.dart';
+import '../../viewmodels/write_signs_viewmodel.dart';
 import 'write_sign_editor_screen.dart';
 
 class WriteSignsScreen extends StatefulWidget {
@@ -331,7 +332,26 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
     _viewModel.updateSearchQuery(_searchController.text);
   }
 
+  bool _ensureAuthenticated() {
+    if (_viewModel.isAuthenticated) return true;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Faça login para gerenciar seus sinais.'),
+        action: SnackBarAction(
+          label: 'Entrar',
+          onPressed: () {
+            Navigator.of(context).pushNamed(AppRoutes.auth);
+          },
+        ),
+      ),
+    );
+    return false;
+  }
+
   Future<void> _openEditor({WrittenSignModel? sign}) async {
+    if (!_ensureAuthenticated()) return;
+
+    final isCreate = sign == null;
     final result = await Navigator.of(context).push<WrittenSignModel>(
       MaterialPageRoute(
         builder: (_) => WriteSignEditorScreen(initialSign: sign),
@@ -340,7 +360,7 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
 
     if (result == null || !mounted) return;
 
-    final success = await _viewModel.saveSign(result);
+    final success = await _viewModel.saveSign(result, isCreate: isCreate);
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -353,6 +373,8 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
   }
 
   Future<void> _confirmDelete(WrittenSignModel sign) async {
+    if (!_ensureAuthenticated()) return;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(

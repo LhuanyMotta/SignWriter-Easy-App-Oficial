@@ -108,10 +108,11 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
     }
 
     final now = DateTime.now();
-    final sign = widget.initialSign;
+    final existing = widget.initialSign;
     final result = WrittenSignModel(
-      id: sign?.id ?? now.millisecondsSinceEpoch.toString(),
-      userId: sign?.userId ?? 'local_user',
+      // Create: id vazio — o banco gera UUID. Edit: preserva UUID existente.
+      id: existing?.id ?? '',
+      userId: existing?.userId ?? '',
       title: _titleController.text.trim(),
       glossPt: _glossController.text.trim(),
       description: _emptyToNull(_descriptionController.text),
@@ -119,12 +120,12 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
       tags: _parseTags(_tagsController.text),
       fsw: _fsw,
       swu: _swu,
-      layoutJson: sign?.layoutJson ?? '[]',
+      layoutJson: existing?.layoutJson ?? '[]',
       previewPngBase64: _previewPngBase64,
-      status: WrittenSignModel.statusDraft,
-      createdAt: sign?.createdAt ?? now,
+      status: existing?.status ?? WrittenSignModel.statusDraft,
+      createdAt: existing?.createdAt ?? now,
       updatedAt: now,
-      publishedAt: null,
+      publishedAt: existing?.publishedAt,
     );
 
     Navigator.of(context).pop(result);

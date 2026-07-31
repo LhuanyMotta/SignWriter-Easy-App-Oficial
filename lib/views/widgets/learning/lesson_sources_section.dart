@@ -8,11 +8,13 @@ import '../../../theme/app_radius.dart';
 class LessonSourcesSection extends StatelessWidget {
   final List<LessonSourceModel> sources;
   final List<String> legacyReferences;
+  final bool collapsible;
 
   const LessonSourcesSection({
     super.key,
     required this.sources,
     this.legacyReferences = const [],
+    this.collapsible = false,
   });
 
   @override
@@ -22,18 +24,9 @@ class LessonSourcesSection extends StatelessWidget {
     }
 
     final scheme = Theme.of(context).colorScheme;
-
-    return Column(
+    final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 8),
-        Text(
-          'Referências e licenças',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-        ),
-        const SizedBox(height: 12),
         ...sources.map((item) => _SourceCard(item: item)),
         ...legacyReferences.map(
           (ref) => Padding(
@@ -47,6 +40,38 @@ class LessonSourcesSection extends StatelessWidget {
           ),
         ),
       ],
+    );
+
+    if (!collapsible) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8),
+          Text(
+            'Referências e licenças',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 12),
+          content,
+        ],
+      );
+    }
+
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: const EdgeInsets.only(bottom: 8),
+        title: Text(
+          'Referências e licenças',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+        ),
+        children: [content],
+      ),
     );
   }
 }

@@ -8,10 +8,8 @@ import '../../services/learning_authoring_service.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/responsive_content.dart';
 import '../../viewmodels/learn_practice_viewmodel.dart';
-import '../widgets/learning/lesson_block_highlight.dart';
-import '../widgets/learning/lesson_block_text.dart';
+import '../widgets/learning/lesson_block_renderer.dart';
 import '../widgets/learning/lesson_inline_field.dart';
-import '../widgets/learning/lesson_media_view.dart';
 import '../widgets/learning/lesson_sources_section.dart';
 import 'exercise_screen.dart';
 
@@ -82,7 +80,7 @@ class LessonScreen extends StatefulWidget {
 
 class _LessonScreenState extends State<LessonScreen> {
   final ScrollController _scroll = ScrollController();
-  final _authoring = LearningAuthoringService();
+  LearningAuthoringService? _authoring;
   double _readProgress = 0.0;
 
   late String _title;
@@ -90,11 +88,13 @@ class _LessonScreenState extends State<LessonScreen> {
   late List<String> _objectives;
   late List<LessonBlockModel> _blocks;
   late String _status;
-  late LessonBlockModel _observeBlock;
   bool _saving = false;
   bool _dirty = false;
 
   bool get _editMode => widget.isEditing || widget.isCreating;
+
+  LearningAuthoringService get _authoringService =>
+      _authoring ??= LearningAuthoringService();
 
   @override
   void initState() {
@@ -109,12 +109,6 @@ class _LessonScreenState extends State<LessonScreen> {
     _objectives = List<String>.from(lesson.objectives);
     _blocks = List<LessonBlockModel>.from(lesson.blocks);
     _status = lesson.status.isEmpty ? 'draft' : lesson.status;
-    _observeBlock = LessonBlockModel(
-      id: 'observe-${lesson.id.isEmpty ? 'new' : lesson.id}',
-      type: LessonBlockType.signwriting,
-      mediaAsset: 'assets/images/signwriter_logo.png',
-      caption: 'Observe a escrita do sinal',
-    );
     _dirty = false;
   }
 
@@ -136,10 +130,7 @@ class _LessonScreenState extends State<LessonScreen> {
 
   void _startExercises() {
     if (_editMode) return;
-    if (widget.lesson.exercises.isEmpty) {
-      _completeWithNoExercises();
-      return;
-    }
+    if (widget.lesson.exercises.isEmpty) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ExerciseScreen(
@@ -151,15 +142,38 @@ class _LessonScreenState extends State<LessonScreen> {
   }
 
   Future<void> _completeWithNoExercises() async {
+    if (widget.lesson.exercises.isNotEmpty) return;
     final vm = context.read<LearnPracticeViewModel>();
     try {
       await vm.completeLesson(
         categoryId: widget.category.id,
         lessonId: widget.lesson.id,
-        correctAnswers: 1,
-        totalQuestions: 1,
+        correctAnswers: 0,
+        totalQuestions: 0,
       );
-    } catch (_) {}
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.error_outline_rounded, color: Colors.white),
+              SizedBox(width: 10),
+              Expanded(
+                child:
+                    Text('Não foi possível concluir a lição. Tente de novo.'),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      return;
+    }
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -180,7 +194,8 @@ class _LessonScreenState extends State<LessonScreen> {
 
   String get _bodyFallback {
     return _blocks
-        .where((b) => b.type == LessonBlockType.text && b.body.trim().isNotEmpty)
+        .where(
+            (b) => b.type == LessonBlockType.text && b.body.trim().isNotEmpty)
         .map((b) => b.body.trim())
         .join('\n\n');
   }
@@ -200,16 +215,14 @@ class _LessonScreenState extends State<LessonScreen> {
       _status = status;
     });
     final body = _bodyFallback.isNotEmpty ? _bodyFallback : summary;
-    final objectives = _objectives
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
+    final objectives =
+        _objectives.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
 
     String? remoteId;
     var remoteOk = false;
 
     if (widget.isCreating || widget.lesson.id.isEmpty) {
-      remoteId = await _authoring.createLesson(
+      remoteId = await _authoringService.createLesson(
         categoryId: widget.category.id,
         title: title,
         summary: summary,
@@ -220,7 +233,7 @@ class _LessonScreenState extends State<LessonScreen> {
       );
       remoteOk = remoteId != null;
     } else {
-      remoteOk = await _authoring.updateLesson(
+      remoteOk = await _authoringService.updateLesson(
         lessonId: widget.lesson.id,
         categoryId: widget.category.id,
         title: title,
@@ -326,435 +339,390 @@ class _LessonScreenState extends State<LessonScreen> {
         }
       },
       child: Scaffold(
-      body: ResponsiveContent(
-        maxWidth: 720,
-        child: CustomScrollView(
-          controller: _scroll,
-          slivers: [
-            SliverAppBar(
-              expandedHeight: 170,
-              pinned: true,
-              backgroundColor: cat.color,
-              foregroundColor: Colors.white,
-              actions: _editMode
-                  ? [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Chip(
-                          label: Text(
-                            _status == 'published' ? 'Publicado' : 'Rascunho',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          visualDensity: VisualDensity.compact,
-                          backgroundColor:
-                              Colors.white.withValues(alpha: 0.2),
-                          labelStyle: const TextStyle(color: Colors.white),
-                          side: BorderSide.none,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: _saving
-                            ? null
-                            : () => _save(status: 'draft'),
-                        child: _saving && _status == 'draft'
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text(
-                                'Salvar rascunho',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                      ),
-                    ]
-                  : null,
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(4),
-                child: LinearProgressIndicator(
-                  value: _editMode ? 1 : _readProgress,
-                  backgroundColor: Colors.white.withValues(alpha: 0.2),
-                  valueColor:
-                      const AlwaysStoppedAnimation<Color>(Colors.white),
-                  minHeight: 4,
-                ),
-              ),
-              flexibleSpace: FlexibleSpaceBar(
-                background: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        cat.color,
-                        cat.color.withValues(alpha: 0.7),
-                      ],
-                    ),
-                  ),
-                  padding: const EdgeInsets.fromLTRB(20, 72, 20, 20),
-                  alignment: Alignment.bottomLeft,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        cat.title,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      if (_editMode)
-                        LessonInlineField(
-                          value: _title,
-                          hint: 'Título da lição',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                          ),
-                          cursorColor: Colors.white,
-                          showUnderline: false,
-                          onChanged: (v) => setState(() {
-                            _title = v;
-                            _dirty = true;
-                          }),
-                        )
-                      else
-                        Text(
-                          displayTitle,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              title: Text(
-                displayTitle,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  if (_editMode) ...[
-                    Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: cat.color.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(AppRadius.card),
-                        border: Border.all(
-                          color: cat.color.withValues(alpha: 0.25),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit_note_rounded,
-                              color: cat.color, size: 20),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Editando como o aluno verá. Toque nos textos para alterar.',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: scheme.onSurface.withValues(alpha: 0.75),
+        body: ResponsiveContent(
+          maxWidth: 720,
+          child: CustomScrollView(
+            controller: _scroll,
+            slivers: [
+              SliverAppBar(
+                expandedHeight: 188,
+                pinned: true,
+                backgroundColor: cat.color,
+                foregroundColor: Colors.white,
+                actions: _editMode
+                    ? [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Chip(
+                            label: Text(
+                              _status == 'published' ? 'Publicado' : 'Rascunho',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
+                            visualDensity: VisualDensity.compact,
+                            backgroundColor:
+                                Colors.white.withValues(alpha: 0.2),
+                            labelStyle: const TextStyle(color: Colors.white),
+                            side: BorderSide.none,
                           ),
+                        ),
+                        TextButton(
+                          onPressed:
+                              _saving ? null : () => _save(status: 'draft'),
+                          child: _saving && _status == 'draft'
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text(
+                                  'Salvar rascunho',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                        ),
+                      ]
+                    : null,
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(3),
+                  child: LinearProgressIndicator(
+                    value: _editMode ? 1 : _readProgress,
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
+                    valueColor:
+                        const AlwaysStoppedAnimation<Color>(Colors.white),
+                    minHeight: 3,
+                  ),
+                ),
+                flexibleSpace: FlexibleSpaceBar(
+                  collapseMode: CollapseMode.pin,
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          cat.color,
+                          cat.color.withValues(alpha: 0.7),
                         ],
                       ),
                     ),
-                  ],
-                  _StepLabel(number: 1, label: 'Objetivo', color: cat.color),
-                  _ObjectivesCard(
-                    summary: _summary,
-                    objectives: _objectives,
-                    color: cat.color,
-                    isEditing: _editMode,
-                    onSummaryChanged: (v) => setState(() {
-                      _summary = v;
-                      _dirty = true;
-                    }),
-                    onObjectivesChanged: (v) =>
-                        setState(() {
-                          _objectives = v;
-                          _dirty = true;
-                        }),
-                  ),
-                  const SizedBox(height: 20),
-
-                  _StepLabel(number: 2, label: 'Observe', color: cat.color),
-                  LessonMediaView.fromBlock(
-                    block: _observeBlock,
-                    accent: cat.color,
-                  ),
-
-                  _StepLabel(number: 3, label: 'Entenda', color: cat.color),
-                  if (_blocks.isEmpty)
-                    _editMode
-                        ? LessonInlineField(
-                            value: _summary,
-                            hint: 'Escreva o conteúdo…',
-                            style: TextStyle(
-                              fontSize: 15.5,
-                              height: 1.55,
-                              color: scheme.onSurface.withValues(alpha: 0.9),
-                            ),
-                            minLines: 3,
-                            cursorColor: cat.color,
-                            onChanged: (v) => setState(() {
-                              _summary = v;
-                              _dirty = true;
-                            }),
-                          )
-                        : Text(
-                            _summary,
-                            style: TextStyle(
-                              fontSize: 15.5,
-                              height: 1.55,
-                              color: scheme.onSurface.withValues(alpha: 0.9),
-                            ),
-                          )
-                  else
-                    ...List.generate(_blocks.length, (index) {
-                      final block = _blocks[index];
-                      switch (block.type) {
-                        case LessonBlockType.highlight:
-                          return LessonBlockHighlight(
-                            block: block,
-                            accent: cat.color,
-                            isEditing: _editMode,
-                            onChanged: (b) => _updateBlock(index, b),
-                          );
-                        case LessonBlockType.image:
-                        case LessonBlockType.signwriting:
-                          return LessonMediaView.fromBlock(
-                            block: block,
-                            accent: cat.color,
-                          );
-                        case LessonBlockType.comparison:
-                          return LessonComparisonView(
-                            block: block,
-                            accent: cat.color,
-                          );
-                        case LessonBlockType.heading:
-                        case LessonBlockType.text:
-                        case LessonBlockType.bullets:
-                        case LessonBlockType.unknown:
-                          return LessonBlockText(
-                            block: block.type == LessonBlockType.unknown
-                                ? block.copyWith(type: LessonBlockType.text)
-                                : block,
-                            accent: cat.color,
-                            isEditing: _editMode,
-                            onChanged: (b) => _updateBlock(index, b),
-                          );
-                      }
-                    }),
-
-                  if (_editMode) ...[
-                    const SizedBox(height: 4),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            _dirty = true;
-                            _blocks = [
-                              ..._blocks,
-                              LessonBlockModel(
-                                id: 'block-${DateTime.now().millisecondsSinceEpoch}',
-                                type: LessonBlockType.heading,
-                                title: 'Nova seção',
-                              ),
-                              LessonBlockModel(
-                                id: 'text-${DateTime.now().millisecondsSinceEpoch}',
-                                type: LessonBlockType.text,
-                                body: 'Escreva o conteúdo…',
-                              ),
-                            ];
-                          });
-                        },
-                        icon: const Icon(Icons.add_rounded),
-                        label: const Text('Adicionar seção'),
-                      ),
-                    ),
-                  ],
-
-                  const SizedBox(height: 12),
-                  _StepLabel(number: 4, label: 'Compare', color: cat.color),
-                  LessonComparisonView(
-                    block: LessonBlockModel(
-                      id: 'compare-${widget.lesson.id}',
-                      type: LessonBlockType.comparison,
-                      payload: const {
-                        'leftTitle': 'Correto',
-                        'rightTitle': 'Incorreto',
-                        'leftBody': 'Exemplo de escrita adequada',
-                        'rightBody': 'Exemplo a evitar',
-                      },
-                    ),
-                    accent: cat.color,
-                  ),
-
-                  _StepLabel(number: 5, label: 'Pratique', color: cat.color),
-                  _PracticeCard(
-                    hasExercises: hasExercises,
-                    exerciseCount: widget.lesson.exercises.length,
-                    color: cat.color,
-                    onTap: _startExercises,
-                    isEditing: _editMode,
-                  ),
-
-                  const SizedBox(height: 16),
-                  LessonSourcesSection(
-                    sources: widget.lesson.sources,
-                    legacyReferences: widget.lesson.references,
-                  ),
-                  const SizedBox(height: 20),
-
-                  _StepLabel(number: 6, label: 'Resumo', color: cat.color),
-                  _MetaCard(
-                    lesson: widget.lesson.copyWith(
-                      title: _title,
-                      summary: _summary,
-                      status: _status,
-                    ),
-                    color: cat.color,
-                  ),
-                  if (widget.lesson.references.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    ...widget.lesson.references.map(
-                      (ref) => Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Row(
+                    child: SafeArea(
+                      bottom: false,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(56, 8, 16, 28),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(Icons.link_rounded,
-                                size: 16, color: cat.color),
+                            Text(
+                              cat.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            if (_editMode)
+                              LessonInlineField(
+                                value: _title,
+                                hint: 'Título da lição',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                                cursorColor: Colors.white,
+                                showUnderline: false,
+                                onChanged: (v) => setState(() {
+                                  _title = v;
+                                  _dirty = true;
+                                }),
+                              )
+                            else
+                              Text(
+                                displayTitle,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 12,
+                              runSpacing: 4,
+                              children: [
+                                _HeaderMeta(
+                                  icon: Icons.timer_outlined,
+                                  label:
+                                      '${widget.lesson.estimatedMinutes} min',
+                                ),
+                                _HeaderMeta(
+                                  icon: Icons.signal_cellular_alt_rounded,
+                                  label: widget.lesson.difficulty,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                title: Text(
+                  displayTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    if (_editMode) ...[
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: cat.color.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(AppRadius.card),
+                          border: Border.all(
+                            color: cat.color.withValues(alpha: 0.25),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit_note_rounded,
+                                color: cat.color, size: 20),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                ref,
+                                'Editando como o aluno verá. Toque nos textos para alterar.',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: scheme.onSurface
-                                      .withValues(alpha: 0.7),
+                                  fontWeight: FontWeight.w600,
+                                  color:
+                                      scheme.onSurface.withValues(alpha: 0.75),
                                 ),
                               ),
                             ),
                           ],
                         ),
                       ),
+                    ],
+                    _ObjectivesCard(
+                      summary: _summary,
+                      objectives: _objectives,
+                      color: cat.color,
+                      isEditing: _editMode,
+                      onSummaryChanged: (v) => setState(() {
+                        _summary = v;
+                        _dirty = true;
+                      }),
+                      onObjectivesChanged: (v) => setState(() {
+                        _objectives = v;
+                        _dirty = true;
+                      }),
                     ),
-                  ],
-                  if (_editMode) ...[
-                    const SizedBox(height: 24),
-                    OutlinedButton.icon(
-                      onPressed:
-                          _saving ? null : () => _save(status: 'draft'),
-                      icon: const Icon(Icons.save_outlined),
-                      label: const Text('Salvar rascunho'),
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(48),
-                        foregroundColor: cat.color,
-                        side: BorderSide(color: cat.color),
+                    const SizedBox(height: 20),
+                    if (_blocks.isEmpty)
+                      _editMode
+                          ? LessonInlineField(
+                              value: _summary,
+                              hint: 'Escreva o conteúdo…',
+                              style: TextStyle(
+                                fontSize: 15.5,
+                                height: 1.55,
+                                color: scheme.onSurface.withValues(alpha: 0.9),
+                              ),
+                              minLines: 3,
+                              cursorColor: cat.color,
+                              onChanged: (v) => setState(() {
+                                _summary = v;
+                                _dirty = true;
+                              }),
+                            )
+                          : Text(
+                              _summary,
+                              style: TextStyle(
+                                fontSize: 15.5,
+                                height: 1.55,
+                                color: scheme.onSurface.withValues(alpha: 0.9),
+                              ),
+                            )
+                    else
+                      ...List.generate(_blocks.length, (index) {
+                        final block = _blocks[index];
+                        return LessonBlockRenderer(
+                          block: block,
+                          accent: cat.color,
+                          isEditing: _editMode,
+                          onChanged: (b) => _updateBlock(index, b),
+                        );
+                      }),
+                    if (_editMode) ...[
+                      const SizedBox(height: 4),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _dirty = true;
+                              _blocks = [
+                                ..._blocks,
+                                LessonBlockModel(
+                                  id: 'block-${DateTime.now().millisecondsSinceEpoch}',
+                                  type: LessonBlockType.heading,
+                                  title: 'Nova seção',
+                                ),
+                                LessonBlockModel(
+                                  id: 'text-${DateTime.now().millisecondsSinceEpoch}',
+                                  type: LessonBlockType.text,
+                                  body: 'Escreva o conteúdo…',
+                                ),
+                              ];
+                            });
+                          },
+                          icon: const Icon(Icons.add_rounded),
+                          label: const Text('Adicionar seção'),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    FilledButton.icon(
-                      onPressed:
-                          _saving ? null : () => _save(status: 'published'),
-                      icon: const Icon(Icons.publish_rounded),
-                      label: const Text('Publicar lição'),
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(48),
-                        backgroundColor: cat.color,
+                    ],
+                    if (hasExercises) ...[
+                      const SizedBox(height: 12),
+                      _PracticeCard(
+                        exerciseCount: widget.lesson.exercises.length,
+                        color: cat.color,
+                        onTap: _startExercises,
+                        isEditing: _editMode,
                       ),
+                    ],
+                    if (!_editMode && !hasExercises) ...[
+                      const SizedBox(height: 16),
+                      _CompleteReadingButton(
+                        color: cat.color,
+                        onTap: _completeWithNoExercises,
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    LessonSourcesSection(
+                      sources: widget.lesson.sources,
+                      legacyReferences: widget.lesson.references,
+                      collapsible: true,
                     ),
-                  ],
-                ]),
+                    if (hasExercises) ...[
+                      const SizedBox(height: 20),
+                      _MetaCard(
+                        lesson: widget.lesson.copyWith(
+                          title: _title,
+                          summary: _summary,
+                          status: _status,
+                        ),
+                        color: cat.color,
+                      ),
+                    ],
+                    if (_editMode) ...[
+                      const SizedBox(height: 24),
+                      OutlinedButton.icon(
+                        onPressed:
+                            _saving ? null : () => _save(status: 'draft'),
+                        icon: const Icon(Icons.save_outlined),
+                        label: const Text('Salvar rascunho'),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                          foregroundColor: cat.color,
+                          side: BorderSide(color: cat.color),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      FilledButton.icon(
+                        onPressed:
+                            _saving ? null : () => _save(status: 'published'),
+                        icon: const Icon(Icons.publish_rounded),
+                        label: const Text('Publicar lição'),
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48),
+                          backgroundColor: cat.color,
+                        ),
+                      ),
+                    ],
+                  ]),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 }
 
-class _StepLabel extends StatelessWidget {
-  final int number;
+class _HeaderMeta extends StatelessWidget {
+  final IconData icon;
   final String label;
-  final Color color;
 
-  const _StepLabel({
-    required this.number,
-    required this.label,
+  const _HeaderMeta({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: Colors.white.withValues(alpha: 0.9)),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.9),
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CompleteReadingButton extends StatelessWidget {
+  final Color color;
+  final VoidCallback onTap;
+
+  const _CompleteReadingButton({
     required this.color,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          Container(
-            width: 26,
-            height: 26,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
-            child: Text(
-              '$number',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-                fontSize: 12,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            label.toUpperCase(),
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.8,
-              color: color,
-            ),
-          ),
-        ],
+    return OutlinedButton.icon(
+      onPressed: onTap,
+      icon: const Icon(Icons.check_circle_outline_rounded),
+      label: const Text('Concluir leitura'),
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size.fromHeight(48),
+        foregroundColor: color,
+        side: BorderSide(color: color),
       ),
     );
   }
@@ -861,14 +829,12 @@ class _ObjectivesCard extends StatelessWidget {
 }
 
 class _PracticeCard extends StatelessWidget {
-  final bool hasExercises;
   final int exerciseCount;
   final Color color;
   final VoidCallback onTap;
   final bool isEditing;
 
   const _PracticeCard({
-    required this.hasExercises,
     required this.exerciseCount,
     required this.color,
     required this.onTap,
@@ -894,9 +860,7 @@ class _PracticeCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isEditing
-                          ? 'Pratique'
-                          : (hasExercises ? 'Praticar agora' : 'Concluir lição'),
+                      isEditing ? 'Pratique' : 'Praticar agora',
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -906,9 +870,7 @@ class _PracticeCard extends StatelessWidget {
                     Text(
                       isEditing
                           ? 'Exercícios serão editáveis em breve'
-                          : (hasExercises
-                              ? '$exerciseCount atividades disponíveis'
-                              : 'Marcar esta lição como concluída'),
+                          : '$exerciseCount atividades disponíveis',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.85),
                         fontSize: 13,

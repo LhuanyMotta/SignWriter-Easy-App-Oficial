@@ -26,24 +26,31 @@ class LessonProgressEntry {
   });
 
   double get scoreRatio {
+    // Preferir bestScore explícito (ex.: sync remoto só com best_score).
     if (bestScore > 0) return bestScore.clamp(0.0, 1.0);
-    if (totalQuestions <= 0) return completed ? 1 : 0;
-    return correctAnswers / totalQuestions;
+    // Leitura sem quiz: completed sem nota — distinto de pontuação perfeita.
+    if (totalQuestions <= 0) return 0;
+    return (correctAnswers / totalQuestions).clamp(0.0, 1.0);
   }
 
+  /// Conclusão por leitura (sem exercícios / sem questões avaliadas).
+  bool get isReadingCompletion => completed && totalQuestions <= 0;
+
   factory LessonProgressEntry.fromMap(Map<String, dynamic> map) {
-    final completed = map['completed'] == true ||
-        map['status']?.toString() == 'completed';
-    final totalQuestions = _parseInt(map['totalQuestions'] ?? map['total_questions']);
+    final completed =
+        map['completed'] == true || map['status']?.toString() == 'completed';
+    final totalQuestions =
+        _parseInt(map['totalQuestions'] ?? map['total_questions']);
     final correctAnswers =
         _parseInt(map['correctAnswers'] ?? map['correct_answers']);
     final bestScore = _parseDouble(map['bestScore'] ?? map['best_score']);
     final derivedBest = bestScore > 0
         ? bestScore
-        : (totalQuestions > 0 ? correctAnswers / totalQuestions : (completed ? 1.0 : 0.0));
+        : (totalQuestions > 0 ? correctAnswers / totalQuestions : 0.0);
 
     return LessonProgressEntry(
-      lessonId: map['lessonId']?.toString() ?? map['lesson_id']?.toString() ?? '',
+      lessonId:
+          map['lessonId']?.toString() ?? map['lesson_id']?.toString() ?? '',
       categoryId:
           map['categoryId']?.toString() ?? map['category_id']?.toString() ?? '',
       completed: completed,

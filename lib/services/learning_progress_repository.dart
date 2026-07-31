@@ -9,14 +9,16 @@ class LearningProgressRepository {
   LearningProgressRepository({
     LearningProgressService? localService,
     SupabaseClient? supabase,
+    bool localOnly = false,
   })  : _local = localService ?? LearningProgressService(),
-        _supabase = supabase ?? Supabase.instance.client;
+        _supabase = localOnly ? null : (supabase ?? Supabase.instance.client);
 
   final LearningProgressService _local;
-  final SupabaseClient _supabase;
+  final SupabaseClient? _supabase;
 
   Future<LearningProgressModel> loadProgress() async {
     final local = await _local.loadProgress();
+    if (_supabase == null) return local;
     try {
       final remote = await _loadRemote();
       if (remote == null) return local;
@@ -53,18 +55,21 @@ class LearningProgressRepository {
   }
 
   Future<void> syncRemote(LessonProgressEntry entry) async {
-    final user = _supabase.auth.currentUser;
+    final client = _supabase;
+    if (client == null) return;
+    final user = client.auth.currentUser;
     if (user == null) return;
 
     final score = totalScore(entry);
     try {
-      await _supabase.from('user_lesson_progress').upsert({
+      await client.from('user_lesson_progress').upsert({
         'user_id': user.id,
         'lesson_id': entry.lessonId,
         'category_id': entry.categoryId.isEmpty ? null : entry.categoryId,
         'status': entry.status.isNotEmpty
             ? entry.status
             : (entry.completed ? 'completed' : 'in_progress'),
+        // Leitura (0 questões): best_score/score 0 — não representa 100%.
         'best_score': score,
         'attempts': entry.attempts,
         'last_block_id': entry.lastBlockId,
@@ -88,10 +93,12 @@ class LearningProgressRepository {
   }
 
   Future<LearningProgressModel?> _loadRemote() async {
-    final user = _supabase.auth.currentUser;
+    final client = _supabase;
+    if (client == null) return null;
+    final user = client.auth.currentUser;
     if (user == null) return null;
 
-    final rows = await _supabase
+    final rows = await client
         .from('user_lesson_progress')
         .select()
         .eq('user_id', user.id);

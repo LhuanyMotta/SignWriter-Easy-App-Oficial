@@ -11,10 +11,12 @@ class LessonMediaView extends StatelessWidget {
   final String? fsw;
   final String? swu;
   final String altText;
+  final String? title;
+  final String? body;
   final String? caption;
   final String? attribution;
   final Color accent;
-  final double height;
+  final double maxHeight;
   final IconData emptyIcon;
 
   const LessonMediaView({
@@ -24,17 +26,19 @@ class LessonMediaView extends StatelessWidget {
     this.fsw,
     this.swu,
     this.altText = '',
+    this.title,
+    this.body,
     this.caption,
     this.attribution,
     required this.accent,
-    this.height = 200,
+    this.maxHeight = 320,
     this.emptyIcon = Icons.image_outlined,
   });
 
   factory LessonMediaView.fromBlock({
     required LessonBlockModel block,
     required Color accent,
-    double height = 200,
+    double maxHeight = 320,
   }) {
     return LessonMediaView(
       mediaUrl: block.mediaUrl ?? block.media?.externalUrl,
@@ -42,13 +46,65 @@ class LessonMediaView extends StatelessWidget {
       fsw: block.effectiveFsw,
       swu: block.effectiveSwu,
       altText: block.effectiveAltText,
+      title: block.title.trim().isEmpty ? null : block.title.trim(),
+      body: block.body.trim().isEmpty ? null : block.body.trim(),
       caption: block.effectiveCaption,
       attribution: block.media?.attributionText,
       accent: accent,
-      height: height,
+      maxHeight: maxHeight,
       emptyIcon: block.type == LessonBlockType.signwriting
           ? Icons.sign_language_rounded
           : Icons.image_outlined,
+    );
+  }
+
+  bool get _hasVisualMedia {
+    final hasAsset = mediaAsset != null && mediaAsset!.trim().isNotEmpty;
+    final hasUrl = mediaUrl != null && mediaUrl!.trim().isNotEmpty;
+    return hasAsset || hasUrl;
+  }
+
+  void _openZoom(BuildContext context) {
+    if (!_hasVisualMedia) return;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) {
+        return Dialog(
+          insetPadding: const EdgeInsets.all(16),
+          backgroundColor: Colors.black.withValues(alpha: 0.92),
+          child: Stack(
+            children: [
+              InteractiveViewer(
+                minScale: 0.8,
+                maxScale: 4,
+                child: SizedBox(
+                  width: double.infinity,
+                  height: MediaQuery.sizeOf(ctx).height * 0.7,
+                  child: _MediaImage(
+                    mediaUrl: mediaUrl,
+                    mediaAsset: mediaAsset,
+                    altText: altText,
+                    accent: accent,
+                    emptyIcon: emptyIcon,
+                    fsw: fsw,
+                    swu: swu,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  icon: const Icon(Icons.close_rounded, color: Colors.white),
+                  tooltip: 'Fechar',
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -56,92 +112,182 @@ class LessonMediaView extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final bridge = SignMakerBridgeService();
-    final hasAsset = mediaAsset != null && mediaAsset!.trim().isNotEmpty;
-    final hasUrl = mediaUrl != null && mediaUrl!.trim().isNotEmpty;
     final validFsw = fsw != null && bridge.isValidFsw(fsw!);
+    final semantic =
+        altText.isNotEmpty ? altText : (caption ?? 'Mídia da lição');
+    final screenH = MediaQuery.sizeOf(context).height;
+    final responsiveMax = (screenH * 0.42).clamp(180.0, maxHeight);
 
     return Semantics(
-      label: altText.isNotEmpty ? altText : (caption ?? 'Mídia da lição'),
+      label: semantic,
       image: true,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            height: height,
-            decoration: BoxDecoration(
-              color: accent.withValues(alpha: 0.06),
-              borderRadius: BorderRadius.circular(AppRadius.large),
-              border: Border.all(color: accent.withValues(alpha: 0.25)),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: hasAsset
-                ? Image.asset(
-                    mediaAsset!,
-                    fit: BoxFit.contain,
-                    semanticLabel: altText,
-                    errorBuilder: (_, __, ___) => _Fallback(
-                      accent: accent,
-                      icon: emptyIcon,
-                      fsw: validFsw ? fsw : null,
-                      swu: swu,
-                    ),
-                  )
-                : hasUrl
-                    ? Image.network(
-                        mediaUrl!,
-                        fit: BoxFit.contain,
-                        semanticLabel: altText,
-                        loadingBuilder: (context, child, progress) {
-                          if (progress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: progress.expectedTotalBytes != null
-                                  ? progress.cumulativeBytesLoaded /
-                                      progress.expectedTotalBytes!
-                                  : null,
-                            ),
-                          );
-                        },
-                        errorBuilder: (_, __, ___) => _Fallback(
-                          accent: accent,
-                          icon: emptyIcon,
-                          fsw: validFsw ? fsw : null,
-                          swu: swu,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (title != null && title!.isNotEmpty) ...[
+              Text(
+                title!,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: scheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+            if (body != null && body!.isNotEmpty) ...[
+              Text(
+                body!,
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.5,
+                  color: scheme.onSurface.withValues(alpha: 0.9),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _hasVisualMedia ? () => _openZoom(context) : null,
+                borderRadius: BorderRadius.circular(AppRadius.large),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = constraints.maxWidth;
+                    final height = (width * 0.75).clamp(140.0, responsiveMax);
+                    return Container(
+                      width: width,
+                      height: height,
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(AppRadius.large),
+                        border: Border.all(
+                          color: accent.withValues(alpha: 0.25),
                         ),
-                      )
-                    : _Fallback(
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: _MediaImage(
+                        mediaUrl: mediaUrl,
+                        mediaAsset: mediaAsset,
+                        altText: altText,
                         accent: accent,
-                        icon: emptyIcon,
+                        emptyIcon: emptyIcon,
                         fsw: validFsw ? fsw : null,
                         swu: swu,
+                        fit: BoxFit.contain,
                       ),
-          ),
-          if (caption != null && caption!.trim().isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              caption!,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: scheme.onSurface.withValues(alpha: 0.75),
+                    );
+                  },
+                ),
               ),
             ),
-          ],
-          if (attribution != null && attribution!.trim().isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              attribution!,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
-                color: scheme.onSurface.withValues(alpha: 0.5),
+            if (caption != null && caption!.trim().isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                caption!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface.withValues(alpha: 0.75),
+                ),
               ),
-            ),
+            ],
+            if (attribution != null && attribution!.trim().isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                attribution!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: scheme.onSurface.withValues(alpha: 0.5),
+                ),
+              ),
+            ],
           ],
-          const SizedBox(height: 12),
-        ],
+        ),
       ),
+    );
+  }
+}
+
+class _MediaImage extends StatelessWidget {
+  final String? mediaUrl;
+  final String? mediaAsset;
+  final String altText;
+  final Color accent;
+  final IconData emptyIcon;
+  final String? fsw;
+  final String? swu;
+  final BoxFit fit;
+
+  const _MediaImage({
+    this.mediaUrl,
+    this.mediaAsset,
+    required this.altText,
+    required this.accent,
+    required this.emptyIcon,
+    this.fsw,
+    this.swu,
+    this.fit = BoxFit.contain,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasAsset = mediaAsset != null && mediaAsset!.trim().isNotEmpty;
+    final hasUrl = mediaUrl != null && mediaUrl!.trim().isNotEmpty;
+
+    if (hasAsset) {
+      return Image.asset(
+        mediaAsset!,
+        fit: fit,
+        semanticLabel: altText,
+        errorBuilder: (_, __, ___) => _Fallback(
+          accent: accent,
+          icon: emptyIcon,
+          fsw: fsw,
+          swu: swu,
+        ),
+      );
+    }
+
+    if (hasUrl) {
+      return Image.network(
+        mediaUrl!,
+        fit: fit,
+        semanticLabel: altText,
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return Center(
+            child: SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                value: progress.expectedTotalBytes != null
+                    ? progress.cumulativeBytesLoaded /
+                        progress.expectedTotalBytes!
+                    : null,
+              ),
+            ),
+          );
+        },
+        errorBuilder: (_, __, ___) => _Fallback(
+          accent: accent,
+          icon: emptyIcon,
+          fsw: fsw,
+          swu: swu,
+        ),
+      );
+    }
+
+    return _Fallback(
+      accent: accent,
+      icon: emptyIcon,
+      fsw: fsw,
+      swu: swu,
     );
   }
 }
@@ -223,14 +369,16 @@ class LessonComparisonView extends StatelessWidget {
         payload['left_media_url']?.toString();
     final rightUrl = payload['rightMediaUrl']?.toString() ??
         payload['right_media_url']?.toString();
-    final leftFsw = payload['leftFsw']?.toString() ?? payload['left_fsw']?.toString();
+    final leftFsw =
+        payload['leftFsw']?.toString() ?? payload['left_fsw']?.toString();
     final rightFsw =
         payload['rightFsw']?.toString() ?? payload['right_fsw']?.toString();
     final leftBody = payload['leftBody']?.toString() ??
         payload['left_body']?.toString() ??
         block.body;
-    final rightBody =
-        payload['rightBody']?.toString() ?? payload['right_body']?.toString() ?? '';
+    final rightBody = payload['rightBody']?.toString() ??
+        payload['right_body']?.toString() ??
+        '';
 
     final left = _ComparisonPanel(
       title: leftTitle,
@@ -315,7 +463,8 @@ class _ComparisonPanel extends StatelessWidget {
               child: Image.network(
                 mediaUrl!,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => Icon(Icons.broken_image, color: color),
+                errorBuilder: (_, __, ___) =>
+                    Icon(Icons.broken_image, color: color),
               ),
             )
           else if (fsw != null && fsw!.isNotEmpty)

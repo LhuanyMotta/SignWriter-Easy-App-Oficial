@@ -290,31 +290,12 @@ class _ContinueLearningSection extends StatelessWidget {
   final LearnPracticeViewModel vm;
   const _ContinueLearningSection({required this.vm});
 
-  LessonModel? _findNextLesson() {
-    for (final cat in vm.categories) {
-      for (final lesson in cat.lessons) {
-        if (!vm.isLessonCompleted(lesson.id)) {
-          return lesson;
-        }
-      }
-    }
-    return null;
-  }
-
-  LessonCategoryModel? _categoryForLesson(LessonModel lesson) {
-    for (final cat in vm.categories) {
-      if (cat.lessons.any((l) => l.id == lesson.id)) return cat;
-    }
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final next = _findNextLesson();
-    if (next == null) return const SliverToBoxAdapter(child: SizedBox.shrink());
-
-    final cat = _categoryForLesson(next);
-    if (cat == null) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    final target = vm.nextLessonTarget();
+    if (target == null) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
 
     return SliverToBoxAdapter(
       child: Padding(
@@ -324,7 +305,11 @@ class _ContinueLearningSection extends StatelessWidget {
           children: [
             _SectionLabel(label: 'CONTINUAR APRENDENDO'),
             const SizedBox(height: 10),
-            _ContinueCard(lesson: next, category: cat, vm: vm),
+            _ContinueCard(
+              lesson: target.lesson,
+              category: target.category,
+              vm: vm,
+            ),
           ],
         ),
       ),
@@ -540,8 +525,8 @@ class _LearningPathSection extends StatelessWidget {
             ...vm.categories.asMap().entries.map((entry) {
               final index = entry.key;
               final cat = entry.value;
-              final isLast = index == vm.categories.length - 1 &&
-                  !canManageLessons;
+              final isLast =
+                  index == vm.categories.length - 1 && !canManageLessons;
               return _PathModuleCard(
                 index: index + 1,
                 category: cat,
@@ -635,7 +620,8 @@ class _PathModuleCardState extends State<_PathModuleCard>
             width: 36,
             child: Column(
               children: [
-                _PathNode(index: widget.index, status: status, color: cat.color),
+                _PathNode(
+                    index: widget.index, status: status, color: cat.color),
                 if (!widget.isLast)
                   Expanded(
                     child: Container(
@@ -761,8 +747,7 @@ class _PathModuleCardState extends State<_PathModuleCard>
                           if (widget.canManageLessons)
                             IconButton(
                               tooltip: 'Excluir módulo',
-                              onPressed: () =>
-                                  _deleteModule(context, vm, cat),
+                              onPressed: () => _deleteModule(context, vm, cat),
                               icon: Icon(
                                 Icons.delete_outline_rounded,
                                 color: scheme.error.withValues(alpha: 0.85),
@@ -775,8 +760,7 @@ class _PathModuleCardState extends State<_PathModuleCard>
                             duration: const Duration(milliseconds: 250),
                             child: Icon(
                               Icons.keyboard_arrow_down_rounded,
-                              color:
-                                  scheme.onSurface.withValues(alpha: 0.4),
+                              color: scheme.onSurface.withValues(alpha: 0.4),
                             ),
                           ),
                         ],
@@ -791,8 +775,7 @@ class _PathModuleCardState extends State<_PathModuleCard>
                         ...cat.lessons.asMap().entries.map((entry) {
                           final idx = entry.key;
                           final lesson = entry.value;
-                          final isCompleted =
-                              vm.isLessonCompleted(lesson.id);
+                          final isCompleted = vm.isLessonCompleted(lesson.id);
                           final lessonProgress =
                               vm.progressForLesson(lesson.id);
                           final isLastLesson = idx == cat.lessons.length - 1 &&
@@ -1209,8 +1192,7 @@ class _AddModuleCard extends StatelessWidget {
                               'Será o módulo $index do percurso — depois você cria as lições',
                               style: TextStyle(
                                 fontSize: 12,
-                                color:
-                                    scheme.onSurface.withValues(alpha: 0.55),
+                                color: scheme.onSurface.withValues(alpha: 0.55),
                               ),
                             ),
                           ],
@@ -1559,8 +1541,7 @@ Future<void> _deleteModule(
 
   final authoring = LearningAuthoringService();
   final isLocal = category.id.startsWith('cat-local-');
-  final remoteOk =
-      isLocal ? true : await authoring.deleteCategory(category.id);
+  final remoteOk = isLocal ? true : await authoring.deleteCategory(category.id);
 
   vm.removeCategory(category.id);
   if (!context.mounted) return;
