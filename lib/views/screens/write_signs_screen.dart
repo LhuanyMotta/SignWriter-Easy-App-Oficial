@@ -8,6 +8,10 @@ import '../../models/written_sign_model.dart';
 import '../../routes/app_routes.dart';
 import '../../theme/responsive_content.dart';
 import '../../viewmodels/write_signs_viewmodel.dart';
+import '../widgets/states/app_empty_state.dart';
+import '../widgets/states/app_error_state.dart';
+import '../widgets/states/app_loading_state.dart';
+import '../widgets/states/app_status_banner.dart';
 import 'write_sign_editor_screen.dart';
 
 class WriteSignsScreen extends StatefulWidget {
@@ -64,20 +68,26 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
                     children: [
                       _buildSearchField(),
                       const SizedBox(height: 12),
-                      if (viewModel.statusMessage.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Text(
-                            viewModel.statusMessage,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
+                      if (!viewModel.isAuthenticated)
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 12),
+                          child: AppStatusBanner(
+                            title: 'Faça login para ver e salvar seus sinais.',
+                            tone: AppStatusBannerTone.warning,
+                            icon: Icons.lock_outline,
                           ),
                         ),
                       Expanded(
                         child: viewModel.isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : _buildSignsList(viewModel),
+                            ? const AppLoadingState(
+                                message: 'Carregando sinais...',
+                              )
+                            : viewModel.loadError != null
+                                ? AppErrorState(
+                                    message: viewModel.loadError!,
+                                    onRetry: viewModel.loadSigns,
+                                  )
+                                : _buildSignsList(viewModel),
                       ),
                     ],
                   ),
@@ -115,24 +125,12 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
   Widget _buildSignsList(WriteSignsViewModel viewModel) {
     final signs = viewModel.signs;
     if (signs.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.gesture_outlined, size: 56),
-            const SizedBox(height: 16),
-            Text(
-              'Nenhum sinal encontrado.',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Use o botão "Novo sinal" para criar seu primeiro sinal.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
-        ),
+      return AppEmptyState(
+        icon: Icons.gesture_outlined,
+        title: 'Nenhum sinal ainda',
+        message: 'Crie seu primeiro sinal para começar.',
+        actionLabel: 'Novo sinal',
+        onAction: () => _openEditor(),
       );
     }
 
@@ -274,6 +272,7 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
         content: Text(
           success ? 'Sinal salvo com sucesso.' : _viewModel.statusMessage,
         ),
+        backgroundColor: success ? Colors.green : Colors.red,
       ),
     );
   }
@@ -297,6 +296,7 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
         content: Text(
           success ? 'Sinal excluído com sucesso.' : _viewModel.statusMessage,
         ),
+        backgroundColor: success ? Colors.green : Colors.red,
       ),
     );
   }

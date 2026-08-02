@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/sign_model.dart';
 import '../models/translation_model.dart';
+import '../utils/friendly_error.dart';
 
 class TranslateViewModel extends ChangeNotifier {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -16,6 +17,7 @@ class TranslateViewModel extends ChangeNotifier {
   bool _isTranslating = false;
   bool _isLoadingHistory = false;
   String? _errorMessage;
+  String? _historyError;
 
   List<SignModel> _signs = [];
   List<String> _notFoundWords = [];
@@ -34,6 +36,7 @@ class TranslateViewModel extends ChangeNotifier {
   bool get isTranslating => _isTranslating;
   bool get isLoadingHistory => _isLoadingHistory;
   String? get errorMessage => _errorMessage;
+  String? get historyError => _historyError;
   List<SignModel> get signs => _signs;
   List<String> get notFoundWords => _notFoundWords;
   TranslationModel? get lastTranslation => _lastTranslation;
@@ -124,11 +127,13 @@ class TranslateViewModel extends ChangeNotifier {
     final user = _supabase.auth.currentUser;
     if (user == null) {
       _recentTranslations = [];
+      _historyError = null;
       notifyListeners();
       return;
     }
 
     _isLoadingHistory = true;
+    _historyError = null;
     notifyListeners();
 
     try {
@@ -142,8 +147,10 @@ class TranslateViewModel extends ChangeNotifier {
       _recentTranslations = (response as List)
           .map((row) => TranslationModel.fromMap(row))
           .toList();
+      _historyError = null;
     } catch (e) {
       _recentTranslations = [];
+      _historyError = friendlyError(e);
     } finally {
       _isLoadingHistory = false;
       notifyListeners();
@@ -181,9 +188,9 @@ class TranslateViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> toggleFavorite(TranslationModel translation) async {
+  Future<bool> toggleFavorite(TranslationModel translation) async {
     final user = _supabase.auth.currentUser;
-    if (user == null) return;
+    if (user == null) return false;
 
     final newValue = !translation.isFavorite;
 
@@ -198,19 +205,25 @@ class TranslateViewModel extends ChangeNotifier {
         _recentTranslations[index] = translation.copyWith(isFavorite: newValue);
         notifyListeners();
       }
-    } catch (_) {
-      // Ignora falha de rede ao favoritar; o estado local não muda.
+      return true;
+    } catch (e) {
+      _errorMessage = friendlyError(e);
+      notifyListeners();
+      return false;
     }
   }
 
-  Future<void> deleteTranslation(TranslationModel translation) async {
+  Future<bool> deleteTranslation(TranslationModel translation) async {
     try {
       await _supabase.from('translations').delete().eq('id', translation.id);
-    } catch (_) {
-      // Mesmo que a exclusão remota falhe, removemos da lista local.
+      _recentTranslations.removeWhere((t) => t.id == translation.id);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _errorMessage = friendlyError(e);
+      notifyListeners();
+      return false;
     }
-    _recentTranslations.removeWhere((t) => t.id == translation.id);
-    notifyListeners();
   }
 
   // ─────────────────────────────────────────────────────────────

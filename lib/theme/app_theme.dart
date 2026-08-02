@@ -59,7 +59,6 @@ class AppTheme {
   static const Color _brandSecondary = Color(0xFF4EB1F0);
 
   static ThemeData light({
-    required double fontScale,
     required double contrastLevel,
     required double spacingScale,
   }) {
@@ -107,7 +106,8 @@ class AppTheme {
       useMaterial3: true,
     );
 
-    final textTheme = _scaledTextTheme(base.textTheme, fontScale).apply(
+    // Escala de fonte fica só no MediaQuery (TextScaler) — evita escala dupla.
+    final textTheme = base.textTheme.apply(
       bodyColor: onSurface,
       displayColor: onSurface,
     );
@@ -254,7 +254,6 @@ class AppTheme {
   }
 
   static ThemeData dark({
-    required double fontScale,
     required double contrastLevel,
     required double spacingScale,
   }) {
@@ -306,7 +305,8 @@ class AppTheme {
       contrastT,
     )!;
 
-    final textTheme = _scaledTextTheme(base.textTheme, fontScale).apply(
+    // Escala de fonte fica só no MediaQuery (TextScaler) — evita escala dupla.
+    final textTheme = base.textTheme.apply(
       bodyColor: onSurface,
       displayColor: onSurface,
     );
@@ -468,93 +468,19 @@ class AppTheme {
     );
   }
 
-  static TextTheme _scaledTextTheme(TextTheme theme, double scale) {
-    return theme.copyWith(
-      displayLarge: theme.displayLarge?.copyWith(
-        fontSize: (theme.displayLarge?.fontSize ?? 57) * scale,
-        fontWeight: FontWeight.bold,
-        letterSpacing: -1.0,
-      ),
-      displayMedium: theme.displayMedium?.copyWith(
-        fontSize: (theme.displayMedium?.fontSize ?? 45) * scale,
-        fontWeight: FontWeight.bold,
-        letterSpacing: -0.8,
-      ),
-      displaySmall: theme.displaySmall?.copyWith(
-        fontSize: (theme.displaySmall?.fontSize ?? 36) * scale,
-        fontWeight: FontWeight.bold,
-        letterSpacing: -0.5,
-      ),
-      headlineLarge: theme.headlineLarge?.copyWith(
-        fontSize: (theme.headlineLarge?.fontSize ?? 32) * scale,
-        fontWeight: FontWeight.bold,
-        letterSpacing: -0.5,
-      ),
-      headlineMedium: theme.headlineMedium?.copyWith(
-        fontSize: (theme.headlineMedium?.fontSize ?? 28) * scale,
-        fontWeight: FontWeight.bold,
-        letterSpacing: -0.3,
-      ),
-      headlineSmall: theme.headlineSmall?.copyWith(
-        fontSize: (theme.headlineSmall?.fontSize ?? 24) * scale,
-        fontWeight: FontWeight.bold,
-        letterSpacing: -0.2,
-      ),
-      titleLarge: theme.titleLarge?.copyWith(
-        fontSize: (theme.titleLarge?.fontSize ?? 22) * scale,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.2,
-      ),
-      titleMedium: theme.titleMedium?.copyWith(
-        fontSize: (theme.titleMedium?.fontSize ?? 16) * scale,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.0,
-      ),
-      titleSmall: theme.titleSmall?.copyWith(
-        fontSize: (theme.titleSmall?.fontSize ?? 14) * scale,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.0,
-      ),
-      bodyLarge: theme.bodyLarge?.copyWith(
-        fontSize: (theme.bodyLarge?.fontSize ?? 16) * scale,
-        height: 1.55,
-        letterSpacing: 0.1,
-      ),
-      bodyMedium: theme.bodyMedium?.copyWith(
-        fontSize: (theme.bodyMedium?.fontSize ?? 14) * scale,
-        height: 1.5,
-        letterSpacing: 0.1,
-      ),
-      bodySmall: theme.bodySmall?.copyWith(
-        fontSize: (theme.bodySmall?.fontSize ?? 12) * scale,
-        height: 1.45,
-        letterSpacing: 0.2,
-      ),
-      labelLarge: theme.labelLarge?.copyWith(
-        fontSize: (theme.labelLarge?.fontSize ?? 14) * scale,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.1,
-      ),
-      labelMedium: theme.labelMedium?.copyWith(
-        fontSize: (theme.labelMedium?.fontSize ?? 12) * scale,
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0.3,
-      ),
-      labelSmall: theme.labelSmall?.copyWith(
-        fontSize: (theme.labelSmall?.fontSize ?? 11) * scale,
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0.4,
-      ),
-    );
-  }
-
   static VisualDensity _visualDensity(double spacingScale) {
     // Efeito de espaçamento mais perceptível no app inteiro.
     final adjustment = ((spacingScale - 1.0) * 1.6).clamp(-0.3, 1.2);
     return VisualDensity(horizontal: adjustment, vertical: adjustment);
   }
 
+  /// Normaliza o contraste na mesma faixa da tela de acessibilidade (0.8–1.5).
   static double _contrastNormalized(double contrastLevel) {
-    return ((contrastLevel.clamp(1.0, 2.0) - 1.0) / 1.0).clamp(0.0, 1.0);
+    const minContrast = 0.8;
+    const maxContrast = 1.5;
+
+    final value = contrastLevel.clamp(minContrast, maxContrast);
+
+    return ((value - minContrast) / (maxContrast - minContrast)).clamp(0.0, 1.0);
   }
 }

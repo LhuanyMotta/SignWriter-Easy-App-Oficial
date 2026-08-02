@@ -27,6 +27,18 @@ class AccessibilitySettingsView extends StatelessWidget {
           ? Colors.grey.shade400
           : Colors.grey.shade600;
 
+  String _themeModeLabel(BuildContext context, AppThemeMode mode) {
+    final l10n = context.l10n;
+    switch (mode) {
+      case AppThemeMode.light:
+        return l10n.themeLight;
+      case AppThemeMode.dark:
+        return l10n.themeDark;
+      case AppThemeMode.system:
+        return l10n.themeSystem;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ProfileViewModel>(
@@ -41,213 +53,211 @@ class AccessibilitySettingsView extends StatelessWidget {
           body: ResponsiveContent(
             maxWidth: 640,
             child: ListView(
-            padding: EdgeInsets.all(16 * viewModel.spacing),
-            children: [
-              Text(
-                l10n.accessibilityTitle,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-              SizedBox(height: AppSpacing.value(context, 8)),
-              Text(
-                l10n.accessibilitySubtitle,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: _subtitleColor(context),
-                ),
-              ),
-              SizedBox(height: AppSpacing.value(context, 24)),
-              _buildSettingCard(
-                context,
-                icon: Icons.format_size,
-                title: l10n.fontSizeTitle,
-                subtitle: '${(viewModel.fontSize * 100).round()}%',
-                child: Slider(
-                  value: viewModel.fontSize,
-                  min: 0.8,
-                  max: 1.5,
-                  divisions: 7,
-                  label: '${(viewModel.fontSize * 100).round()}%',
-                  activeColor: const Color(0xFF2D78BB),
-                  onChanged: viewModel.updateFontSize,
-                ),
-              ),
-              SizedBox(height: AppSpacing.value(context, 16)),
-              _buildSettingCard(
-                context,
-                icon: Icons.contrast,
-                title: l10n.contrastTitle,
-                subtitle: '${(viewModel.contrastLevel * 100).round()}%',
-                child: Slider(
-                  value: viewModel.contrastLevel,
-                  min: 0.8,
-                  max: 1.5,
-                  divisions: 7,
-                  label: '${(viewModel.contrastLevel * 100).round()}%',
-                  activeColor: const Color(0xFF2D78BB),
-                  onChanged: viewModel.updateContrast,
-                ),
-              ),
-              SizedBox(height: AppSpacing.value(context, 16)),
-              _buildSettingCard(
-                context,
-                icon: Icons.space_bar,
-                title: l10n.spacingTitle,
-                subtitle: '${(viewModel.spacing * 100).round()}%',
-                child: Slider(
-                  value: viewModel.spacing,
-                  min: 0.8,
-                  max: 1.5,
-                  divisions: 7,
-                  label: '${(viewModel.spacing * 100).round()}%',
-                  activeColor: const Color(0xFF2D78BB),
-                  onChanged: viewModel.updateSpacing,
-                ),
-              ),
-              SizedBox(height: AppSpacing.value(context, 16)),
-              _buildSettingCard(
-                context,
-                icon: Icons.brightness_6,
-                title: l10n.themeTitle,
-                subtitle: _themeModeLabel(viewModel.themeMode),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _optionButton(
-                        context,
-                        title: l10n.themeLight,
-                        selected: viewModel.themeMode == AppThemeMode.light,
-                        onTap: () => viewModel.setThemeMode(AppThemeMode.light),
-                      ),
-                    ),
-                    SizedBox(width: AppSpacing.value(context, 8)),
-                    Expanded(
-                      child: _optionButton(
-                        context,
-                        title: l10n.themeDark,
-                        selected: viewModel.themeMode == AppThemeMode.dark,
-                        onTap: () => viewModel.setThemeMode(AppThemeMode.dark),
-                      ),
-                    ),
-                    SizedBox(width: AppSpacing.value(context, 8)),
-                    Expanded(
-                      child: _optionButton(
-                        context,
-                        title: l10n.themeSystem,
-                        selected: viewModel.themeMode == AppThemeMode.system,
-                        onTap: () => viewModel.setThemeMode(AppThemeMode.system),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: AppSpacing.value(context, 16)),
-              _buildSettingCard(
-                context,
-                icon: Icons.language,
-                title: l10n.languageTitle,
-                subtitle: viewModel.language == 'English'
-                    ? l10n.languageEnglish
-                    : l10n.languagePortuguese,
-                child: DropdownButtonFormField<String>(
-                  value: viewModel.language,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    contentPadding: AppSpacing.symmetric(
-                      context,
-                      horizontal: 12,
-                    ),
-                  ),
-                  items: viewModel.availableLanguages.map((language) {
-                    final label = language == 'English'
-                        ? l10n.languageEnglish
-                        : l10n.languagePortuguese;
-
-                    return DropdownMenuItem(
-                      value: language,
-                      child: Text(label),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      viewModel.setLanguage(value);
-                    }
-                  },
-                ),
-              ),
-              SizedBox(height: AppSpacing.value(context, 24)),
-              if (isFirstAccess) ...[
-                SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      final prefs = await SharedPreferences.getInstance();
-
-                      await prefs.setBool(
-                        'has_seen_accessibility',
-                        true,
-                      );
-
-                      if (context.mounted) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const HomeScreen(),
-                          ),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2D78BB),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: Text(
-                      l10n.save,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+              padding: EdgeInsets.all(16 * viewModel.spacing),
+              children: [
+                Text(
+                  l10n.accessibilityTitle,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-                SizedBox(height: AppSpacing.value(context, 12)),
-                Center(
-                  child: TextButton(
-                    onPressed: () async {
-                      final prefs = await SharedPreferences.getInstance();
-
-                      await prefs.setBool(
-                        'has_seen_accessibility',
-                        true,
-                      );
-
-                      if (context.mounted) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const HomeScreen(),
-                          ),
-                        );
-                      }
-                    },
-                    child: Text(
-                      l10n.cancel,
-                    ),
+                SizedBox(height: AppSpacing.value(context, 8)),
+                Text(
+                  l10n.accessibilitySubtitle,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: _subtitleColor(context),
                   ),
                 ),
                 SizedBox(height: AppSpacing.value(context, 24)),
+                _buildSettingCard(
+                  context,
+                  icon: Icons.format_size,
+                  title: l10n.fontSizeTitle,
+                  subtitle: '${(viewModel.fontSize * 100).round()}%',
+                  child: Slider(
+                    value: viewModel.fontSize,
+                    min: 0.8,
+                    max: 1.5,
+                    divisions: 7,
+                    label: '${(viewModel.fontSize * 100).round()}%',
+                    activeColor: const Color(0xFF2D78BB),
+                    onChanged: viewModel.updateFontSize,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.value(context, 16)),
+                _buildSettingCard(
+                  context,
+                  icon: Icons.contrast,
+                  title: l10n.contrastTitle,
+                  subtitle: '${(viewModel.contrastLevel * 100).round()}%',
+                  child: Slider(
+                    value: viewModel.contrastLevel,
+                    min: 0.8,
+                    max: 1.5,
+                    divisions: 7,
+                    label: '${(viewModel.contrastLevel * 100).round()}%',
+                    activeColor: const Color(0xFF2D78BB),
+                    onChanged: viewModel.updateContrast,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.value(context, 16)),
+                _buildSettingCard(
+                  context,
+                  icon: Icons.space_bar,
+                  title: l10n.spacingTitle,
+                  subtitle: '${(viewModel.spacing * 100).round()}%',
+                  child: Slider(
+                    value: viewModel.spacing,
+                    min: 0.8,
+                    max: 1.5,
+                    divisions: 7,
+                    label: '${(viewModel.spacing * 100).round()}%',
+                    activeColor: const Color(0xFF2D78BB),
+                    onChanged: viewModel.updateSpacing,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.value(context, 16)),
+                _buildSettingCard(
+                  context,
+                  icon: Icons.brightness_6,
+                  title: l10n.themeTitle,
+                  subtitle: _themeModeLabel(context, viewModel.themeMode),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _optionButton(
+                          context,
+                          title: l10n.themeLight,
+                          selected: viewModel.themeMode == AppThemeMode.light,
+                          onTap: () =>
+                              viewModel.setThemeMode(AppThemeMode.light),
+                        ),
+                      ),
+                      SizedBox(width: AppSpacing.value(context, 8)),
+                      Expanded(
+                        child: _optionButton(
+                          context,
+                          title: l10n.themeDark,
+                          selected: viewModel.themeMode == AppThemeMode.dark,
+                          onTap: () =>
+                              viewModel.setThemeMode(AppThemeMode.dark),
+                        ),
+                      ),
+                      SizedBox(width: AppSpacing.value(context, 8)),
+                      Expanded(
+                        child: _optionButton(
+                          context,
+                          title: l10n.themeSystem,
+                          selected: viewModel.themeMode == AppThemeMode.system,
+                          onTap: () =>
+                              viewModel.setThemeMode(AppThemeMode.system),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: AppSpacing.value(context, 16)),
+                _buildSettingCard(
+                  context,
+                  icon: Icons.language,
+                  title: l10n.languageTitle,
+                  subtitle: viewModel.language == 'English'
+                      ? l10n.languageEnglish
+                      : l10n.languagePortuguese,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _optionButton(
+                          context,
+                          title: l10n.languagePortuguese,
+                          selected: viewModel.language == 'Português',
+                          onTap: () => viewModel.setLanguage('Português'),
+                        ),
+                      ),
+                      SizedBox(width: AppSpacing.value(context, 8)),
+                      Expanded(
+                        child: _optionButton(
+                          context,
+                          title: l10n.languageEnglish,
+                          selected: viewModel.language == 'English',
+                          onTap: () => viewModel.setLanguage('English'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: AppSpacing.value(context, 24)),
+                if (isFirstAccess) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final prefs = await SharedPreferences.getInstance();
+
+                        await prefs.setBool(
+                          'has_seen_accessibility',
+                          true,
+                        );
+
+                        if (context.mounted) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HomeScreen(),
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2D78BB),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: Text(
+                        l10n.save,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.value(context, 12)),
+                  Center(
+                    child: TextButton(
+                      onPressed: () async {
+                        final prefs = await SharedPreferences.getInstance();
+
+                        await prefs.setBool(
+                          'has_seen_accessibility',
+                          true,
+                        );
+
+                        if (context.mounted) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HomeScreen(),
+                            ),
+                          );
+                        }
+                      },
+                      child: Text(
+                        l10n.cancel,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.value(context, 24)),
+                ],
               ],
-            ],
-          )),
+            ),
+          ),
         );
       },
     );
@@ -337,27 +347,5 @@ class AccessibilitySettingsView extends StatelessWidget {
         ),
       ),
     );
-    String _themeModeLabel(AppThemeMode mode) {
-  switch (mode) {
-    case AppThemeMode.light:
-      return 'Claro';
-    case AppThemeMode.dark:
-      return 'Escuro';
-    case AppThemeMode.system:
-      return 'Sistema';
   }
-}
-}
-String _themeModeLabel(AppThemeMode mode) {
-  switch (mode) {
-    case AppThemeMode.light:
-      return 'Claro';
-
-    case AppThemeMode.dark:
-      return 'Escuro';
-
-    case AppThemeMode.system:
-      return 'Sistema';
-  }
-}
 }

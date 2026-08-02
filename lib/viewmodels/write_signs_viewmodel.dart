@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/written_sign_model.dart';
-import '../services/written_sign_preview_policy.dart';
 import '../services/written_signs_service.dart';
+import '../utils/friendly_error.dart';
 
 /// ViewModel para a tela de escrita de sinais
 class WriteSignsViewModel extends ChangeNotifier {
@@ -21,7 +21,9 @@ class WriteSignsViewModel extends ChangeNotifier {
   String _searchQuery = '';
   String _selectedStatus = 'all';
   String _statusMessage = '';
+  String? _loadError;
   bool _isLoading = false;
+  bool _isSaving = false;
 
   List<WrittenSignModel> get signs {
     return _signs.where((sign) {
@@ -47,7 +49,9 @@ class WriteSignsViewModel extends ChangeNotifier {
   String get searchQuery => _searchQuery;
   String get selectedStatus => _selectedStatus;
   String get statusMessage => _statusMessage;
+  String? get loadError => _loadError;
   bool get isLoading => _isLoading;
+  bool get isSaving => _isSaving;
   bool get isAuthenticated =>
       Supabase.instance.client.auth.currentUser != null;
 
@@ -63,6 +67,7 @@ class WriteSignsViewModel extends ChangeNotifier {
 
   Future<void> loadSigns() async {
     _isLoading = true;
+    _loadError = null;
     notifyListeners();
 
     try {
@@ -73,8 +78,10 @@ class WriteSignsViewModel extends ChangeNotifier {
       }
       _signs = await _writtenSignsService.getWrittenSigns();
       _statusMessage = '';
+      _loadError = null;
     } catch (e) {
-      _statusMessage = 'Erro ao carregar sinais: ${_friendlyError(e)}';
+      _loadError = friendlyError(e);
+      _statusMessage = '';
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -92,8 +99,8 @@ class WriteSignsViewModel extends ChangeNotifier {
       return false;
     }
 
-    _isLoading = true;
-    _statusMessage = 'Salvando sinal...';
+    _isSaving = true;
+    _statusMessage = '';
     notifyListeners();
 
     try {
@@ -104,10 +111,10 @@ class WriteSignsViewModel extends ChangeNotifier {
       _statusMessage = 'Sinal salvo com sucesso!';
       return true;
     } catch (e) {
-      _statusMessage = 'Erro ao salvar sinal: ${_friendlyError(e)}';
+      _statusMessage = friendlyError(e);
       return false;
     } finally {
-      _isLoading = false;
+      _isSaving = false;
       notifyListeners();
     }
   }
@@ -119,8 +126,8 @@ class WriteSignsViewModel extends ChangeNotifier {
       return false;
     }
 
-    _isLoading = true;
-    _statusMessage = 'Excluindo sinal...';
+    _isSaving = true;
+    _statusMessage = '';
     notifyListeners();
 
     try {
@@ -129,10 +136,10 @@ class WriteSignsViewModel extends ChangeNotifier {
       _statusMessage = 'Sinal excluído com sucesso!';
       return true;
     } catch (e) {
-      _statusMessage = 'Erro ao excluir sinal: ${_friendlyError(e)}';
+      _statusMessage = friendlyError(e);
       return false;
     } finally {
-      _isLoading = false;
+      _isSaving = false;
       notifyListeners();
     }
   }
@@ -155,10 +162,4 @@ class WriteSignsViewModel extends ChangeNotifier {
     }
   }
 
-  String _friendlyError(Object error) {
-    if (error is WrittenSignsException) return error.message;
-    if (error is WrittenSignPreviewException) return error.message;
-    final text = error.toString();
-    return text.replaceFirst('Exception: ', '');
-  }
 }

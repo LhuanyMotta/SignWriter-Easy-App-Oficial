@@ -9,6 +9,7 @@ import '../../viewmodels/translate_viewmodel.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/responsive.dart';
 import '../../theme/responsive_content.dart';
+import '../widgets/states/app_status_banner.dart';
 
 class TranslateSignsScreen extends StatefulWidget {
   const TranslateSignsScreen({super.key});
@@ -222,7 +223,18 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
           ),
           SizedBox(height: AppSpacing.value(context, 8)),
           Expanded(child: _buildResultBox(viewModel)),
-          if (viewModel.recentTranslations.isNotEmpty) ...[
+          if (viewModel.isLoadingHistory) ...[
+            SizedBox(height: AppSpacing.value(context, 12)),
+            const LinearProgressIndicator(minHeight: 2),
+          ] else if (viewModel.historyError != null) ...[
+            SizedBox(height: AppSpacing.value(context, 12)),
+            AppStatusBanner(
+              title: 'Não foi possível carregar o histórico',
+              subtitle: viewModel.historyError,
+              tone: AppStatusBannerTone.error,
+              onAction: viewModel.loadRecentTranslations,
+            ),
+          ] else if (viewModel.recentTranslations.isNotEmpty) ...[
             SizedBox(height: AppSpacing.value(context, 12)),
             _buildRecentTranslations(viewModel),
           ],
@@ -562,17 +574,43 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
                   translation.isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos',
                   style: TextStyle(color: textColor),
                 ),
-                onTap: () {
-                  _viewModel.toggleFavorite(translation);
+                onTap: () async {
                   Navigator.pop(sheetContext);
+                  final ok = await _viewModel.toggleFavorite(translation);
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        ok
+                            ? (translation.isFavorite
+                                ? 'Removido dos favoritos.'
+                                : 'Adicionado aos favoritos.')
+                            : (_viewModel.errorMessage ??
+                                'Não foi possível atualizar o favorito.'),
+                      ),
+                      backgroundColor: ok ? Colors.green : Colors.red,
+                    ),
+                  );
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.delete_outline_rounded, color: Colors.red),
                 title: const Text('Excluir do histórico', style: TextStyle(color: Colors.red)),
-                onTap: () {
-                  _viewModel.deleteTranslation(translation);
+                onTap: () async {
                   Navigator.pop(sheetContext);
+                  final ok = await _viewModel.deleteTranslation(translation);
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        ok
+                            ? 'Tradução excluída.'
+                            : (_viewModel.errorMessage ??
+                                'Não foi possível excluir.'),
+                      ),
+                      backgroundColor: ok ? Colors.green : Colors.red,
+                    ),
+                  );
                 },
               ),
             ],
@@ -617,22 +655,10 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
   }
 
   Widget _buildErrorBanner(String message) {
-    return Container(
-      padding: AppSpacing.symmetric(context, horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.red.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.red.withValues(alpha: 0.25)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.error_outline_rounded, color: Colors.red, size: 18),
-          SizedBox(width: AppSpacing.value(context, 8)),
-          Expanded(
-            child: Text(message, style: const TextStyle(color: Colors.red, fontSize: 13)),
-          ),
-        ],
-      ),
+    return AppStatusBanner(
+      title: message,
+      tone: AppStatusBannerTone.error,
+      icon: Icons.error_outline_rounded,
     );
   }
 

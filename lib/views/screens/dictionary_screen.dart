@@ -8,6 +8,9 @@ import '../../theme/responsive.dart';
 import '../../theme/adaptive_nav_scaffold.dart';
 import '../../theme/hover_lift.dart';
 import '../../l10n/l10n.dart';
+import '../widgets/states/app_empty_state.dart';
+import '../widgets/states/app_error_state.dart';
+import '../widgets/states/app_loading_state.dart';
 
 class DictionaryScreen extends StatefulWidget {
   const DictionaryScreen({super.key});
@@ -24,6 +27,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(_onSearchChanged);
   }
 
   @override
@@ -37,7 +41,6 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
       if (!mounted) return;
       _viewModel.setAllLabel(label);
     });
-    _searchController.addListener(_onSearchChanged);
   }
 
   @override
@@ -70,8 +73,12 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
         body: Consumer<DictionaryViewModel>(
           builder: (context, viewModel, child) {
             if (viewModel.isLoading) {
-              return Center(
-                child: CircularProgressIndicator(color: primary),
+              return const AppLoadingState(message: 'Carregando sinais...');
+            }
+            if (viewModel.loadError != null) {
+              return AppErrorState(
+                message: viewModel.loadError!,
+                onRetry: viewModel.loadSigns,
               );
             }
 
@@ -365,20 +372,22 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final message = _viewModel.showFavoritesOnly
-        ? context.l10n.favoritesEmpty
-        : 'Nenhum sinal encontrado';
-
-    return Center(
-      child: Text(
-        message,
-        style: TextStyle(
-          color: isDark ? Colors.grey[300] : Colors.grey[700],
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+    if (_viewModel.showFavoritesOnly) {
+      return AppEmptyState(
+        icon: Icons.favorite_border,
+        title: context.l10n.favoritesEmpty,
+        message: 'Favorite sinais no dicionário para vê-los aqui.',
+      );
+    }
+    final hasQuery = _searchController.text.trim().isNotEmpty;
+    return AppEmptyState(
+      icon: Icons.search_off_rounded,
+      title: 'Nenhum sinal encontrado',
+      message: hasQuery
+          ? 'Nenhum sinal corresponde à busca. Tente outros termos.'
+          : 'Ainda não há sinais nesta categoria.',
+      actionLabel: hasQuery ? 'Limpar busca' : null,
+      onAction: hasQuery ? () => _searchController.clear() : null,
     );
   }
 }

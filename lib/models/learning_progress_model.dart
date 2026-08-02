@@ -26,10 +26,10 @@ class LessonProgressEntry {
   });
 
   double get scoreRatio {
+    // Leitura sem quiz: sem nota — distinto de pontuação perfeita.
+    if (totalQuestions <= 0) return 0;
     // Preferir bestScore explícito (ex.: sync remoto só com best_score).
     if (bestScore > 0) return bestScore.clamp(0.0, 1.0);
-    // Leitura sem quiz: completed sem nota — distinto de pontuação perfeita.
-    if (totalQuestions <= 0) return 0;
     return (correctAnswers / totalQuestions).clamp(0.0, 1.0);
   }
 
@@ -44,9 +44,12 @@ class LessonProgressEntry {
     final correctAnswers =
         _parseInt(map['correctAnswers'] ?? map['correct_answers']);
     final bestScore = _parseDouble(map['bestScore'] ?? map['best_score']);
-    final derivedBest = bestScore > 0
-        ? bestScore
-        : (totalQuestions > 0 ? correctAnswers / totalQuestions : 0.0);
+    // Leitura sem quiz: zera nota mesmo se legado salvou bestScore=1.0.
+    final derivedBest = totalQuestions <= 0
+        ? 0.0
+        : bestScore > 0
+            ? bestScore.clamp(0.0, 1.0)
+            : (correctAnswers / totalQuestions).clamp(0.0, 1.0);
 
     return LessonProgressEntry(
       lessonId:

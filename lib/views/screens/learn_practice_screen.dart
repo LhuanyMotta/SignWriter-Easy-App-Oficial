@@ -8,6 +8,10 @@ import '../../services/learning_authoring_service.dart';
 import '../../viewmodels/learn_practice_viewmodel.dart';
 import '../../theme/responsive_content.dart';
 import '../../theme/app_radius.dart';
+import '../widgets/states/app_empty_state.dart';
+import '../widgets/states/app_error_state.dart';
+import '../widgets/states/app_loading_state.dart';
+import '../widgets/states/app_status_banner.dart';
 import 'lesson_screen.dart';
 
 class LearnPracticeScreen extends StatefulWidget {
@@ -91,10 +95,10 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen>
       body: ResponsiveContent(child: Consumer<LearnPracticeViewModel>(
         builder: (context, vm, _) {
           if (vm.isLoading) {
-            return const _LoadingState();
+            return const AppLoadingState(message: 'Carregando lições...');
           }
           if (vm.errorMessage.isNotEmpty && vm.categories.isEmpty) {
-            return _ErrorState(
+            return AppErrorState(
               message: vm.errorMessage,
               onRetry: vm.reload,
             );
@@ -112,28 +116,26 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen>
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                    child: Material(
-                      color: Colors.orange.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
-                      child: ListTile(
-                        leading: const Icon(Icons.cloud_off_rounded,
-                            color: Colors.orange),
-                        title: const Text('Conteúdo offline'),
-                        subtitle: Text(
-                          vm.cacheSyncedAt == null
-                              ? 'Exibindo a última versão salva neste dispositivo.'
-                              : 'Última sincronização: ${vm.cacheSyncedAt!.toLocal()}',
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.refresh_rounded),
-                          onPressed: vm.reload,
-                        ),
-                      ),
+                    child: AppStatusBanner(
+                      title: 'Conteúdo offline',
+                      subtitle: vm.cacheSyncedAt == null
+                          ? 'Exibindo a última versão salva neste dispositivo.'
+                          : 'Última sincronização: ${vm.cacheSyncedAt!.toLocal()}',
+                      tone: AppStatusBannerTone.warning,
+                      icon: Icons.cloud_off_rounded,
+                      onAction: vm.reload,
+                      actionTooltip: 'Atualizar',
                     ),
                   ),
                 ),
               if (vm.categories.isEmpty && !_canManageLessons)
-                const SliverFillRemaining(child: _EmptyState())
+                const SliverFillRemaining(
+                  child: AppEmptyState(
+                    icon: Icons.school_outlined,
+                    title: 'Nenhuma lição disponível',
+                    message: 'Novas aulas serão disponibilizadas em breve.',
+                  ),
+                )
               else ...[
                 if (vm.categories.isNotEmpty) _ContinueLearningSection(vm: vm),
                 _LearningPathSection(
@@ -1603,101 +1605,3 @@ Future<void> _deleteLesson(
   );
 }
 
-// ─── Estados auxiliares ───────────────────────────────────────────────────────
-
-class _LoadingState extends StatelessWidget {
-  const _LoadingState();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('Carregando lições...'),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _ErrorState({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.wifi_off_rounded,
-                size: 64, color: scheme.onSurface.withValues(alpha: 0.3)),
-            const SizedBox(height: 16),
-            Text(
-              'Não foi possível carregar',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: scheme.onSurface.withValues(alpha: 0.55),
-                  fontSize: 13),
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Tentar novamente'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.school_outlined,
-                size: 72, color: scheme.onSurface.withValues(alpha: 0.2)),
-            const SizedBox(height: 16),
-            Text(
-              'Nenhuma lição disponível',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(color: scheme.onSurface.withValues(alpha: 0.5)),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'As lições serão adicionadas em breve.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: scheme.onSurface.withValues(alpha: 0.4), fontSize: 13),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

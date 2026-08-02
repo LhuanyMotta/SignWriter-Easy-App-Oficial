@@ -196,6 +196,9 @@ void main() {
         'category_id': 'cat-1',
         'status': 'completed',
         'best_score': 0.8,
+        // Denominador necessário: sem questões a nota é 0 (leitura, não 100%).
+        'total_questions': 100,
+        'correct_answers': 80,
         'attempts': 2,
         'last_block_id': 'sec-1-text',
         'completed_at': '2026-07-01T10:00:00Z',

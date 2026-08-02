@@ -5,6 +5,7 @@ import '../models/lesson_category_model.dart';
 import '../models/lesson_model.dart';
 import '../services/learning_progress_repository.dart';
 import '../services/learning_repository.dart';
+import '../utils/friendly_error.dart';
 
 class LearnPracticeViewModel extends ChangeNotifier {
   LearnPracticeViewModel({
@@ -83,7 +84,7 @@ class LearnPracticeViewModel extends ChangeNotifier {
       }
       _progress = await _progressRepository.loadProgress();
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = friendlyError(e);
       _categories = [];
     } finally {
       _isLoading = false;
@@ -169,11 +170,11 @@ class LearnPracticeViewModel extends ChangeNotifier {
   }
 
   /// Primeira lição incompleta no percurso (Continuar aprendendo).
-  /// Em modo aluno ignora rascunhos; com includeDrafts, também.
+  /// Só considera aulas published (ignora draft, review e archived).
   ({LessonCategoryModel category, LessonModel lesson})? nextLessonTarget() {
     for (final category in _categories) {
       for (final lesson in category.lessons) {
-        if (lesson.isDraft) continue;
+        if (!lesson.isPublished) continue;
         if (!isLessonCompleted(lesson.id)) {
           return (category: category, lesson: lesson);
         }

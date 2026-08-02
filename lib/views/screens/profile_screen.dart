@@ -11,6 +11,9 @@ import '../../theme/adaptive_nav_scaffold.dart';
 import '../../theme/responsive_content.dart';
 import '../../l10n/l10n.dart';
 import '../../routes/app_routes.dart';
+import '../widgets/states/app_error_state.dart';
+import '../widgets/states/app_loading_state.dart';
+import '../widgets/states/app_status_banner.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -50,12 +53,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
           maxWidth: 720,
           child: Consumer<ProfileViewModel>(
             builder: (context, vm, _) {
+              if (vm.isLoading && vm.userData == null) {
+                return const AppLoadingState(message: 'Carregando perfil...');
+              }
               if (vm.userData == null) {
-                return Center(child: CircularProgressIndicator(color: _primary));
+                return AppErrorState(
+                  message: vm.errorMessage ??
+                      'Não foi possível carregar o perfil.',
+                  onRetry: vm.loadInitialData,
+                );
               }
               return ListView(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
                 children: [
+                  if (vm.errorMessage != null) ...[
+                    AppStatusBanner(
+                      title: vm.errorMessage!,
+                      tone: AppStatusBannerTone.warning,
+                      icon: Icons.warning_amber_rounded,
+                      onAction: vm.loadInitialData,
+                      actionTooltip: 'Tentar novamente',
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   _heroCard(vm),
                   const SizedBox(height: 20),
                   _bioCard(vm),
@@ -403,9 +423,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           );
           if (confirmed == true && mounted) {
             final ok = await vm.logout();
-            if (ok && mounted) {
+            if (!mounted) return;
+            if (ok) {
               Navigator.of(context)
                   .pushNamedAndRemoveUntil(AppRoutes.auth, (_) => false);
+            } else {
+              _snack(
+                vm.errorMessage ?? 'Não foi possível sair. Tente novamente.',
+                false,
+              );
             }
           }
         },
@@ -572,7 +598,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   if (!mounted) return;
                   Navigator.pop(sheetCtx);
                   _snack(
-                    ok ? 'Perfil atualizado!' : 'Erro: ${vm.errorMessage ?? "verifique a conexão"}',
+                    ok
+                        ? 'Perfil atualizado!'
+                        : (vm.errorMessage ??
+                            'Não foi possível salvar. Tente novamente.'),
                     ok,
                   );
                 },

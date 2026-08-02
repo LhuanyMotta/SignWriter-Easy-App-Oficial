@@ -9,6 +9,7 @@ import 'home_screen.dart';
 import '../widgets/app_logo.dart';
 import '../accessibility_settings_view.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_theme.dart';
 import '../../theme/responsive.dart';
 import '../../l10n/l10n.dart';
 
@@ -68,14 +69,27 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     final isWide = Responsive.isWide(context);
+    final scheme = Theme.of(context).colorScheme;
 
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: scheme.surface,
         body: isWide ? _buildWideLayout(context) : _buildFormBody(context),
       ),
     );
+  }
+
+  AppThemeTokens _tokens(BuildContext context) {
+    return Theme.of(context).extension<AppThemeTokens>() ??
+        const AppThemeTokens(
+          spacingScale: 1,
+          contrastLevel: 1,
+          surface: Colors.white,
+          surfaceMuted: Color(0xFFF8FAFC),
+          onSurfaceMuted: Color(0xFF4B5563),
+          border: Color(0xFFD1D5DB),
+        );
   }
 
   /// Layout de Web/desktop: painel de marca à esquerda (ocupando o espaço
@@ -156,31 +170,41 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           ),
         ),
         Expanded(
-          child: Container(
-            color: const Color(0xFFF5F7FB),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 480),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(vertical: 48),
-                  child: Container(
-                    padding: const EdgeInsets.all(40),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.08),
-                          blurRadius: 32,
-                          offset: const Offset(0, 12),
+          child: Builder(
+            builder: (context) {
+              final scheme = Theme.of(context).colorScheme;
+              final tokens = _tokens(context);
+              final isDark = scheme.brightness == Brightness.dark;
+              return Container(
+                color: tokens.surfaceMuted,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(vertical: 48),
+                      child: Container(
+                        padding: const EdgeInsets.all(40),
+                        decoration: BoxDecoration(
+                          color: scheme.surface,
+                          borderRadius: BorderRadius.circular(24),
+                          border: isDark
+                              ? Border.all(color: tokens.border.withValues(alpha: 0.5))
+                              : null,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+                              blurRadius: 32,
+                              offset: const Offset(0, 12),
+                            ),
+                          ],
                         ),
-                      ],
+                        child: _buildFormCard(context),
+                      ),
                     ),
-                    child: _buildFormCard(context),
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ),
       ],
@@ -188,10 +212,11 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildFormBody(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final tokens = _tokens(context);
+
     return SafeArea(
-  child: Stack(
-    children: [
-      Column(
+      child: Column(
         children: [
           Padding(
             padding: AppSpacing.symmetric(context, horizontal: 24.0, vertical: 16.0),
@@ -199,23 +224,23 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
               children: [
                 SizedBox(height: AppSpacing.value(context, 40)),
                 const AppLogo(
-                              size: 80,
-                              colored: true,
-                              showText: false,
-                            ),
+                  size: 80,
+                  colored: true,
+                  showText: false,
+                ),
                 SizedBox(height: AppSpacing.value(context, 20)),
                 Text(
                   context.l10n.appTitle,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF2D78BB),
+                        color: scheme.primary,
                       ),
                 ),
                 SizedBox(height: AppSpacing.value(context, 8)),
                 Text(
                   context.l10n.authSubtitle,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[600],
+                        color: tokens.onSurfaceMuted,
                       ),
                 ),
                 SizedBox(height: AppSpacing.value(context, 32)),
@@ -235,14 +260,14 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           ),
         ],
       ),
-    ],
-  ),
-);
+    );
   }
 
   /// Mesmo conteúdo de formulário do mobile, mas sem o SafeArea/Stack
   /// externo — usado dentro do card centralizado da tela larga.
   Widget _buildFormCard(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -250,7 +275,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           context.l10n.appTitle,
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF2D78BB),
+                color: scheme.primary,
               ),
         ),
         const SizedBox(height: 24),
@@ -270,21 +295,24 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildTabBarChrome(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final tokens = _tokens(context);
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: tokens.surfaceMuted,
         borderRadius: BorderRadius.circular(12),
       ),
       child: TabBar(
         controller: _tabController,
         dividerColor: Colors.transparent,
         indicator: BoxDecoration(
-          color: const Color(0xFF2D78BB),
+          color: scheme.primary,
           borderRadius: BorderRadius.circular(12),
         ),
         indicatorSize: TabBarIndicatorSize.tab,
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.grey[600],
+        labelColor: scheme.onPrimary,
+        unselectedLabelColor: tokens.onSurfaceMuted,
         labelStyle: const TextStyle(
           fontWeight: FontWeight.w600,
           fontSize: 16,
@@ -351,7 +379,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 child: Text(
                   context.l10n.forgotPassword,
                   style: TextStyle(
-                    color: const Color(0xFF2D78BB),
+                    color: Theme.of(context).colorScheme.primary,
                     fontSize: 14,
                   ),
                 ),
@@ -361,26 +389,27 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             
             Consumer<AuthViewModel>(
               builder: (context, viewModel, child) {
+                final scheme = Theme.of(context).colorScheme;
                 return SizedBox(
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
                     onPressed: viewModel.isLoading ? null : () => _handleLogin(viewModel, context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2D78BB),
-                      foregroundColor: Colors.white,
+                      backgroundColor: scheme.primary,
+                      foregroundColor: scheme.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       elevation: 2,
                     ),
                     child: viewModel.isLoading
-                        ? const SizedBox(
+                        ? SizedBox(
                             height: 24,
                             width: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(scheme.onPrimary),
                             ),
                           )
                         : Row(
@@ -494,26 +523,27 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             
             Consumer<AuthViewModel>(
               builder: (context, viewModel, child) {
+                final scheme = Theme.of(context).colorScheme;
                 return SizedBox(
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
                     onPressed: viewModel.isLoading ? null : () => _handleSignup(viewModel, context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2D78BB),
-                      foregroundColor: Colors.white,
+                      backgroundColor: scheme.primary,
+                      foregroundColor: scheme.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       elevation: 2,
                     ),
                     child: viewModel.isLoading
-                        ? const SizedBox(
+                        ? SizedBox(
                             height: 24,
                             width: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(scheme.onPrimary),
                             ),
                           )
                         : Row(
@@ -556,6 +586,9 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
+    final scheme = Theme.of(context).colorScheme;
+    final tokens = _tokens(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -564,7 +597,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Colors.grey[700],
+            color: tokens.onSurfaceMuted,
           ),
         ),
         SizedBox(height: AppSpacing.value(context, 6)),
@@ -573,36 +606,34 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           obscureText: isPassword,
           keyboardType: keyboardType,
           validator: validator,
-          style: const TextStyle(
-  color: Color(0xFF333333),
-),
-          decoration: InputDecoration(hintStyle: const TextStyle(
-  color: Color(0xFF666666),
-),
+          style: TextStyle(color: scheme.onSurface),
+          cursorColor: scheme.primary,
+          decoration: InputDecoration(
+            hintStyle: TextStyle(color: tokens.onSurfaceMuted.withValues(alpha: 0.75)),
             hintText: hintText,
-            prefixIcon: Icon(icon, color: const Color(0xFF2D78BB)),
+            prefixIcon: Icon(icon, color: scheme.primary),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderSide: BorderSide(color: tokens.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderSide: BorderSide(color: tokens.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF2D78BB), width: 2),
+              borderSide: BorderSide(color: scheme.primary, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.red[300]!),
+              borderSide: BorderSide(color: scheme.error),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.red[400]!, width: 2),
+              borderSide: BorderSide(color: scheme.error, width: 2),
             ),
             filled: true,
-            fillColor: Colors.grey[50],
+            fillColor: tokens.surfaceMuted,
             contentPadding: AppSpacing.symmetric(context, horizontal: 16, vertical: 18),
           ),
         ),
@@ -611,12 +642,14 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildDivider() {
+    final tokens = _tokens(context);
+
     return Row(
       children: [
         Expanded(
           child: Container(
             height: 1,
-            color: Colors.grey[300],
+            color: tokens.border,
           ),
         ),
         Padding(
@@ -624,7 +657,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           child: Text(
             context.l10n.orLabel,
             style: TextStyle(
-              color: Colors.grey[600],
+              color: tokens.onSurfaceMuted,
               fontSize: 14,
             ),
           ),
@@ -632,7 +665,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         Expanded(
           child: Container(
             height: 1,
-            color: Colors.grey[300],
+            color: tokens.border,
           ),
         ),
       ],
@@ -640,9 +673,10 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildSocialLoginButtons() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Column(
       children: [
-        // Botão Google com fundo AZUL sólido e G branco
         SizedBox(
           width: double.infinity,
           height: 56,
@@ -667,15 +701,15 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 messenger.showSnackBar(
                   SnackBar(
                     content: Text(_viewModel.error!),
-                    backgroundColor: Colors.red,
+                    backgroundColor: scheme.error,
                     duration: const Duration(seconds: 3),
                   ),
                 );
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2D78BB),
-              foregroundColor: Colors.white,
+              backgroundColor: scheme.primary,
+              foregroundColor: scheme.onPrimary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -684,13 +718,12 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Ícone do Google - apenas o G branco
                 Text(
                   'G',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: scheme.onPrimary,
                   ),
                 ),
                 SizedBox(width: AppSpacing.value(context, 12)),
@@ -699,7 +732,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: Colors.white,
+                    color: scheme.onPrimary,
                   ),
                 ),
               ],
@@ -709,7 +742,6 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         SizedBox(height: AppSpacing.value(context, 12)),
         
         if (!kIsWeb) ...[
-          // Botão Apple com fundo AZUL sólido
           SizedBox(
             width: double.infinity,
             height: 56,
@@ -734,15 +766,15 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                   messenger.showSnackBar(
                     SnackBar(
                       content: Text(_viewModel.error!),
-                      backgroundColor: Colors.red,
+                      backgroundColor: scheme.error,
                       duration: const Duration(seconds: 3),
                     ),
                   );
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2D78BB),
-                foregroundColor: Colors.white,
+                backgroundColor: scheme.primary,
+                foregroundColor: scheme.onPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -751,14 +783,14 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.apple, size: 24, color: Colors.white),
+                  Icon(Icons.apple, size: 24, color: scheme.onPrimary),
                   SizedBox(width: AppSpacing.value(context, 12)),
                   Text(
                     context.l10n.continueWithApple,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: Colors.white,
+                      color: scheme.onPrimary,
                     ),
                   ),
                 ],

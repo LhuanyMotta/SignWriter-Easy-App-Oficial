@@ -117,7 +117,6 @@ class MyApp extends StatelessWidget {
     return Consumer<ProfileViewModel>(
       builder: (context, profileViewModel, child) {
         final themeMode = profileViewModel.flutterThemeMode;
-        final fontScale = profileViewModel.fontSize;
 
         return MaterialApp(
           title: 'SignWriter Fácil',
@@ -135,13 +134,11 @@ GlobalMaterialLocalizations.delegate,
   GlobalCupertinoLocalizations.delegate,
 ],
           theme: AppTheme.light(
-  fontScale: profileViewModel.fontSize,
   contrastLevel: profileViewModel.contrastLevel,
   spacingScale: profileViewModel.spacing,
 ),
 
           darkTheme: AppTheme.dark(
-  fontScale: profileViewModel.fontSize,
   contrastLevel: profileViewModel.contrastLevel,
   spacingScale: profileViewModel.spacing,
 ),

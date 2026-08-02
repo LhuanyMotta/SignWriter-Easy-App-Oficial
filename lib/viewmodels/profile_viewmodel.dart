@@ -7,6 +7,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../utils/friendly_error.dart';
+
 enum AppThemeMode {
   light,
   dark,
@@ -78,8 +80,13 @@ Locale get locale {
   }
 
   Future<void> loadInitialData() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
     await _loadPreferences();
     await _loadUserData();
+    _isLoading = false;
+    notifyListeners();
   }
 
   Future<void> _loadUserData() async {
@@ -88,7 +95,7 @@ Locale get locale {
 
     if (user == null) {
       _userData = null;
-      notifyListeners();
+      _errorMessage = 'Sua sessão expirou. Entre novamente.';
       return;
     }
 
@@ -118,7 +125,6 @@ Locale get locale {
     }
 
     _errorMessage = null;
-    notifyListeners();
   } catch (e) {
     final user = _supabase.auth.currentUser;
 
@@ -132,8 +138,7 @@ Locale get locale {
       'avatar_url': user?.userMetadata?['avatar_url'],
     };
 
-    _errorMessage = 'Erro ao carregar dados: $e';
-    notifyListeners();
+    _errorMessage = friendlyError(e);
   }
 }
 
@@ -174,21 +179,23 @@ Locale get locale {
     notifyListeners();
   }
 
-Future<void> setThemeMode(
-  AppThemeMode mode,
-) async {
-  _themeMode = mode;
+  Future<void> setThemeMode(AppThemeMode mode) async {
+    if (_themeMode == mode) return;
 
-  await _savePreferences();
-
-  notifyListeners();
-}
+    _themeMode = mode;
+    await _savePreferences();
+    notifyListeners();
+  }
 
   Future<void> setLanguage(String value) async {
     if (!availableLanguages.contains(value)) return;
+    if (_language == value) return;
 
     _language = value;
     await _savePreferences();
+    // Troca de locale reconstrói o MaterialApp; notifica no próximo frame
+    // para evitar conflitos com overlays/menus ainda em fechamento.
+    await Future<void>.delayed(Duration.zero);
     notifyListeners();
   }
 
@@ -237,7 +244,7 @@ Future<void> setThemeMode(
       final user = _supabase.auth.currentUser;
 
       if (user == null) {
-        _errorMessage = 'Usuário não autenticado';
+        _errorMessage = 'Sua sessão expirou. Entre novamente.';
         _isLoading = false;
         notifyListeners();
         return false;
@@ -263,7 +270,7 @@ Future<void> setThemeMode(
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = 'Erro ao atualizar perfil: $e';
+      _errorMessage = friendlyError(e);
       _isLoading = false;
       notifyListeners();
       return false;
@@ -278,7 +285,7 @@ Future<void> setThemeMode(
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        _errorMessage = 'Usuário não autenticado';
+        _errorMessage = 'Sua sessão expirou. Entre novamente.';
         _isLoading = false;
         notifyListeners();
         return false;
@@ -341,7 +348,7 @@ Future<void> setThemeMode(
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = 'Erro ao remover foto: $e';
+      _errorMessage = friendlyError(e);
       _isLoading = false;
       notifyListeners();
       return false;
@@ -363,7 +370,7 @@ Future<void> setThemeMode(
 
       return await _uploadPickedImage(pickedImage);
     } catch (e) {
-      _errorMessage = 'Erro ao selecionar imagem: $e';
+      _errorMessage = friendlyError(e);
       notifyListeners();
       return false;
     }
@@ -381,7 +388,7 @@ Future<void> setThemeMode(
       if (response.isEmpty) return false;
 
       if (response.exception != null) {
-        _errorMessage = 'Erro ao recuperar imagem: ${response.exception}';
+        _errorMessage = friendlyError(response.exception!);
         notifyListeners();
         return false;
       }
@@ -391,7 +398,7 @@ Future<void> setThemeMode(
 
       return await _uploadPickedImage(file);
     } catch (e) {
-      _errorMessage = 'Erro ao recuperar imagem: $e';
+      _errorMessage = friendlyError(e);
       notifyListeners();
       return false;
     }
@@ -405,7 +412,7 @@ Future<void> setThemeMode(
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        _errorMessage = 'Usuário não autenticado';
+        _errorMessage = 'Sua sessão expirou. Entre novamente.';
         _isLoading = false;
         notifyListeners();
         return false;
@@ -457,14 +464,17 @@ Future<void> setThemeMode(
       }
 
       if (!dbOk) {
-        _errorMessage = 'Foto enviada mas erro ao salvar no banco: $dbError';
+        _errorMessage = friendlyError(dbError);
+        _isLoading = false;
+        notifyListeners();
+        return false;
       }
 
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = 'Erro ao enviar imagem: $e';
+      _errorMessage = friendlyError(e);
       _isLoading = false;
       notifyListeners();
       return false;
@@ -477,7 +487,7 @@ Future<void> setThemeMode(
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = 'Erro ao fazer logout: $e';
+      _errorMessage = friendlyError(e);
       notifyListeners();
       return false;
     }
@@ -526,7 +536,7 @@ Future<void> setThemeMode(
       final user = _supabase.auth.currentUser;
 
       if (user == null) {
-        _errorMessage = 'Usuário não autenticado';
+        _errorMessage = 'Sua sessão expirou. Entre novamente.';
         _isLoading = false;
         notifyListeners();
         return false;
@@ -540,7 +550,7 @@ Future<void> setThemeMode(
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = 'Erro ao excluir conta: $e';
+      _errorMessage = friendlyError(e);
       _isLoading = false;
       notifyListeners();
       return false;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/sign_model.dart';
+import '../utils/friendly_error.dart';
 
 class DictionaryViewModel extends ChangeNotifier {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -13,6 +14,7 @@ class DictionaryViewModel extends ChangeNotifier {
   bool _showFavoritesOnly = false;
 
   bool _isLoading = false;
+  String? _loadError;
 
   String _allLabel = 'All';
   List<String> _categories = ['All'];
@@ -22,6 +24,7 @@ class DictionaryViewModel extends ChangeNotifier {
   String get selectedCategory => _selectedCategory;
   bool get showFavoritesOnly => _showFavoritesOnly;
   bool get isLoading => _isLoading;
+  String? get loadError => _loadError;
   List<String> get categories => _categories;
 
   void setAllLabel(String label) {
@@ -33,11 +36,12 @@ class DictionaryViewModel extends ChangeNotifier {
   }
 
   DictionaryViewModel() {
-    _loadSigns();
+    loadSigns();
   }
 
-  Future<void> _loadSigns() async {
+  Future<void> loadSigns() async {
     _isLoading = true;
+    _loadError = null;
     notifyListeners();
 
     try {
@@ -72,15 +76,14 @@ class DictionaryViewModel extends ChangeNotifier {
 
       _categories = [_allLabel, ...categorySet];
       _filteredSigns = List.from(_signs);
-
-      _isLoading = false;
-      notifyListeners();
+      _loadError = null;
     } catch (e) {
       debugPrint('Erro ao carregar dicionário: $e');
-
-      _isLoading = false;
       _signs = [];
       _filteredSigns = [];
+      _loadError = friendlyError(e);
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }

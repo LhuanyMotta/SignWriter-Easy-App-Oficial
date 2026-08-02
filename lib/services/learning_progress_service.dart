@@ -42,10 +42,14 @@ class LearningProgressService {
     final prefs = await SharedPreferences.getInstance();
     final current = await loadProgress();
     final previous = current.lessonProgress(lessonId);
-    final bestScore = totalQuestions > 0
+    final currentScore = totalQuestions > 0
         ? (correctAnswers / totalQuestions).clamp(0.0, 1.0)
-        : 1.0;
-    final previousBest = previous?.bestScore ?? 0;
+        : 0.0;
+    final previousBest = previous?.bestScore ?? 0.0;
+    // Sem exercícios: concluída sem nota (0), nunca 100%.
+    final bestScore = totalQuestions > 0
+        ? (currentScore > previousBest ? currentScore : previousBest)
+        : 0.0;
 
     final updated = current.upsertLesson(
       LessonProgressEntry(
@@ -57,7 +61,7 @@ class LearningProgressService {
         attempts: (previous?.attempts ?? 0) + 1,
         completedAt: DateTime.now(),
         status: 'completed',
-        bestScore: bestScore > previousBest ? bestScore : previousBest,
+        bestScore: bestScore,
         lastBlockId: lastBlockId ?? previous?.lastBlockId,
         updatedAt: DateTime.now(),
       ),
