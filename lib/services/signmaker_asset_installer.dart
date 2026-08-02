@@ -12,7 +12,7 @@ class SignMakerAssetInstaller {
   SignMakerAssetInstaller._();
 
   /// Incrementar ao alterar host/index de integração para forçar re-cópia.
-  static const _versionMarker = '1.2.1-png1';
+  static const _versionMarker = '1.2.1-colorize2';
   static Directory? _cachedDir;
 
   static Future<Directory> ensureBundleDirectory() async {

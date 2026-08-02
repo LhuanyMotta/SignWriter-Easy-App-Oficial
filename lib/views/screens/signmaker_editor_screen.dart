@@ -65,12 +65,19 @@ class _SignMakerEditorScreenState extends State<SignMakerEditorScreen> {
         }
         try {
           if (fsw && typeof ssw !== 'undefined' && typeof ssw.png === 'function') {
-            png = ssw.png(fsw, {
+            var styling = '';
+            try {
+              styling = signmaker.vm.styling() || '';
+            } catch (eStyle) {
+              styling = '';
+            }
+            png = ssw.png(fsw + styling, {
               size: 1,
               pad: 8,
               line: 'black',
               fill: 'white',
-              back: 'white'
+              back: 'white',
+              colorize: true
             }) || null;
             // Limite ~400KB de data URL para o bridge JS ↔ Flutter.
             if (png && png.length > 400000) png = null;

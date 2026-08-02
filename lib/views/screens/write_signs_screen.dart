@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -54,88 +55,35 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
                 ),
               ],
             ),
-            body: ResponsiveContent(child: SafeArea(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header como card com fundo primário — alinhado com o
-                  // padrão das outras telas (mesma aparência do "Aprender")
-                  Container(
-                    margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Theme.of(context).colorScheme.primary,
-                          Theme.of(context).colorScheme.primary.withValues(alpha: 0.80),
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Meus sinais',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Crie e salve seus sinais para editar quando quiser.',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.white70,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        _buildSummaryRow(viewModel),
-                      ],
-                    ),
-                  ),
-                  // Busca, filtros e lista — padding normal
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSearchField(),
-                          const SizedBox(height: 12),
-                          _buildStatusFilters(viewModel),
-                          const SizedBox(height: 12),
-                          if (viewModel.statusMessage.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Text(
-                                viewModel.statusMessage,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                              ),
+            body: ResponsiveContent(
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSearchField(),
+                      const SizedBox(height: 12),
+                      if (viewModel.statusMessage.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            viewModel.statusMessage,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
                             ),
-                          Expanded(
-                            child: viewModel.isLoading
-                                ? const Center(child: CircularProgressIndicator())
-                                : _buildSignsList(viewModel),
                           ),
-                        ],
+                        ),
+                      Expanded(
+                        child: viewModel.isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : _buildSignsList(viewModel),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            )),
+            ),
             floatingActionButton: FloatingActionButton.extended(
               onPressed: () => _openEditor(),
               icon: const Icon(Icons.add),
@@ -144,28 +92,6 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
           );
         },
       ),
-    );
-  }
-
-  Widget _buildSummaryRow(WriteSignsViewModel viewModel) {
-    return Row(
-      children: [
-        Expanded(
-          child: _SummaryCard(
-            label: 'Sinais',
-            value: viewModel.draftSigns.length.toString(),
-            icon: Icons.edit_note,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _SummaryCard(
-            label: 'Publicados',
-            value: viewModel.publishedSigns.length.toString(),
-            icon: Icons.public,
-          ),
-        ),
-      ],
     );
   }
 
@@ -183,29 +109,6 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
               ),
         border: const OutlineInputBorder(),
       ),
-    );
-  }
-
-  Widget _buildStatusFilters(WriteSignsViewModel viewModel) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        _buildStatusChip(viewModel, 'all', 'Todos'),
-        _buildStatusChip(viewModel, WrittenSignModel.statusDraft, 'Sinais'),
-      ],
-    );
-  }
-
-  Widget _buildStatusChip(
-    WriteSignsViewModel viewModel,
-    String value,
-    String label,
-  ) {
-    return ChoiceChip(
-      label: Text(label),
-      selected: viewModel.selectedStatus == value,
-      onSelected: (_) => viewModel.updateStatusFilter(value),
     );
   }
 
@@ -316,6 +219,9 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
                 ),
                 TextButton.icon(
                   onPressed: () => _confirmDelete(sign),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.error,
+                  ),
                   icon: const Icon(Icons.delete_outline),
                   label: const Text('Excluir'),
                 ),
@@ -377,20 +283,8 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Excluir sinal'),
-        content: Text('Deseja remover "${sign.title}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Excluir'),
-          ),
-        ],
-      ),
+      barrierDismissible: false,
+      builder: (context) => _DeleteSignConfirmDialog(signTitle: sign.title),
     );
 
     if (confirmed != true) return;
@@ -417,43 +311,99 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
   }
 }
 
-class _SummaryCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
+class _DeleteSignConfirmDialog extends StatefulWidget {
+  final String signTitle;
 
-  const _SummaryCard({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
+  const _DeleteSignConfirmDialog({required this.signTitle});
+
+  @override
+  State<_DeleteSignConfirmDialog> createState() =>
+      _DeleteSignConfirmDialogState();
+}
+
+class _DeleteSignConfirmDialogState extends State<_DeleteSignConfirmDialog> {
+  static const int _seconds = 10;
+  int _remaining = _seconds;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (_remaining <= 1) {
+        timer.cancel();
+        setState(() => _remaining = 0);
+        return;
+      }
+      setState(() => _remaining -= 1);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+    final error = Theme.of(context).colorScheme.error;
+    final canConfirm = _remaining <= 0;
+
+    return AlertDialog(
+      title: Text(
+        'Excluir sinal',
+        style: TextStyle(color: error, fontWeight: FontWeight.bold),
       ),
-      child: Row(
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+          Text('Deseja remover "${widget.signTitle}"?'),
+          const SizedBox(height: 12),
+          Text(
+            'Esta ação é permanente e não tem volta.',
+            style: TextStyle(
+              color: error,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Center(
+            child: Text(
+              canConfirm
+                  ? 'Pode confirmar a exclusão.'
+                  : 'Aguarde $_remaining s para confirmar...',
+              style: TextStyle(
+                color: error,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
-              Text(label),
-            ],
+            ),
           ),
         ],
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: canConfirm ? () => Navigator.of(context).pop(true) : null,
+          style: FilledButton.styleFrom(
+            backgroundColor: error,
+            foregroundColor: Theme.of(context).colorScheme.onError,
+            disabledBackgroundColor: error.withValues(alpha: 0.35),
+            disabledForegroundColor:
+                Theme.of(context).colorScheme.onError.withValues(alpha: 0.7),
+          ),
+          child: Text(canConfirm ? 'Excluir' : 'Excluir ($_remaining)'),
+        ),
+      ],
     );
   }
 }

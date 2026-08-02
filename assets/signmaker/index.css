@@ -139,10 +139,6 @@ div.btn svg, div.cmd svg, div.cmdslim svg, div.cmdhalf svg, div.cmdrow svg, div.
   max-height: 90%;
   cursor: default;
 }
-div.sort svg g text.sym-line {
-  fill: gray !important;
-}
-
 div.disabled {
   color: gray;
 }
@@ -282,8 +278,10 @@ div.row div svg, div.cmdrow svg, div.cmdfull svg, div.cmdlong svg {
   top:0;
   left:0;
 }
-#signbox div.selected svg g text.sym-line {
-  fill: blue !important;
+#signbox div.selected {
+  outline: 2px solid #0066ff;
+  outline-offset: 1px;
+  border-radius: 2px;
 }
 #command {
   float:left;
@@ -388,14 +386,14 @@ body.inverse div.cmd.unselected:hover p {
 body.inverse div.disabled svg g text.sym-line, body.inverse div.cmd.unselected svg g text.sym-line{
   fill: gray !important;
 }
-body.inverse div.btn svg g text.sym-line, body.inverse div.cmd.unselected:hover svg g text.sym-line, body.inverse div.cmd svg g text.sym-line, body.inverse div.cmdslim svg g text.sym-line, body.inverse div.cmdhalf svg g text.sym-line, body.inverse div.cmdrow svg g text.sym-line, body.inverse div.cmdfull svg g text.sym-line, body.inverse div.cmdlong svg g text.sym-line, body.inverse #header p svg g text.sym-line, body.inverse div.row div svg g text.sym-line, body.inverse #signbox div svg g text.sym-line {
+body.inverse div.btn svg g text.sym-line, body.inverse div.cmd.unselected:hover svg g text.sym-line, body.inverse div.cmd svg g text.sym-line, body.inverse div.cmdslim svg g text.sym-line, body.inverse div.cmdhalf svg g text.sym-line, body.inverse div.cmdrow svg g text.sym-line, body.inverse div.cmdfull svg g text.sym-line, body.inverse div.cmdlong svg g text.sym-line, body.inverse #header p svg g text.sym-line {
   fill: white !important;
 }
-body.inverse div.btn svg g text.sym-fill, body.inverse div.cmd svg g text.sym-fill, body.inverse div.cmdslim svg g text.sym-fill, body.inverse div.cmdhalf svg g text.sym-fill, body.inverse div.cmdrow svg g text.sym-fill, body.inverse div.cmdfull svg g text.sym-fill, body.inverse div.cmdlong svg g text.sym-fill, body.inverse #header p svg g text.sym-fill, body.inverse div.row div svg g text.sym-fill, body.inverse div.sort svg g text.sym-fill, body.inverse #signbox div svg g text.sym-fill {
+body.inverse div.btn svg g text.sym-fill, body.inverse div.cmd svg g text.sym-fill, body.inverse div.cmdslim svg g text.sym-fill, body.inverse div.cmdhalf svg g text.sym-fill, body.inverse div.cmdrow svg g text.sym-fill, body.inverse div.cmdfull svg g text.sym-fill, body.inverse div.cmdlong svg g text.sym-fill, body.inverse #header p svg g text.sym-fill {
   fill: black !important;
 }
-body.inverse #signbox div.selected svg g text.sym-line{
-  fill: yellow !important;
+body.inverse #signbox div.selected {
+  outline-color: #ffcc00;
 }
 
 body.inverse #header p, body.inverse select, body.inverse input, body.inverse div.btn p, body.inverse #search {

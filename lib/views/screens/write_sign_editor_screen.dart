@@ -164,7 +164,32 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: _openSignMaker,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    icon: Icon(hasSign ? Icons.edit : Icons.open_in_new),
+                    label: Text(
+                      hasSign
+                          ? 'Editar sinal no SignMaker'
+                          : 'Abrir editor SignWriting',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 _buildPreviewCard(context, hasSign),
+                if (hasSign) ...[
+                  const SizedBox(height: 8),
+                  SelectableText(
+                    'FSW: $_fsw',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _titleController,
@@ -234,38 +259,6 @@ class _WriteSignEditorScreenState extends State<WriteSignEditorScreen> {
                   ),
                   maxLines: 3,
                 ),
-                const SizedBox(height: 20),
-                Text(
-                  'Escrita SignWriting',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Use o SignMaker oficial (Sutton SignWriting) para montar o sinal. '
-                  'O aplicativo guarda FSW como fonte principal.',
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: _openSignMaker,
-                    icon: Icon(hasSign ? Icons.edit : Icons.open_in_new),
-                    label: Text(
-                      hasSign
-                          ? 'Editar sinal no SignMaker'
-                          : 'Abrir editor SignWriting',
-                    ),
-                  ),
-                ),
-                if (hasSign) ...[
-                  const SizedBox(height: 8),
-                  SelectableText(
-                    'FSW: $_fsw',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,

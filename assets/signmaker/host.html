@@ -98,12 +98,19 @@
     }
     try {
       if (fsw && w.ssw && typeof w.ssw.png === 'function') {
-        png = w.ssw.png(fsw, {
+        var styling = '';
+        try {
+          styling = w.signmaker.vm.styling() || '';
+        } catch (eStyle) {
+          styling = '';
+        }
+        png = w.ssw.png(fsw + styling, {
           size: 1,
           pad: 8,
           line: 'black',
           fill: 'white',
-          back: 'white'
+          back: 'white',
+          colorize: true
         }) || null;
         if (png && png.length > 400000) png = null;
       }

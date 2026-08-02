@@ -362,7 +362,7 @@ signmaker.vm = {
   linecolor: m.prop('black'),
   fillcolor: m.prop('white'),
   backcolor: m.prop(''),
-  colorize: m.prop(''),
+  colorize: m.prop(true),
   center: function(){
     signmaker.vm.fsw(ssw.norm(signmaker.vm.fsw()));
   },
@@ -640,7 +640,7 @@ signmaker.view = function(ctrl){
             draggie.on( 'dragEnd', sbDragEnd );
           }
         }
-      },m.trust(ssw.svg(symbol.key())));
+      },m.trust(ssw.svg(symbol.key(), { colorize: true })));
     })
   ]),
   m('div',{id:"sequence"},
@@ -654,7 +654,7 @@ signmaker.view = function(ctrl){
             draggie.on( 'dragEnd', seqDragEnd );
           }
         }
-      },m.trust(ssw.svg(key)));
+      },m.trust(key ? ssw.svg(key, { colorize: true }) : ''));
     }))
   ];
 
@@ -1065,7 +1065,7 @@ palette.view = function(ctrl){
               draggie.on( 'dragEnd', palDragEnd );
             }
           }
-        },m.trust(ssw.svg(key)));
+        },m.trust(key ? ssw.svg(key, { colorize: true }) : ''));
       }));
     })
   ];
