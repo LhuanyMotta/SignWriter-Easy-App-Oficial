@@ -220,9 +220,11 @@ class _LessonScreenState extends State<LessonScreen> {
 
     String? remoteId;
     var remoteOk = false;
+    var draftPreserved = false;
+    var savedStatus = status;
 
     if (widget.isCreating || widget.lesson.id.isEmpty) {
-      remoteId = await _authoringService.createLesson(
+      final result = await _authoringService.createLesson(
         categoryId: widget.category.id,
         title: title,
         summary: summary,
@@ -231,7 +233,10 @@ class _LessonScreenState extends State<LessonScreen> {
         objectives: objectives,
         blocks: _blocks,
       );
-      remoteOk = remoteId != null;
+      remoteId = result.lessonId;
+      remoteOk = result.isSaved;
+      draftPreserved = result.isDraftPreserved;
+      savedStatus = result.savedStatus;
     } else {
       remoteOk = await _authoringService.updateLesson(
         lessonId: widget.lesson.id,
@@ -249,7 +254,10 @@ class _LessonScreenState extends State<LessonScreen> {
     if (!mounted) return;
     setState(() {
       _saving = false;
-      if (remoteOk) _dirty = false;
+      if (remoteOk || draftPreserved) {
+        _dirty = false;
+        _status = savedStatus;
+      }
     });
 
     final lessonId = remoteId ??
@@ -270,23 +278,26 @@ class _LessonScreenState extends State<LessonScreen> {
       relatedSignIds: widget.lesson.relatedSignIds,
       sources: widget.lesson.sources,
       media: widget.lesson.media,
-      status: status,
+      status: savedStatus,
       version: widget.lesson.version,
     );
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          remoteOk
-              ? (status == 'published'
-                  ? 'Lição publicada.'
-                  : 'Rascunho salvo no banco.')
-              : 'Não foi possível salvar no banco (RLS/rede).',
+          draftPreserved
+              ? 'Conteúdo salvo como rascunho. Não foi possível publicar agora.'
+              : remoteOk
+                  ? (status == 'published'
+                      ? 'Lição publicada.'
+                      : 'Rascunho salvo no banco.')
+                  : 'Não foi possível salvar no banco (RLS/rede).',
         ),
-        backgroundColor: remoteOk ? Colors.green : Colors.orange,
+        backgroundColor:
+            remoteOk && !draftPreserved ? Colors.green : Colors.orange,
       ),
     );
-    if (remoteOk) {
+    if (remoteOk || draftPreserved) {
       Navigator.of(context).pop(savedLesson);
     }
   }

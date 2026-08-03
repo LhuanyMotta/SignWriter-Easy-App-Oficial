@@ -14,10 +14,9 @@ GoogleService-Info.plist
 # Cursor local config (MCP etc.)
 .cursor/
 
-# Markdown (não versionar), exceto allowlist
+# Documentos de planejamento não são versionados
 *.md
 !/README.md
-# Para permitir outro .md no futuro, adicione: !/caminho/arquivo.md
 
 # Miscellaneous
 *.class

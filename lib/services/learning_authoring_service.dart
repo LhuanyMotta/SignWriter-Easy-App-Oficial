@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../models/lesson_block_model.dart';
+import '../models/lesson_save_result.dart';
 
 /// CRUD editorial sobre o CMS (`lesson_blocks`). Escrita sujeita a RLS/`user_roles`.
 class LearningAuthoringService {
@@ -85,13 +86,18 @@ class LearningAuthoringService {
     required String description,
   }) async {
     try {
-      await _supabase.from('lesson_categories').update({
-        'title_pt': title,
-        'description_pt': description,
-        'updated_at': DateTime.now().toUtc().toIso8601String(),
-      }).eq('id', categoryId);
-      return true;
-    } on PostgrestException catch (error, stack) {
+      final updated = await _supabase
+          .from('lesson_categories')
+          .update({
+            'title_pt': title,
+            'description_pt': description,
+            'updated_at': DateTime.now().toUtc().toIso8601String(),
+          })
+          .eq('id', categoryId)
+          .select('id')
+          .maybeSingle();
+      return updated != null;
+    } catch (error, stack) {
       debugPrint('updateCategory: $error\n$stack');
       return false;
     }
@@ -99,20 +105,16 @@ class LearningAuthoringService {
 
   Future<bool> deleteCategory(String categoryId) async {
     try {
-      final lessons = await _supabase
-          .from('lessons')
+      // As relações internas usam ON DELETE CASCADE. O banco executa a
+      // exclusão completa em uma única transação.
+      final deleted = await _supabase
+          .from('lesson_categories')
+          .delete()
+          .eq('id', categoryId)
           .select('id')
-          .eq('category_id', categoryId);
-
-      for (final row in lessons) {
-        final lessonId = row['id']?.toString();
-        if (lessonId == null || lessonId.isEmpty) continue;
-        await deleteLesson(lessonId);
-      }
-
-      await _supabase.from('lesson_categories').delete().eq('id', categoryId);
-      return true;
-    } on PostgrestException catch (error, stack) {
+          .maybeSingle();
+      return deleted != null;
+    } catch (error, stack) {
       debugPrint('deleteCategory: $error\n$stack');
       return false;
     }
@@ -120,19 +122,20 @@ class LearningAuthoringService {
 
   Future<bool> deleteLesson(String lessonId) async {
     try {
-      await _supabase.from('lesson_exercises').delete().eq('lesson_id', lessonId);
-      await _supabase.from('lesson_blocks').delete().eq('lesson_id', lessonId);
-      await _supabase.from('lesson_sources').delete().eq('lesson_id', lessonId);
-      await _supabase.from('lesson_media').delete().eq('lesson_id', lessonId);
-      await _supabase.from('lessons').delete().eq('id', lessonId);
-      return true;
-    } on PostgrestException catch (error, stack) {
+      final deleted = await _supabase
+          .from('lessons')
+          .delete()
+          .eq('id', lessonId)
+          .select('id')
+          .maybeSingle();
+      return deleted != null;
+    } catch (error, stack) {
       debugPrint('deleteLesson: $error\n$stack');
       return false;
     }
   }
 
-  Future<String?> createLesson({
+  Future<LessonSaveResult> createLesson({
     required String categoryId,
     required String title,
     required String summary,
@@ -142,58 +145,128 @@ class LearningAuthoringService {
     List<LessonBlockModel> blocks = const [],
   }) async {
     final user = _supabase.auth.currentUser;
-    if (user == null) return null;
+    if (user == null) return const LessonSaveResult.failed();
 
     final lessonId =
         'les-${DateTime.now().millisecondsSinceEpoch}-${user.id.substring(0, 6)}';
+    final effectiveBlocks = blocks.isNotEmpty
+        ? blocks
+        : [
+            LessonBlockModel(
+              id: '$lessonId-heading',
+              lessonId: lessonId,
+              type: LessonBlockType.heading,
+              title: 'Conteúdo',
+              orderIndex: 0,
+            ),
+            LessonBlockModel(
+              id: '$lessonId-text',
+              lessonId: lessonId,
+              type: LessonBlockType.text,
+              body: body,
+              orderIndex: 1,
+            ),
+          ];
+
+    return runCreateLessonWorkflow(
+      lessonId: lessonId,
+      requestedStatus: status,
+      insertDraft: () async {
+        // Toda nova lição nasce como rascunho. A publicação só acontece
+        // depois que seus blocos foram persistidos com sucesso.
+        await _supabase.from('lessons').insert({
+          'id': lessonId,
+          'category_id': categoryId,
+          'title_pt': title,
+          'title_en': title,
+          'summary_pt': summary,
+          'summary_en': summary,
+          'estimated_minutes': 5,
+          'difficulty_pt': 'Iniciante',
+          'difficulty_en': 'Beginner',
+          'order_index': 999,
+          'status': 'draft',
+          'created_by': user.id,
+          'objectives_pt': objectives,
+          'objectives_en': objectives,
+          'references_pt': <String>[],
+          'related_sign_ids': <String>[],
+        });
+      },
+      saveBlocks: () =>
+          _saveBlocksSafely(lessonId: lessonId, blocks: effectiveBlocks),
+      publishCategory: () => _publishCategory(categoryId),
+      publishLesson: () async {
+        final published = await _supabase
+            .from('lessons')
+            .update({
+              'status': 'published',
+              'published_at': DateTime.now().toUtc().toIso8601String(),
+              'updated_at': DateTime.now().toUtc().toIso8601String(),
+            })
+            .eq('id', lessonId)
+            .select('id')
+            .maybeSingle();
+        if (published == null) {
+          throw StateError(
+              'A publicação da lição não alterou nenhum registro.');
+        }
+      },
+      cleanupIncompleteDraft: () => deleteLesson(lessonId),
+    );
+  }
+
+  @visibleForTesting
+  Future<LessonSaveResult> runCreateLessonWorkflow({
+    required String lessonId,
+    required String requestedStatus,
+    required Future<void> Function() insertDraft,
+    required Future<void> Function() saveBlocks,
+    required Future<void> Function() publishCategory,
+    required Future<void> Function() publishLesson,
+    required Future<bool> Function() cleanupIncompleteDraft,
+  }) async {
+    var draftInserted = false;
+    var blocksSaved = false;
 
     try {
-      await _supabase.from('lessons').insert({
-        'id': lessonId,
-        'category_id': categoryId,
-        'title_pt': title,
-        'title_en': title,
-        'summary_pt': summary,
-        'summary_en': summary,
-        'estimated_minutes': 5,
-        'difficulty_pt': 'Iniciante',
-        'difficulty_en': 'Beginner',
-        'order_index': 999,
-        'status': status,
-        'created_by': user.id,
-        'objectives_pt': objectives,
-        'objectives_en': objectives,
-        'references_pt': <String>[],
-        'related_sign_ids': <String>[],
-      });
+      await insertDraft();
+      draftInserted = true;
+      await saveBlocks();
+      blocksSaved = true;
 
-      final effectiveBlocks = blocks.isNotEmpty
-          ? blocks
-          : [
-              LessonBlockModel(
-                id: '$lessonId-heading',
-                lessonId: lessonId,
-                type: LessonBlockType.heading,
-                title: 'Conteúdo',
-                orderIndex: 0,
-              ),
-              LessonBlockModel(
-                id: '$lessonId-text',
-                lessonId: lessonId,
-                type: LessonBlockType.text,
-                body: body,
-                orderIndex: 1,
-              ),
-            ];
-
-      await _replaceBlocks(lessonId: lessonId, blocks: effectiveBlocks);
-      if (status == 'published') {
-        await _publishCategory(categoryId);
+      if (requestedStatus == 'published') {
+        try {
+          await publishCategory();
+          await publishLesson();
+        } catch (error, stack) {
+          // O conteúdo completo continua disponível ao autor como rascunho.
+          debugPrint('createLesson publicação: $error\n$stack');
+          return LessonSaveResult.draftPreserved(lessonId: lessonId);
+        }
       }
-      return lessonId;
-    } on PostgrestException catch (error, stack) {
+
+      return LessonSaveResult.saved(
+        lessonId: lessonId,
+        status: requestedStatus,
+      );
+    } catch (error, stack) {
       debugPrint('createLesson: $error\n$stack');
-      return null;
+      // Só compensa uma inserção confirmada que ainda não possui todos os
+      // blocos. Uma falha de INSERT nunca pode apagar uma lição homônima.
+      if (draftInserted && !blocksSaved) {
+        try {
+          final cleaned = await cleanupIncompleteDraft();
+          if (!cleaned) {
+            debugPrint('createLesson: não foi possível limpar $lessonId');
+          }
+        } catch (cleanupError, cleanupStack) {
+          debugPrint(
+            'createLesson limpeza: $cleanupError\n$cleanupStack',
+          );
+        }
+      }
+      return const LessonSaveResult.failed();
     }
   }
 
@@ -208,16 +281,6 @@ class LearningAuthoringService {
     List<LessonBlockModel> blocks = const [],
   }) async {
     try {
-      await _supabase.from('lessons').update({
-        'title_pt': title,
-        'summary_pt': summary,
-        'status': status,
-        'objectives_pt': objectives,
-        'updated_at': DateTime.now().toUtc().toIso8601String(),
-        if (status == 'published')
-          'published_at': DateTime.now().toUtc().toIso8601String(),
-      }).eq('id', lessonId);
-
       final effectiveBlocks = blocks.isNotEmpty
           ? blocks
           : [
@@ -230,12 +293,29 @@ class LearningAuthoringService {
               ),
             ];
 
-      await _replaceBlocks(lessonId: lessonId, blocks: effectiveBlocks);
+      // Grava os novos blocos antes de mudar o status da lição. Uma falha
+      // preserva os blocos anteriores e não publica conteúdo incompleto.
+      await _saveBlocksSafely(lessonId: lessonId, blocks: effectiveBlocks);
       if (status == 'published') {
         await _publishCategory(categoryId);
       }
-      return true;
-    } on PostgrestException catch (error, stack) {
+
+      final updated = await _supabase
+          .from('lessons')
+          .update({
+            'title_pt': title,
+            'summary_pt': summary,
+            'status': status,
+            'objectives_pt': objectives,
+            'updated_at': DateTime.now().toUtc().toIso8601String(),
+            if (status == 'published')
+              'published_at': DateTime.now().toUtc().toIso8601String(),
+          })
+          .eq('id', lessonId)
+          .select('id')
+          .maybeSingle();
+      return updated != null;
+    } catch (error, stack) {
       debugPrint('updateLesson: $error\n$stack');
       return false;
     }
@@ -243,30 +323,75 @@ class LearningAuthoringService {
 
   Future<void> _publishCategory(String categoryId) async {
     if (categoryId.isEmpty) return;
-    try {
-      await _supabase.from('lesson_categories').update({
-        'status': 'published',
-        'updated_at': DateTime.now().toUtc().toIso8601String(),
-      }).eq('id', categoryId);
-    } on PostgrestException catch (error, stack) {
-      debugPrint('_publishCategory: $error\n$stack');
+    final published = await _supabase
+        .from('lesson_categories')
+        .update({
+          'status': 'published',
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('id', categoryId)
+        .select('id')
+        .maybeSingle();
+    if (published == null) {
+      throw StateError('A publicação do módulo não alterou nenhum registro.');
     }
   }
 
-  Future<void> _replaceBlocks({
+  Future<void> _saveBlocksSafely({
     required String lessonId,
     required List<LessonBlockModel> blocks,
   }) async {
-    await _supabase.from('lesson_blocks').delete().eq('lesson_id', lessonId);
+    final existingRows = await _supabase
+        .from('lesson_blocks')
+        .select('id')
+        .eq('lesson_id', lessonId);
+    final existingIds = existingRows
+        .map((row) => row['id']?.toString() ?? '')
+        .where((id) => id.isNotEmpty)
+        .toSet();
 
+    final rows = buildBlockRowsForLesson(lessonId: lessonId, blocks: blocks);
+    final desiredIds = rows.map((row) => row['id']!.toString()).toSet();
+
+    // O upsert em lote é uma única instrução no Postgres. Se falhar, os
+    // blocos existentes continuam disponíveis.
+    if (rows.isNotEmpty) {
+      await _supabase.from('lesson_blocks').upsert(rows);
+    }
+
+    // Só remove blocos antigos depois que todos os novos foram gravados.
+    for (final obsoleteId in existingIds.difference(desiredIds)) {
+      final deleted = await _supabase
+          .from('lesson_blocks')
+          .delete()
+          .eq('lesson_id', lessonId)
+          .eq('id', obsoleteId)
+          .select('id')
+          .maybeSingle();
+      if (deleted == null) {
+        throw StateError('O bloco $obsoleteId não pôde ser removido.');
+      }
+    }
+  }
+
+  @visibleForTesting
+  List<Map<String, dynamic>> buildBlockRowsForLesson({
+    required String lessonId,
+    required List<LessonBlockModel> blocks,
+  }) {
     final rows = <Map<String, dynamic>>[];
     for (var i = 0; i < blocks.length; i++) {
       final block = blocks[i];
-      final typeName = block.type == LessonBlockType.unknown
-          ? 'text'
-          : block.type.name;
+      final typeName =
+          block.type == LessonBlockType.unknown ? 'text' : block.type.name;
+      final originalId = block.id.trim();
+      final blockId = originalId.isEmpty
+          ? '$lessonId-block-$i'
+          : originalId.startsWith('$lessonId-')
+              ? originalId
+              : '$lessonId-$originalId';
       rows.add({
-        'id': block.id.isNotEmpty ? block.id : '$lessonId-block-$i',
+        'id': blockId,
         'lesson_id': lessonId,
         'type': typeName,
         'title_pt': block.title,
@@ -286,9 +411,6 @@ class LearningAuthoringService {
         'order_index': block.orderIndex != 0 ? block.orderIndex : i,
       });
     }
-
-    if (rows.isNotEmpty) {
-      await _supabase.from('lesson_blocks').insert(rows);
-    }
+    return rows;
   }
 }
