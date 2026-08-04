@@ -21,12 +21,9 @@ void main() async {
   print('🚀 ============ INICIANDO SIGNWRITER FÁCIL ============');
   
   try {
-    // 1. PRIMEIRO: Carregar o arquivo .env
     print('📁 Carregando configurações do arquivo .env...');
-    
     await dotenv.load(fileName: '.env');
     
-    // 2. SEGUNDO: Pegar as variáveis do .env
     final supabaseUrl = dotenv.env['SUPABASE_URL'];
     final supabaseKey = dotenv.env['SUPABASE_KEY'];
     
@@ -34,7 +31,6 @@ void main() async {
     print('   SUPABASE_URL: ${supabaseUrl != null ? '✅' : '❌'}');
     print('   SUPABASE_KEY: ${supabaseKey != null ? '✅' : '❌'}');
     
-    // 3. VALIDAR: Verificar se as variáveis existem
     if (supabaseUrl == null || supabaseUrl.isEmpty) {
       throw Exception('❌ SUPABASE_URL não encontrada ou vazia no arquivo .env');
     }
@@ -43,13 +39,10 @@ void main() async {
       throw Exception('❌ SUPABASE_KEY não encontrada ou vazia no arquivo .env');
     }
     
-    // Mostrar parte das informações (por segurança)
     print('🔗 Supabase URL: ${supabaseUrl.substring(0, 30)}...');
     print('🔑 Supabase Key: ${supabaseKey.substring(0, 10)}...');
     
-    // 4. TERCEIRO: Inicializar o Supabase com as variáveis
     print('🔌 Inicializando conexão com Supabase...');
-    
     await Supabase.initialize(
       url: supabaseUrl,
       anonKey: supabaseKey,
@@ -58,34 +51,32 @@ void main() async {
     print('✅ Supabase inicializado com sucesso!');
     print('================================================\n');
     
-    // 5. Iniciar o aplicativo
     runApp(
-  MultiProvider(
-    providers: [
-      ChangeNotifierProvider(
-        create: (_) => AuthViewModel(Supabase.instance.client),
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: (_) => AuthViewModel(Supabase.instance.client),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => ProfileViewModel(),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => DictionaryViewModel(),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => LearnPracticeViewModel(),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => TranslateViewModel(),
+          ),
+        ],
+        child: const MyApp(),
       ),
-      ChangeNotifierProvider(
-        create: (_) => ProfileViewModel(),
-      ),
-      ChangeNotifierProvider(
-        create: (_) => DictionaryViewModel(),
-      ),
-      ChangeNotifierProvider(
-        create: (_) => LearnPracticeViewModel(),
-      ),
-      ChangeNotifierProvider(
-        create: (_) => TranslateViewModel(),
-      ),
-    ],
-    child: const MyApp(),
-  ),
-);
+    );
     
   } catch (e) {
     print('❌ ERRO CRÍTICO NA INICIALIZAÇÃO: $e');
     
-    // Dicas para debugging
     print('\n🔧 DICAS PARA SOLUCIONAR:');
     print('   1. Verifique se o arquivo .env está na raiz do projeto');
     print('   2. Verifique se o conteúdo do .env está correto');
@@ -114,54 +105,47 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ProfileViewModel>(
-      builder: (context, profileViewModel, child) {
-        final themeMode = profileViewModel.flutterThemeMode;
+    return Selector<ProfileViewModel,
+        (ThemeMode, Locale, double, double, double)>(
+      selector: (_, vm) => (
+        vm.flutterThemeMode,
+        vm.locale,
+        vm.contrastLevel,
+        vm.spacing,
+        vm.fontSize,
+      ),
+      builder: (context, data, child) {
+        final (themeMode, locale, contrastLevel, spacing, fontSize) = data;
 
         return MaterialApp(
           title: 'SignWriter Fácil',
           debugShowCheckedModeBanner: false,
           routes: AppRoutes.routes,
           themeMode: themeMode,
-locale: profileViewModel.locale,
-
-supportedLocales: AppLocalizations.supportedLocales,
-
-localizationsDelegates: const [
-  AppLocalizations.delegate,
-GlobalMaterialLocalizations.delegate,
-  GlobalWidgetsLocalizations.delegate,
-  GlobalCupertinoLocalizations.delegate,
-],
+          locale: locale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           theme: AppTheme.light(
-  contrastLevel: profileViewModel.contrastLevel,
-  spacingScale: profileViewModel.spacing,
-),
-
+            contrastLevel: contrastLevel,
+            spacingScale: spacing,
+          ),
           darkTheme: AppTheme.dark(
-  contrastLevel: profileViewModel.contrastLevel,
-  spacingScale: profileViewModel.spacing,
-),
+            contrastLevel: contrastLevel,
+            spacingScale: spacing,
+          ),
           builder: (context, child) {
-  final spacingValue =
-      ((profileViewModel.spacing - 1.0) * 4).clamp(-1.0, 4.0);
-
-  return MediaQuery(
-    data: MediaQuery.of(context).copyWith(
-      textScaler: TextScaler.linear(profileViewModel.fontSize),
-    ),
-    child: Theme(
-      data: Theme.of(context).copyWith(
-        visualDensity: VisualDensity(
-          horizontal: spacingValue,
-          vertical: spacingValue,
-        ),
-      ),
-      child: child!,
-    ),
-  );
-},
-
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.linear(fontSize),
+              ),
+              child: child!,
+            );
+          },
           home: const AuthWrapper(),
         );
       },
@@ -200,12 +184,11 @@ class ErrorApp extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Cabeçalho
                 Row(
-                  children: [
-                    const Icon(Icons.error_outline, color: Colors.red, size: 32),
-                    const SizedBox(width: 12),
-                    const Text(
+                  children: const [
+                    Icon(Icons.error_outline, color: Colors.red, size: 32),
+                    SizedBox(width: 12),
+                    Text(
                       'Erro de Configuração',
                       style: TextStyle(
                         fontSize: 24,
@@ -218,7 +201,6 @@ class ErrorApp extends StatelessWidget {
                 
                 const SizedBox(height: 24),
                 
-                // Card com informações do erro
                 Expanded(
                   child: SingleChildScrollView(
                     child: Container(
@@ -242,7 +224,6 @@ class ErrorApp extends StatelessWidget {
                           
                           const SizedBox(height: 16),
                           
-                          // Mensagem de erro
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
@@ -252,7 +233,7 @@ class ErrorApp extends StatelessWidget {
                             ),
                             child: SelectableText(
                               errorMessage,
-                              style: TextStyle(  // REMOVIDO 'const'
+                              style: const TextStyle(
                                 fontFamily: 'monospace',
                                 fontSize: 14,
                                 color: Colors.red,
@@ -262,7 +243,6 @@ class ErrorApp extends StatelessWidget {
                           
                           const SizedBox(height: 24),
                           
-                          // Passos para resolver
                           const Text(
                             '📋 Passos para resolver:',
                             style: TextStyle(
@@ -302,7 +282,6 @@ class ErrorApp extends StatelessWidget {
                 
                 const SizedBox(height: 24),
                 
-                // Botão de ação
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -335,7 +314,6 @@ class ErrorApp extends StatelessWidget {
   }
 }
 
-// Widget auxiliar para os passos
 class _StepItem extends StatelessWidget {
   final int number;
   final String text;
@@ -397,7 +375,7 @@ class _StepItem extends StatelessWidget {
                     ),
                     child: SelectableText(
                       subText!,
-                      style: TextStyle(  // REMOVIDO 'const'
+                      style: TextStyle(
                         fontFamily: 'monospace',
                         fontSize: 13,
                         color: Colors.grey.shade800,

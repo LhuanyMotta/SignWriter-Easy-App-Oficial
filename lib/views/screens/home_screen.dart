@@ -454,21 +454,30 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           child: Column(
             children: [
+
               _buildTeamRow(
                 initials: 'KA',
                 name: 'Kauan Ambrosio',
                 role: 'Estudante Bolsista',
               ),
+
+              _buildTeamDivider(),
+              _buildTeamRow(
+                initials: 'DM',
+                name: 'Daniele Morais',
+                role: 'Estudante Bolsista',
+              ),
+
               _buildTeamDivider(),
               _buildTeamRow(
                 initials: 'AM',
-                name: 'Prof.ª Andreia Mendonça',
+                name: 'Prof.ª Me. Andreia Mendonça',
                 role: 'Coorientadora',
               ),
               _buildTeamDivider(),
               _buildTeamRow(
-                initials: 'IL',
-                name: 'Dra. Ilma Rodrigues de Souza Fausto',
+                initials: 'IR',
+                name: 'Prof.ª Dra. Ilma Rodrigues de Souza Fausto',
                 role: 'Orientadora do Projeto',
               ),
             ],
