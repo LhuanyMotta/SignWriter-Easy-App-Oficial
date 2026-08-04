@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -10,6 +12,7 @@ import '../models/lesson_model.dart';
 import '../models/lesson_source_model.dart';
 import '../models/media_asset_model.dart';
 import 'learning_content_cache.dart';
+import 'learning_image_cache.dart';
 
 enum LearningContentFailureKind {
   network,
@@ -53,11 +56,14 @@ class LearningContentService {
   LearningContentService({
     SupabaseClient? supabase,
     LearningContentCache? cache,
+    LearningImageCache? imageCache,
   })  : _supabase = supabase ?? Supabase.instance.client,
-        _cache = cache ?? LearningContentCache();
+        _cache = cache ?? LearningContentCache(),
+        _imageCache = imageCache ?? LearningImageCache();
 
   final SupabaseClient _supabase;
   final LearningContentCache _cache;
+  final LearningImageCache _imageCache;
 
   /// Resultado da última carga (útil para banners offline).
   LearningCourseSnapshot? lastSnapshot;
@@ -79,22 +85,27 @@ class LearningContentService {
     try {
       final remote = await _loadRemoteCourse(lang, includeDrafts: includeDrafts);
       final version = _computeVersion(remote);
-      // Cache offline = visão do aluno (sem rascunhos).
-      if (!includeDrafts) {
-        try {
-          if (remote.isEmpty) {
-            await _cache.clear();
-          } else {
-            await _cache.save(
-              categories: remote,
-              localeCode: lang,
-              contentVersion: version,
-            );
-          }
-        } catch (error, stack) {
-          debugPrint('Falha ao gravar cache do curso: $error\n$stack');
+      final publishedCourse = _publishedCourse(remote);
+
+      // Sempre alimenta o cache com a visão publicada, inclusive quando quem
+      // abriu a tela é admin e a resposta remota também contém rascunhos.
+      try {
+        if (publishedCourse.isNotEmpty) {
+          await _cache.save(
+            categories: publishedCourse,
+            localeCode: lang,
+            contentVersion: _computeVersion(publishedCourse),
+          );
+        } else if (!includeDrafts && remote.isEmpty) {
+          await _cache.clear();
         }
+      } catch (error, stack) {
+        debugPrint('Falha ao gravar cache do curso: $error\n$stack');
       }
+
+      // A tela não espera os downloads, mas cada imagem passa a ficar
+      // persistida assim que o curso é sincronizado com internet.
+      unawaited(_prefetchMedia(publishedCourse));
 
       final snapshot = LearningCourseSnapshot(
         categories: remote,
@@ -105,14 +116,8 @@ class LearningContentService {
       lastSnapshot = snapshot;
       return snapshot;
     } on LearningContentException catch (error) {
-      final cached = await _cache.load();
-      if (cached != null && cached.localeCode == lang) {
-        final snapshot = LearningCourseSnapshot(
-          categories: cached.categories,
-          fromCache: true,
-          syncedAt: cached.syncedAt,
-          contentVersion: cached.contentVersion,
-        );
+      final snapshot = await _loadCachedSnapshot(lang);
+      if (snapshot != null) {
         lastSnapshot = snapshot;
         debugPrint(
           'Usando cache offline após falha remota (${error.kind}): ${error.message}',
@@ -122,14 +127,9 @@ class LearningContentService {
       rethrow;
     } on PostgrestException catch (error, stack) {
       debugPrint('PostgrestException no curso: $error\n$stack');
-      final cached = await _cache.load();
-      if (cached != null) {
-        lastSnapshot = LearningCourseSnapshot(
-          categories: cached.categories,
-          fromCache: true,
-          syncedAt: cached.syncedAt,
-          contentVersion: cached.contentVersion,
-        );
+      final cachedSnapshot = await _loadCachedSnapshot(lang);
+      if (cachedSnapshot != null) {
+        lastSnapshot = cachedSnapshot;
         return lastSnapshot!;
       }
       final kind = error.code == '42501'
@@ -138,14 +138,9 @@ class LearningContentService {
       throw LearningContentException(kind, error.message, cause: error);
     } catch (error, stack) {
       debugPrint('Erro ao carregar curso: $error\n$stack');
-      final cached = await _cache.load();
-      if (cached != null) {
-        lastSnapshot = LearningCourseSnapshot(
-          categories: cached.categories,
-          fromCache: true,
-          syncedAt: cached.syncedAt,
-          contentVersion: cached.contentVersion,
-        );
+      final cachedSnapshot = await _loadCachedSnapshot(lang);
+      if (cachedSnapshot != null) {
+        lastSnapshot = cachedSnapshot;
         return lastSnapshot!;
       }
       throw LearningContentException(
@@ -154,6 +149,90 @@ class LearningContentService {
         cause: error,
       );
     }
+  }
+
+  List<LessonCategoryModel> _publishedCourse(
+    List<LessonCategoryModel> categories,
+  ) {
+    return categories
+        .where((category) => category.status.toLowerCase() == 'published')
+        .map(
+          (category) => category.copyWith(
+            lessons: category.lessons
+                .where((lesson) => lesson.isPublished)
+                .toList(growable: false),
+          ),
+        )
+        .where((category) => category.lessons.isNotEmpty)
+        .toList(growable: false);
+  }
+
+  Future<LearningCourseSnapshot?> _loadCachedSnapshot(String lang) async {
+    try {
+      final cached = await _cache.load();
+      if (cached == null || cached.localeCode != lang) return null;
+      return LearningCourseSnapshot(
+        categories: cached.categories,
+        fromCache: true,
+        syncedAt: cached.syncedAt,
+        contentVersion: cached.contentVersion,
+      );
+    } catch (error, stack) {
+      debugPrint('Falha ao abrir cache do curso: $error\n$stack');
+      return null;
+    }
+  }
+
+  Future<void> _prefetchMedia(List<LessonCategoryModel> categories) async {
+    try {
+      await _imageCache.prefetchAll(_collectMediaUrls(categories));
+    } catch (error, stack) {
+      debugPrint('Falha no prefetch de imagens pedagógicas: $error\n$stack');
+    }
+  }
+
+  Set<String> _collectMediaUrls(List<LessonCategoryModel> categories) {
+    final urls = <String>{};
+
+    void add(String? value) {
+      final url = value?.trim();
+      if (url != null &&
+          url.isNotEmpty &&
+          (url.startsWith('https://') || url.startsWith('http://'))) {
+        urls.add(url);
+      }
+    }
+
+    for (final category in categories) {
+      for (final lesson in category.lessons) {
+        for (final media in lesson.media) {
+          add(media.externalUrl);
+        }
+        for (final block in lesson.blocks) {
+          add(block.mediaUrl);
+          add(block.media?.externalUrl);
+          for (final key in const [
+            'leftMediaUrl',
+            'left_media_url',
+            'rightMediaUrl',
+            'right_media_url',
+          ]) {
+            add(block.payload[key]?.toString());
+          }
+        }
+        for (final exercise in lesson.exercises) {
+          add(exercise.mediaUrl);
+          for (final option in exercise.options) {
+            add(option.mediaUrl);
+          }
+          for (final pair in exercise.pairs) {
+            add(pair.leftMediaUrl);
+            add(pair.rightMediaUrl);
+          }
+        }
+      }
+    }
+    return urls;
   }
 
   Future<List<LessonCategoryModel>> _loadRemoteCourse(
