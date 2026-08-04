@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/export_data.dart';
+import '../../services/export_format.dart';
 import '../../viewmodels/profile_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../accessibility_settings_view.dart';
@@ -515,6 +516,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (action == null || !mounted) return;
 
     if (action == 'remove') {
+      // Confirmação antes de remover — ação destrutiva, mesmo padrão
+      // usado na exclusão de conta.
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Remover foto de perfil?'),
+          content: const Text(
+              'Você poderá adicionar uma nova foto a qualquer momento.'),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(context.l10n.cancel)),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Remover'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed != true || !mounted) return;
+
       final ok = await vm.removeProfileImage();
       if (!mounted) return;
       _snack(ok ? 'Foto removida!' : vm.errorMessage ?? 'Erro ao remover.', ok);
@@ -627,16 +651,78 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _doExport(ProfileViewModel vm) async {
-    try {
-      final data = await vm.exportUserData();
-      await shareExportedUserData(data,
-          shareText: 'Meus dados do SignWriter Fácil',
-          shareSubject: 'Exportação - SignWriter Fácil');
-    } catch (e) {
-      if (!mounted) return;
-      _snack('Erro ao exportar: $e', false);
-    }
+  final format = await showModalBottomSheet<ExportFormat>(
+    context: context,
+    backgroundColor: _card,
+    shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+    builder: (_) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40, height: 4,
+              margin: const EdgeInsets.only(bottom: 14),
+              decoration: BoxDecoration(
+                color: Colors.grey.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(100),
+              ),
+            ),
+            Text('Exportar dados',
+                style: TextStyle(
+                    fontSize: 17, fontWeight: FontWeight.bold, color: _text)),
+            const SizedBox(height: 4),
+            Text('Escolha o formato do arquivo',
+                style: TextStyle(color: _sub, fontSize: 13)),
+            const SizedBox(height: 12),
+            ListTile(
+              leading: CircleAvatar(
+                  backgroundColor: _primary,
+                  child: const Icon(Icons.table_chart_outlined, color: Colors.white)),
+              title: Text('CSV', style: TextStyle(color: _text, fontWeight: FontWeight.w600)),
+              subtitle: Text('Abre em Excel ou Planilhas Google', style: TextStyle(color: _sub)),
+              onTap: () => Navigator.pop(context, ExportFormat.csv),
+            ),
+            ListTile(
+              leading: CircleAvatar(
+                  backgroundColor: _primary.withValues(alpha: 0.85),
+                  child: const Icon(Icons.picture_as_pdf_outlined, color: Colors.white)),
+              title: Text('PDF', style: TextStyle(color: _text, fontWeight: FontWeight.w600)),
+              subtitle: Text('Documento pronto para impressão', style: TextStyle(color: _sub)),
+              onTap: () => Navigator.pop(context, ExportFormat.pdf),
+            ),
+            ListTile(
+              leading: CircleAvatar(
+                  backgroundColor: _primary.withValues(alpha: 0.7),
+                  child: const Icon(Icons.text_snippet_outlined, color: Colors.white)),
+              title: Text('TXT', style: TextStyle(color: _text, fontWeight: FontWeight.w600)),
+              subtitle: Text('Texto simples, leve e universal', style: TextStyle(color: _sub)),
+              onTap: () => Navigator.pop(context, ExportFormat.txt),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    ),
+  );
+
+  if (format == null || !mounted) return;
+
+  try {
+    final data = await vm.exportUserData(); // continua retornando o JSON String
+await shareExportedUserData(
+  data,
+  format: format, // ExportFormat escolhido no bottom sheet
+  shareText: 'Meus dados do SignWriter Fácil',
+  shareSubject: 'Exportação - SignWriter Fácil',
+);
+  } catch (e) {
+    if (!mounted) return;
+    _snack('Erro ao exportar: $e', false);
   }
+}
 
   void _confirmDelete(ProfileViewModel vm) {
     showDialog(

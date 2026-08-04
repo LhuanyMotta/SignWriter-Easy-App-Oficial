@@ -27,6 +27,8 @@ dependencies:
   speech_to_text: ^7.0.0
   webview_flutter: ^4.10.0
   webview_flutter_android: ^4.3.0
+  csv: ^6.0.0
+  pdf: ^3.11.1
 
 dev_dependencies:
   flutter_test:
