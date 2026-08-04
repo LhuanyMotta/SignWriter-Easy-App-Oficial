@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../models/lesson_block_model.dart';
 import '../../../services/signmaker_bridge_service.dart';
 import '../../../theme/app_radius.dart';
+import 'offline_network_image.dart';
 
 /// Renderiza mídia de bloco: asset local, URL (incl. learning-content) ou FSW.
 class LessonMediaView extends StatelessWidget {
@@ -254,26 +255,17 @@ class _MediaImage extends StatelessWidget {
     }
 
     if (hasUrl) {
-      return Image.network(
-        mediaUrl!,
+      return OfflineNetworkImage(
+        url: mediaUrl!,
         fit: fit,
         semanticLabel: altText,
-        loadingBuilder: (context, child, progress) {
-          if (progress == null) return child;
-          return Center(
+        placeholder: (context) => Center(
             child: SizedBox(
               width: 28,
               height: 28,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                value: progress.expectedTotalBytes != null
-                    ? progress.cumulativeBytesLoaded /
-                        progress.expectedTotalBytes!
-                    : null,
-              ),
+              child: CircularProgressIndicator(strokeWidth: 2.5),
             ),
-          );
-        },
+          ),
         errorBuilder: (_, __, ___) => _Fallback(
           accent: accent,
           icon: emptyIcon,
@@ -460,8 +452,8 @@ class _ComparisonPanel extends StatelessWidget {
           if (mediaUrl != null && mediaUrl!.isNotEmpty)
             SizedBox(
               height: 100,
-              child: Image.network(
-                mediaUrl!,
+              child: OfflineNetworkImage(
+                url: mediaUrl!,
                 fit: BoxFit.contain,
                 errorBuilder: (_, __, ___) =>
                     Icon(Icons.broken_image, color: color),
