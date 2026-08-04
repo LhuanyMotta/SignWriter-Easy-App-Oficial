@@ -28,7 +28,13 @@ void main() {
               'estimatedMinutes': 5,
               'difficulty': 'Iniciante',
               'blocks': [
-                {'id': 'b1', 'type': 'text', 'body': 'Oi', 'order_index': 0},
+                {
+                  'id': 'b1',
+                  'type': 'image',
+                  'body': 'Oi',
+                  'media_url': 'https://example.test/palma.png',
+                  'order_index': 0,
+                },
               ],
             },
           ],
@@ -44,6 +50,10 @@ void main() {
       final loaded = await cache.load();
       expect(loaded, isNotNull);
       expect(loaded!.categories.first.id, 'cat-1');
+      expect(
+        loaded.categories.first.lessons.first.blocks.first.mediaUrl,
+        'https://example.test/palma.png',
+      );
       expect(loaded.contentVersion, '1-1-1');
       expect(loaded.localeCode, 'pt');
     });
