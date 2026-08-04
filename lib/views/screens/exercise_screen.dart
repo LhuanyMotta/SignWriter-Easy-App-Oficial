@@ -6,6 +6,7 @@ import '../../models/lesson_exercise_model.dart';
 import '../../models/lesson_model.dart';
 import '../../viewmodels/learn_practice_viewmodel.dart';
 import '../../theme/responsive_content.dart';
+import '../widgets/learning/offline_network_image.dart';
 
 class ExerciseScreen extends StatefulWidget {
   final LessonModel lesson;
@@ -459,13 +460,11 @@ class _ExerciseMediaSlot extends StatelessWidget {
               ),
       );
     } else if (mediaUrl != null && mediaUrl!.isNotEmpty) {
-      image = Image.network(
-        mediaUrl!,
+      image = OfflineNetworkImage(
+        url: mediaUrl!,
         fit: BoxFit.contain,
-        loadingBuilder: (context, child, progress) {
-          if (progress == null) return child;
-          return const Center(child: CircularProgressIndicator());
-        },
+        placeholder: (context) =>
+            const Center(child: CircularProgressIndicator()),
         errorBuilder: (_, __, ___) => hasFsw
             ? _FswFallback(fsw: fsw!, accent: accent)
             : Icon(
