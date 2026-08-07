@@ -250,20 +250,104 @@ Locale get locale {
         return false;
       }
 
-      await _supabase.from('profiles').update({
-        'name': name,
-        'email': email,
-        'bio': bio ?? '',
-        'updated_at': DateTime.now().toIso8601String(),
-      }).eq('id', user.id);
+      // Tenta upsert e pede o registro retornado para confirmar a escrita.
+      dynamic saved;
+      try {
+        saved = await _supabase
+            .from('profiles')
+            .upsert({
+              'id': user.id,
+              'name': name,
+              'email': email,
+              'bio': bio ?? '',
+              'updated_at': DateTime.now().toIso8601String(),
+            }, onConflict: 'id')
+            .select()
+            .maybeSingle();
+      } catch (e) {
+        debugPrint('upsert error: $e');
+        _errorMessage = '$e';
 
-      // Atualiza cache local — não recarrega do banco pra evitar que
-      // _loadUserData sobrescreva os dados novos com os dados antigos do auth.
-      if (_userData != null) {
+        // Se a exceção indicar coluna ausente no schema (ex: "Could not find the 'bio' column"),
+        // tenta reenviar o upsert sem esse campo para manter a sincronização local.
+        try {
+          final err = e.toString();
+          final match = RegExp(r"Could not find the '([a-zA-Z0-9_]+)' column").firstMatch(err);
+          if (match != null) {
+            final missingCol = match.group(1);
+            debugPrint('Detected missing column: $missingCol — retrying without it');
+
+            final payload = {
+              'id': user.id,
+              'name': name,
+              'email': email,
+              'updated_at': DateTime.now().toIso8601String(),
+            };
+
+            // só adiciona bio se não for a coluna faltante
+            if (missingCol != null && missingCol != 'bio') {
+              payload['bio'] = bio ?? '';
+            }
+
+            try {
+              saved = await _supabase
+                  .from('profiles')
+                  .upsert(payload, onConflict: 'id')
+                  .select()
+                  .maybeSingle();
+              if (saved != null) {
+                _errorMessage = null;
+              }
+            } catch (e2) {
+              debugPrint('upsert retry error: $e2');
+              _errorMessage = '$e2';
+            }
+          }
+        } catch (_) {}
+
+        // deixamos saved null para tentar fallback abaixo (update)
+      }
+
+      // Se upsert não retornou o registro, tenta um update como fallback.
+      if (saved == null) {
+        try {
+          final updated = await _supabase
+              .from('profiles')
+              .update({
+                'name': name,
+                'email': email,
+                'bio': bio ?? '',
+                'updated_at': DateTime.now().toIso8601String(),
+              })
+              .eq('id', user.id)
+              .select()
+              .maybeSingle();
+          if (updated != null) saved = updated;
+        } catch (e) {
+          debugPrint('update fallback error: $e');
+          _errorMessage = '$e';
+        }
+      }
+
+      // Atualiza cache local a partir do registro confirmado pelo servidor.
+      if (saved != null) {
+        // Recarrega do servidor para garantir sincronização com Supabase.
+        try {
+          await _loadUserData();
+        } catch (e) {
+          debugPrint('reload after save error: $e');
+        }
+      } else if (_userData != null) {
+        // fallback em memória caso servidor não retorne o registro
         _userData = Map<String, dynamic>.from(_userData!);
         _userData!['name'] = name;
         _userData!['email'] = email;
         _userData!['bio'] = bio ?? '';
+      } else {
+        _errorMessage = 'Não foi possível confirmar a atualização no servidor.';
+        _isLoading = false;
+        notifyListeners();
+        return false;
       }
 
       _isLoading = false;

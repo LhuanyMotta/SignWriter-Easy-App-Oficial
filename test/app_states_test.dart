@@ -1,11 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:signwriter_easy_app_oficial/utils/friendly_error.dart';
+import 'package:signwriter_easy_app_oficial/viewmodels/profile_viewmodel.dart';
+import 'package:signwriter_easy_app_oficial/views/screens/profile_screen.dart';
 import 'package:signwriter_easy_app_oficial/views/widgets/states/app_empty_state.dart';
 import 'package:signwriter_easy_app_oficial/views/widgets/states/app_error_state.dart';
 import 'package:signwriter_easy_app_oficial/views/widgets/states/app_loading_state.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() {
+  setUpAll(() async {
+    await Supabase.initialize(
+      url: 'https://example.supabase.co',
+      anonKey: 'dummy-key',
+    );
+  });
+
+  testWidgets('ProfileScreen salva nome sem quebrar o provider', (tester) async {
+    final vm = ProfileViewModel();
+
+    await tester.pumpWidget(
+      ChangeNotifierProvider<ProfileViewModel>.value(
+        value: vm,
+        child: const MaterialApp(
+          home: ProfileScreen(),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Editar perfil'));
+    await tester.pumpAndSettle();
+
+    final nameField = find.widgetWithText(TextField, 'Nome');
+    expect(nameField, findsOneWidget);
+
+    await tester.enterText(nameField, 'Novo Nome');
+    await tester.tap(find.text('Salvar alterações'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Perfil atualizado!'), findsOneWidget);
+  });
+
   testWidgets('AppLoadingState mostra indicador e mensagem', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(

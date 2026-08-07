@@ -118,8 +118,18 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context, constraints) {
               final spacing = AppSpacing.value(context, 16);
               final columns = Responsive.isWide(context) ? 4 : 2;
-              final cardWidth =
-                  (constraints.maxWidth - spacing * (columns - 1)) / columns;
+              final rawWidth =
+                  (constraints.maxWidth - spacing * (columns - 1)) /
+                      columns;
+              // No primeiro frame a largura disponível ainda pode ser 0
+              // (ou o cálculo pode resultar em número negativo). Sem
+              // esse clamp, o SizedBox recebe largura negativa e quebra
+              // a árvore de renderização inteira logo no início do app,
+              // o que gerava efeito cascata em telas completamente
+              // diferentes (inclusive o crash ao salvar o perfil).
+              final cardWidth = rawWidth.isFinite && rawWidth > 0
+                  ? rawWidth
+                  : 0.0;
 
               return Wrap(
                 spacing: spacing,
