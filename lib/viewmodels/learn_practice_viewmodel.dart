@@ -85,7 +85,10 @@ class LearnPracticeViewModel extends ChangeNotifier {
       _progress = await _progressRepository.loadProgress();
     } catch (e) {
       _errorMessage = friendlyError(e);
-      _categories = [];
+      // Conserva o último conteúdo funcional durante uma recarga sem rede.
+      if (_categories.isNotEmpty) {
+        _isOfflineCache = true;
+      }
     } finally {
       _isLoading = false;
       notifyListeners();

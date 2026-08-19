@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../models/lesson_block_model.dart';
 import '../../../theme/app_radius.dart';
 import 'lesson_inline_field.dart';
+import 'offline_network_image.dart';
 
 class LessonBlockMediaPlaceholder extends StatelessWidget {
   final LessonBlockModel? block;
@@ -57,8 +58,8 @@ class LessonBlockMediaPlaceholder extends StatelessWidget {
               errorBuilder: (_, __, ___) => _Empty(icon: icon, accent: accent),
             )
           else if (url != null && url.isNotEmpty)
-            Image.network(
-              url,
+            OfflineNetworkImage(
+              url: url,
               fit: BoxFit.contain,
               errorBuilder: (_, __, ___) => _Empty(icon: icon, accent: accent),
             )

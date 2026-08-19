@@ -12,12 +12,14 @@ class _FakeLearningRepository implements LearningRepository {
   _FakeLearningRepository(this._categories);
 
   final List<LessonCategoryModel> _categories;
+  bool shouldFail = false;
 
   @override
   LearningCourseSnapshot? get lastSnapshot => null;
 
   @override
   Future<List<LessonCategoryModel>> loadCategories(Locale locale) async {
+    if (shouldFail) throw Exception('sem rede');
     return _categories;
   }
 }
@@ -50,9 +52,12 @@ LessonModel _simpleLesson({
   );
 }
 
-LearnPracticeViewModel _buildVm(List<LessonCategoryModel> categories) {
+LearnPracticeViewModel _buildVm(
+  List<LessonCategoryModel> categories, {
+  _FakeLearningRepository? repository,
+}) {
   return LearnPracticeViewModel(
-    repository: _FakeLearningRepository(categories),
+    repository: repository ?? _FakeLearningRepository(categories),
     progressRepository: LearningProgressRepository(localOnly: true),
   );
 }
@@ -180,6 +185,30 @@ void main() {
 
       expect(vm.nextLessonTarget(), isNull);
       expect(vm.totalLessons, 0);
+    });
+  });
+
+  group('modo offline', () {
+    test('mantém o conteúdo em memória quando uma recarga falha', () async {
+      final categories = [
+        _category(
+          id: 'cat-1',
+          lessons: [_simpleLesson(id: 'p1')],
+        ),
+      ];
+      final repository = _FakeLearningRepository(categories);
+      final vm = _buildVm(categories, repository: repository);
+
+      await vm.initialize(const Locale('pt'));
+      expect(vm.categories, hasLength(1));
+
+      repository.shouldFail = true;
+      await vm.reload();
+
+      expect(vm.categories, hasLength(1));
+      expect(vm.categories.single.id, 'cat-1');
+      expect(vm.isOfflineCache, isTrue);
+      expect(vm.errorMessage, isNotEmpty);
     });
   });
 }

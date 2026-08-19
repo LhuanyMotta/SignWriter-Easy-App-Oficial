@@ -45,8 +45,14 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen>
   }
 
   Future<void> _bootstrap() async {
-    await _authorization.clearLocalAuthorUiOverride();
-    final canManage = await _authorization.hasEditorialRole();
+    var canManage = false;
+    try {
+      await _authorization.clearLocalAuthorUiOverride();
+      canManage = await _authorization.hasEditorialRole();
+    } catch (error, stack) {
+      // Uma falha na autorização não pode interromper o cache offline.
+      debugPrint('Bootstrap editorial indisponível: $error\n$stack');
+    }
     if (!mounted) return;
     setState(() => _canManageLessons = canManage);
 

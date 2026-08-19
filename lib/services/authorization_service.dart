@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -50,10 +51,21 @@ class AuthorizationService {
         }
       }
       return false;
-    } on PostgrestException catch (error) {
-      // Erro RLS/autorização — não libera edição.
+    } on PostgrestException catch (error, stack) {
       if (error.code == '42501') return false;
-      rethrow;
+      debugPrint(
+        'Falha ao consultar papel editorial; usando modo aluno: '
+        '$error\n$stack',
+      );
+      return false;
+    } catch (error, stack) {
+      // Sem rede, DNS ou timeout nunca devem impedir a abertura do cache.
+      // A escrita continua protegida pelas policies RLS do Supabase.
+      debugPrint(
+        'Consulta de papel editorial indisponível; usando modo aluno: '
+        '$error\n$stack',
+      );
+      return false;
     }
   }
 
