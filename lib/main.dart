@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:signwriter_easy_app_oficial/views/screens/auth_screen.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/auth_viewmodel.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:signwriter_easy_app_oficial/views/screens/profile_screen.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/profile_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/dictionary_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/learn_practice_viewmodel.dart';
@@ -18,18 +17,18 @@ import 'l10n/app_localizations.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  print('🚀 ============ INICIANDO SIGNWRITER FÁCIL ============');
+  debugPrint('INICIANDO SIGNWRITER FÁCIL');
   
   try {
-    print('📁 Carregando configurações do arquivo .env...');
+    debugPrint('Carregando configurações do arquivo .env...');
     await dotenv.load(fileName: '.env');
     
     final supabaseUrl = dotenv.env['SUPABASE_URL'];
     final supabaseKey = dotenv.env['SUPABASE_KEY'];
     
-    print('🔍 Variáveis carregadas:');
-    print('   SUPABASE_URL: ${supabaseUrl != null ? '✅' : '❌'}');
-    print('   SUPABASE_KEY: ${supabaseKey != null ? '✅' : '❌'}');
+    debugPrint('Variáveis carregadas:');
+    debugPrint('SUPABASE_URL: ${supabaseUrl != null}');
+    debugPrint('SUPABASE_KEY: ${supabaseKey != null}');
     
     if (supabaseUrl == null || supabaseUrl.isEmpty) {
       throw Exception('❌ SUPABASE_URL não encontrada ou vazia no arquivo .env');
@@ -39,17 +38,16 @@ void main() async {
       throw Exception('❌ SUPABASE_KEY não encontrada ou vazia no arquivo .env');
     }
     
-    print('🔗 Supabase URL: ${supabaseUrl.substring(0, 30)}...');
-    print('🔑 Supabase Key: ${supabaseKey.substring(0, 10)}...');
+    debugPrint('Supabase URL carregada');
+    debugPrint('Supabase Key carregada');
     
-    print('🔌 Inicializando conexão com Supabase...');
+    debugPrint('Inicializando conexão com Supabase...');
     await Supabase.initialize(
       url: supabaseUrl,
       anonKey: supabaseKey,
     );
     
-    print('✅ Supabase inicializado com sucesso!');
-    print('================================================\n');
+    debugPrint('Supabase inicializado com sucesso!');
     
     runApp(
       MultiProvider(
@@ -75,13 +73,9 @@ void main() async {
     );
     
   } catch (e) {
-    print('❌ ERRO CRÍTICO NA INICIALIZAÇÃO: $e');
+    debugPrint('Erro crítico na inicialização: $e');
     
-    print('\n🔧 DICAS PARA SOLUCIONAR:');
-    print('   1. Verifique se o arquivo .env está na raiz do projeto');
-    print('   2. Verifique se o conteúdo do .env está correto');
-    print('   3. Execute: flutter clean && flutter pub get');
-    print('   4. Reinicie o emulador se necessário');
+    debugPrint('Verifique o arquivo .env e execute flutter pub get.');
     
     runApp(
       ErrorApp(

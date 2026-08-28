@@ -24,7 +24,6 @@ class LearnPracticeScreen extends StatefulWidget {
 class _LearnPracticeScreenState extends State<LearnPracticeScreen>
     with TickerProviderStateMixin {
   late AnimationController _headerController;
-  late Animation<double> _headerFade;
   final AuthorizationService _authorization = AuthorizationService();
   String _languageCode = '';
   bool _canManageLessons = false;
@@ -35,10 +34,6 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen>
     _headerController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
-    );
-    _headerFade = CurvedAnimation(
-      parent: _headerController,
-      curve: Curves.easeOut,
     );
     _headerController.forward();
     WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap());

@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../viewmodels/auth_viewmodel.dart';
+import '../../utils/password_validator.dart';
+import '../../utils/email_validator.dart';
 import 'home_screen.dart';
 import '../widgets/app_logo.dart';
 import '../accessibility_settings_view.dart';
@@ -342,8 +345,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 if (value == null || value.isEmpty) {
                   return context.l10n.enterEmailError;
                 }
-                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                  return context.l10n.invalidEmailError;
+                if (!EmailValidator.isValid(value)) {
+                  return context.l10n.invalidEmailDomainError;
                 }
                 return null;
               },
@@ -444,94 +447,105 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildSignupTab() {
-    return SingleChildScrollView(
-      padding: AppSpacing.symmetric(context, horizontal: 24.0),
-      child: Form(
-        key: _signupFormKey,
-        child: Column(
-          children: [
-            _buildTextField(
-              controller: _signupNameController,
-              label: context.l10n.fullNameLabel,
-              hintText: context.l10n.fullNameLabel,
-              icon: Icons.person_outlined,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return context.l10n.enterNameError;
-                }
-                if (value.length < 2) {
-                  return context.l10n.nameLengthError;
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: AppSpacing.value(context, 16)),
-            
-            _buildTextField(
-              controller: _signupEmailController,
-              label: context.l10n.emailLabel,
-              hintText: context.l10n.emailLabel,
-              icon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return context.l10n.enterEmailError;
-                }
-                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                  return context.l10n.invalidEmailError;
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: AppSpacing.value(context, 16)),
-            
-            _buildTextField(
-              controller: _signupPasswordController,
-              label: context.l10n.passwordLabel,
-              hintText: context.l10n.passwordLabel,
-              icon: Icons.lock_outlined,
-              isPassword: true,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return context.l10n.enterPasswordError;
-                }
-                if (value.length < 6) {
-                  return context.l10n.passwordLengthError;
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: AppSpacing.value(context, 16)),
-            
-            _buildTextField(
-              controller: _confirmPasswordController,
-              label: context.l10n.confirmPasswordLabel,
-              hintText: context.l10n.confirmPasswordLabel,
-              icon: Icons.lock_outlined,
-              isPassword: true,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return context.l10n.confirmPasswordError;
-                }
-                if (value != _signupPasswordController.text) {
-                  return context.l10n.passwordMismatchError;
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: AppSpacing.value(context, 32)),
-            
-            Consumer<AuthViewModel>(
-              builder: (context, viewModel, child) {
-                final scheme = Theme.of(context).colorScheme;
-                return SizedBox(
+    return Consumer<AuthViewModel>(
+      builder: (context, viewModel, child) {
+        return SingleChildScrollView(
+          padding: AppSpacing.symmetric(context, horizontal: 24.0),
+          child: Form(
+            key: _signupFormKey,
+            child: Column(
+              children: [
+                _buildTextField(
+                  controller: _signupNameController,
+                  label: context.l10n.fullNameLabel,
+                  hintText: context.l10n.fullNameLabel,
+                  icon: Icons.person_outlined,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return context.l10n.enterNameError;
+                    }
+                    if (value.length < 2) {
+                      return context.l10n.nameLengthError;
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: AppSpacing.value(context, 16)),
+
+                _buildTextField(
+                  controller: _signupEmailController,
+                  label: context.l10n.emailLabel,
+                  hintText: context.l10n.emailLabel,
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return context.l10n.enterEmailError;
+                    }
+                    if (!EmailValidator.isValid(value)) {
+                      return context.l10n.invalidEmailDomainError;
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: AppSpacing.value(context, 16)),
+
+                _buildTextField(
+                  controller: _signupPasswordController,
+                  label: context.l10n.passwordLabel,
+                  hintText: context.l10n.passwordLabel,
+                  icon: Icons.lock_outlined,
+                  isPassword: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return context.l10n.enterPasswordError;
+                    }
+                    if (!PasswordValidator.hasMinimumLength(value)) {
+                      return context.l10n.passwordMinLengthError;
+                    }
+                    if (!PasswordValidator.hasUppercase(value)) {
+                      return context.l10n.passwordUppercaseError;
+                    }
+                    if (!PasswordValidator.hasLowercase(value)) {
+                      return context.l10n.passwordLowercaseError;
+                    }
+                    if (!PasswordValidator.hasNumber(value)) {
+                      return context.l10n.passwordNumberError;
+                    }
+                    if (!PasswordValidator.hasSpecialCharacter(value)) {
+                      return context.l10n.passwordSpecialCharError;
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: AppSpacing.value(context, 16)),
+
+                _buildTextField(
+                  controller: _confirmPasswordController,
+                  label: context.l10n.confirmPasswordLabel,
+                  hintText: context.l10n.confirmPasswordLabel,
+                  icon: Icons.lock_outlined,
+                  isPassword: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return context.l10n.confirmPasswordError;
+                    }
+                    if (value != _signupPasswordController.text) {
+                      return context.l10n.passwordMismatchError;
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: AppSpacing.value(context, 32)),
+
+                SizedBox(
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
                     onPressed: viewModel.isLoading ? null : () => _handleSignup(viewModel, context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: scheme.primary,
-                      foregroundColor: scheme.onPrimary,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -543,7 +557,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                             width: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(scheme.onPrimary),
+                              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onPrimary),
                             ),
                           )
                         : Row(
@@ -561,19 +575,19 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                             ],
                           ),
                   ),
-                );
-              },
+                ),
+                SizedBox(height: AppSpacing.value(context, 20)),
+
+                _buildDivider(),
+                SizedBox(height: AppSpacing.value(context, 20)),
+
+                _buildSocialLoginButtons(),
+                SizedBox(height: AppSpacing.value(context, 32)),
+              ],
             ),
-            SizedBox(height: AppSpacing.value(context, 20)),
-            
-            _buildDivider(),
-            SizedBox(height: AppSpacing.value(context, 20)),
-            
-            _buildSocialLoginButtons(),
-            SizedBox(height: AppSpacing.value(context, 32)),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -584,6 +598,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     required IconData icon,
     bool isPassword = false,
     TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
   }) {
     final scheme = Theme.of(context).colorScheme;
@@ -605,6 +620,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           controller: controller,
           obscureText: isPassword,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
           validator: validator,
           style: TextStyle(color: scheme.onSurface),
           cursorColor: scheme.primary,
@@ -811,10 +827,10 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       );
       
       if (success) {
-        if (!mounted) return;
+        if (!context.mounted) return;
         await _navigateAfterAuth();
       } else {
-        if (!mounted) return;
+        if (!context.mounted) return;
         final msg = _localizedAuthError(viewModel.errorType, context);
         messenger.showSnackBar(
           SnackBar(
@@ -837,16 +853,26 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       );
       
       if (success) {
-        if (!mounted) return;
+        if (!context.mounted) return;
         await _navigateAfterAuth();
-      } else {
-        if (!mounted) return;
-        final msg = _localizedAuthError(viewModel.errorType, context, isSignup: true);
+      } else if (viewModel.requiresEmailConfirmation) {
+        if (!context.mounted) return;
         messenger.showSnackBar(
           SnackBar(
-            content: Text(msg),
+            content: Text('Um link de confirmação foi enviado para ${viewModel.pendingVerificationEmail}. Abra o e-mail e clique no link para concluir o cadastro.'),
+            backgroundColor: Colors.blue,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      } else {
+        if (!context.mounted) return;
+        final msg = viewModel.error ??
+            _localizedAuthError(viewModel.errorType, context, isSignup: true);
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Erro no cadastro: $msg'),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
+            duration: const Duration(seconds: 8),
           ),
         );
       }
@@ -883,6 +909,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         return l.authErrorInvalidCredentials;
       case AuthErrorType.emailExists:
         return l.authErrorEmailExists;
+      case AuthErrorType.invalidEmail:
+        return l.invalidEmailDomainError;
       case AuthErrorType.weakPassword:
         return l.authErrorWeakPassword;
       case AuthErrorType.emailSignupsDisabled:

@@ -279,8 +279,8 @@ class AccessibilitySettingsView extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(
-              Theme.of(context).brightness == Brightness.dark ? 0.25 : 0.08,
+            color: Colors.black.withValues(
+              alpha: Theme.of(context).brightness == Brightness.dark ? 0.25 : 0.08,
             ),
             blurRadius: 8,
             offset: const Offset(0, 3),

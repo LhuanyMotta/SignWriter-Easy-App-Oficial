@@ -28,6 +28,7 @@ dependencies:
   webview_flutter: ^4.10.0
   webview_flutter_android: ^4.3.0
   csv: ^6.0.0
+  http: ^1.1.0
   pdf: ^3.11.1
 
 dev_dependencies:
@@ -60,10 +61,6 @@ flutter_launcher_icons:
     image_path: "assets/images/signwriter_logo.png"
     background_color: "#hexcode"
     theme_color: "#hexcode"
-  windows:
-    generate: true
-    image_path: "assets/images/signwriter_logo.png"
-    icon_size: 48
   macos:
     generate: true
     image_path: "assets/images/signwriter_logo.png"

@@ -265,7 +265,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: isDark ? Colors.black26 : Colors.grey.withOpacity(0.08),
+              color: isDark ? Colors.black26 : Colors.grey.withValues(alpha: 0.08),
               blurRadius: 6,
               spreadRadius: 2,
             ),
@@ -350,7 +350,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                   Container(
                     padding: AppSpacing.symmetric(context, horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: primary.withOpacity(0.12),
+                      color: primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
