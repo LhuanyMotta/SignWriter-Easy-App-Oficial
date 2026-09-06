@@ -25,10 +25,19 @@ class AppLogo extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset(
-          'assets/images/signwriter_logo.png',
+        Container(
           width: size,
           height: size,
+          padding: EdgeInsets.all(size * 0.12),
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: colored ? const Color(0xFF2D78BB) : Colors.transparent,
+            borderRadius: BorderRadius.circular(size * 0.22),
+          ),
+          child: Image.asset(
+            'assets/images/signwriter_logo.png',
+            fit: BoxFit.contain,
+          ),
         ),
         if (showText) ...[
           SizedBox(height: AppSpacing.value(context, 8)),
