@@ -5,8 +5,19 @@ import 'package:flutter/foundation.dart' show debugPrint;
 
 /// Serviço para envio de emails de confirmação e notificações
 class EmailService {
+  static const String defaultSenderEmail = 'signwriter.easy.app@gmail.com';
+
   // Você pode usar qualquer provider: SendGrid, Mailtrap, Firebase, etc.
   // Para este exemplo, vamos usar uma abordagem com Supabase Edge Functions
+
+  String resolveSenderEmail({String? senderEmail}) {
+    final trimmed = senderEmail?.trim();
+    if (trimmed != null && trimmed.isNotEmpty) {
+      return trimmed;
+    }
+
+    return defaultSenderEmail;
+  }
   
   /// Envia um email de confirmação de cadastro
   /// 
@@ -20,9 +31,11 @@ class EmailService {
     required String name,
     required String confirmationLink,
     String appName = 'SignWriter Fácil',
+    String? senderEmail,
   }) async {
     try {
-      debugPrint('EmailService: Enviando email de confirmação para $email');
+      final resolvedSenderEmail = resolveSenderEmail(senderEmail: senderEmail);
+      debugPrint('EmailService: Enviando email de confirmação para $email usando $resolvedSenderEmail');
       
       // Opção 1: Se usar Supabase Edge Functions
       final result = await _sendViaSupabaseFunction(
@@ -31,6 +44,7 @@ class EmailService {
         confirmationLink: confirmationLink,
         appName: appName,
         type: 'confirmation',
+        senderEmail: resolvedSenderEmail,
       );
       
       return result;
@@ -45,15 +59,18 @@ class EmailService {
     required String email,
     required String name,
     String appName = 'SignWriter Fácil',
+    String? senderEmail,
   }) async {
     try {
-      debugPrint('EmailService: Enviando email de boas-vindas para $email');
+      final resolvedSenderEmail = resolveSenderEmail(senderEmail: senderEmail);
+      debugPrint('EmailService: Enviando email de boas-vindas para $email usando $resolvedSenderEmail');
       
       final result = await _sendViaSupabaseFunction(
         email: email,
         name: name,
         appName: appName,
         type: 'welcome',
+        senderEmail: resolvedSenderEmail,
       );
       
       return result;
@@ -75,10 +92,17 @@ class EmailService {
     required String type,
     String? confirmationLink,
     String appName = 'SignWriter Fácil',
+    String? senderEmail,
   }) async {
     try {
       final apiUrl = dotenv.env['SUPABASE_URL'];
-      final anonKey = dotenv.env['SUPABASE_ANON_KEY'];
+      final anonKey = dotenv.env['SUPABASE_KEY'] ?? dotenv.env['SUPABASE_ANON_KEY'];
+      final resolvedSenderEmail = resolveSenderEmail(
+        senderEmail: senderEmail ??
+            dotenv.env['APP_EMAIL'] ??
+            dotenv.env['EMAIL_SENDER_EMAIL'] ??
+            dotenv.env['EMAIL_SENDER_ID'],
+      );
       
       if (apiUrl == null || anonKey == null) {
         debugPrint('EmailService ERROR: Supabase credentials not found in .env');
@@ -97,6 +121,8 @@ class EmailService {
           'email': email,
           'name': name,
           'type': type, // 'confirmation' ou 'welcome'
+          'from': resolvedSenderEmail,
+          'senderEmail': resolvedSenderEmail,
           'confirmationLink': confirmationLink,
           'appName': appName,
         }),
