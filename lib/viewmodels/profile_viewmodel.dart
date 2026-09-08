@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../services/learning_progress_service.dart';
 import '../utils/friendly_error.dart';
 
 enum AppThemeMode {
@@ -591,6 +592,29 @@ Locale get locale {
           .eq('id', user.id)
           .single();
 
+        final learningProgress = await LearningProgressService()
+          .loadProgress();
+        final remoteProgress = await _supabase
+          .from('user_lesson_progress')
+          .select()
+          .eq('user_id', user.id);
+        final writtenSigns = await _supabase
+          .from('written_signs')
+          .select()
+          .eq('user_id', user.id)
+          .order('updated_at', ascending: false);
+          final favoriteSigns = await _supabase
+            .from('favorite_signs')
+            .select('sign_id')
+            .eq('user_id', user.id);
+
+        final sanitizedSigns = writtenSigns.map((raw) {
+        final sign = Map<String, dynamic>.from(raw as Map);
+        sign.remove('preview_png_base64');
+        sign.remove('preview_svg');
+        return sign;
+        }).toList();
+
       final dataToExport = {
         'profile': profileData,
         'settings': {
@@ -601,6 +625,14 @@ Locale get locale {
           'spacing': _spacing,
           'language': _language,
         },
+        'learning_progress': learningProgress.toMap(),
+        'synced_learning_progress': remoteProgress
+            .map((row) => Map<String, dynamic>.from(row as Map))
+            .toList(),
+        'written_signs': sanitizedSigns,
+        'favorite_signs': favoriteSigns
+          .map((row) => Map<String, dynamic>.from(row as Map))
+          .toList(),
         'exported_at': DateTime.now().toIso8601String(),
         'app_version': '1.0.0',
       };

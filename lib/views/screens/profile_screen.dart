@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/export_data.dart';
+import '../../services/export_format.dart';
 import '../../viewmodels/profile_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../accessibility_settings_view.dart';
@@ -566,15 +567,82 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _doExport(ProfileViewModel vm) async {
+    final format = await showModalBottomSheet<ExportFormat>(
+      context: context,
+      backgroundColor: _card,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const ListTile(
+                title: Text('Escolha o formato'),
+                subtitle: Text('Selecione como deseja salvar seus dados.'),
+              ),
+              _exportOption(
+                context,
+                format: ExportFormat.pdf,
+                icon: Icons.picture_as_pdf_outlined,
+                title: 'PDF',
+                subtitle: 'Relatório pronto para ler ou imprimir',
+              ),
+              _exportOption(
+                context,
+                format: ExportFormat.csv,
+                icon: Icons.table_chart_outlined,
+                title: 'CSV',
+                subtitle: 'Ideal para abrir em planilhas',
+              ),
+              _exportOption(
+                context,
+                format: ExportFormat.txt,
+                icon: Icons.notes_outlined,
+                title: 'TXT',
+                subtitle: 'Texto simples e compatível',
+              ),
+              _exportOption(
+                context,
+                format: ExportFormat.json,
+                icon: Icons.data_object_outlined,
+                title: 'JSON',
+                subtitle: 'Backup completo para uso no aplicativo',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (format == null || !mounted) return;
+
     try {
       final data = await vm.exportUserData();
       await shareExportedUserData(data,
+          format: format,
           shareText: 'Meus dados do SignWriter Fácil',
           shareSubject: 'Exportação - SignWriter Fácil');
     } catch (e) {
       if (!mounted) return;
       _snack('Erro ao exportar: $e', false);
     }
+  }
+
+  Widget _exportOption(
+    BuildContext context, {
+    required ExportFormat format,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: _primary),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => Navigator.pop(context, format),
+    );
   }
 
   void _confirmDelete(ProfileViewModel vm) {
