@@ -228,49 +228,55 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     final tokens = _tokens(context);
 
     return SafeArea(
-      child: Column(
-        children: [
-          Padding(
-            padding: AppSpacing.symmetric(context, horizontal: 24.0, vertical: 16.0),
-            child: Column(
-              children: [
-                SizedBox(height: AppSpacing.value(context, 40)),
-                const AppLogo(
-                  size: 80,
-                  colored: true,
-                  showText: false,
-                ),
-                SizedBox(height: AppSpacing.value(context, 20)),
-                Text(
-                  context.l10n.appTitle,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: scheme.primary,
-                      ),
-                ),
-                SizedBox(height: AppSpacing.value(context, 8)),
-                Text(
-                  context.l10n.authSubtitle,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: tokens.onSurfaceMuted,
-                      ),
-                ),
-                SizedBox(height: AppSpacing.value(context, 32)),
-                _buildTabBarChrome(context),
-                SizedBox(height: AppSpacing.value(context, 24)),
-              ],
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 32),
+        child: Column(
+          children: [
+            Padding(
+              padding: AppSpacing.symmetric(
+                context,
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
+              child: Column(
+                children: [
+                  SizedBox(height: AppSpacing.value(context, 40)),
+                  const AppLogo(
+                    size: 80,
+                    colored: true,
+                    showText: false,
+                  ),
+                  SizedBox(height: AppSpacing.value(context, 20)),
+                  Text(
+                    context.l10n.appTitle,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: scheme.primary,
+                        ),
+                  ),
+                  SizedBox(height: AppSpacing.value(context, 8)),
+                  Text(
+                    context.l10n.authSubtitle,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: tokens.onSurfaceMuted,
+                        ),
+                  ),
+                  SizedBox(height: AppSpacing.value(context, 32)),
+                  _buildTabBarChrome(context),
+                  SizedBox(height: AppSpacing.value(context, 24)),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildLoginTab(),
-                _buildSignupTab(),
-              ],
+            AnimatedBuilder(
+              animation: _tabController,
+              builder: (context, _) {
+                return _tabController.index == 0
+                    ? _buildLoginTab(scrollable: false)
+                    : _buildSignupTab(scrollable: false);
+              },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -337,8 +343,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildLoginTab() {
-    return SingleChildScrollView(
+  Widget _buildLoginTab({bool scrollable = true}) {
+    final content = Padding(
       padding: AppSpacing.symmetric(context, horizontal: 24.0),
       child: Form(
         key: _loginFormKey,
@@ -446,6 +452,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         ),
       ),
     );
+    return scrollable ? SingleChildScrollView(child: content) : content;
   }
 
   Future<void> _showPasswordRecoveryDialog() async {
@@ -472,10 +479,10 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildSignupTab() {
+  Widget _buildSignupTab({bool scrollable = true}) {
     return Consumer<AuthViewModel>(
       builder: (context, viewModel, child) {
-        return SingleChildScrollView(
+        final content = Padding(
           padding: AppSpacing.symmetric(context, horizontal: 24.0),
           child: Form(
             key: _signupFormKey,
@@ -613,6 +620,9 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             ),
           ),
         );
+        return scrollable
+            ? SingleChildScrollView(child: content)
+            : content;
       },
     );
   }
