@@ -30,6 +30,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fullNameLabel => 'Full name';
 
   @override
+  String get fullNameRequiredError => 'Enter your first and last name';
+
+  @override
+  String get confirmEmailLabel => 'Confirm email';
+
+  @override
+  String get emailMismatchError => 'The emails do not match';
+
+  @override
   String get confirmPasswordLabel => 'Confirm password';
 
   @override

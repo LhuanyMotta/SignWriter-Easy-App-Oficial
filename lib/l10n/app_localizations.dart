@@ -137,6 +137,24 @@ abstract class AppLocalizations {
   /// **'Full name'**
   String get fullNameLabel;
 
+  /// No description provided for @fullNameRequiredError.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your first and last name'**
+  String get fullNameRequiredError;
+
+  /// No description provided for @confirmEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm email'**
+  String get confirmEmailLabel;
+
+  /// No description provided for @emailMismatchError.
+  ///
+  /// In en, this message translates to:
+  /// **'The emails do not match'**
+  String get emailMismatchError;
+
   /// No description provided for @confirmPasswordLabel.
   ///
   /// In en, this message translates to:

@@ -30,6 +30,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String get fullNameLabel => 'Nome completo';
 
   @override
+  String get fullNameRequiredError => 'Informe nome e sobrenome';
+
+  @override
+  String get confirmEmailLabel => 'Confirmar e-mail';
+
+  @override
+  String get emailMismatchError => 'Os e-mails não coincidem';
+
+  @override
   String get confirmPasswordLabel => 'Confirmar senha';
 
   @override

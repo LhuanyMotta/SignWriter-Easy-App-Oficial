@@ -37,6 +37,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   
   final TextEditingController _signupNameController = TextEditingController();
   final TextEditingController _signupEmailController = TextEditingController();
+  final TextEditingController _signupConfirmEmailController = TextEditingController();
   final TextEditingController _signupPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
@@ -73,6 +74,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     _loginPasswordController.dispose();
     _signupNameController.dispose();
     _signupEmailController.dispose();
+    _signupConfirmEmailController.dispose();
     _signupPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -497,8 +499,29 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                     if (value == null || value.isEmpty) {
                       return context.l10n.enterNameError;
                     }
-                    if (value.length < 2) {
-                      return context.l10n.nameLengthError;
+                    final nameParts = value.trim().split(RegExp(r'\s+'));
+                    if (nameParts.length < 2 ||
+                        nameParts.any((part) => part.length < 2)) {
+                      return context.l10n.fullNameRequiredError;
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: AppSpacing.value(context, 16)),
+
+                _buildTextField(
+                  controller: _signupConfirmEmailController,
+                  label: context.l10n.confirmEmailLabel,
+                  hintText: context.l10n.confirmEmailLabel,
+                  icon: Icons.mark_email_read_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return context.l10n.enterEmailError;
+                    }
+                    if (value.trim().toLowerCase() !=
+                        _signupEmailController.text.trim().toLowerCase()) {
+                      return context.l10n.emailMismatchError;
                     }
                     return null;
                   },
