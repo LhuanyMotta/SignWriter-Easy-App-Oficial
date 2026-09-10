@@ -57,6 +57,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invalidEmailError => 'Please enter a valid email';
 
   @override
+  String get invalidEmailDomainError => 'Please enter a valid email';
+
+  @override
   String get enterPasswordError => 'Please enter your password';
 
   @override
@@ -76,6 +79,135 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passwordRecoverySoon => 'Password recovery will be available soon';
+
+  @override
+  String get passwordRecoverySent => 'We sent a recovery link to your email.';
+
+  @override
+  String get passwordRecoveryError => 'Could not send the recovery link.';
+
+  @override
+  String get resetPasswordTitle => 'Reset password';
+
+  @override
+  String get resetPasswordSubtitle => 'Choose a new password for your account.';
+
+  @override
+  String get newPasswordLabel => 'New password';
+
+  @override
+  String get saveNewPassword => 'Save new password';
+
+  @override
+  String get passwordUpdatedSuccess => 'Password updated successfully!';
+
+  @override
+  String get sendButton => 'Send';
+
+  @override
+  String get passwordMinLengthError => 'Password must be at least 8 characters long';
+
+  @override
+  String get passwordUppercaseError => 'Password must contain at least one uppercase letter';
+
+  @override
+  String get passwordLowercaseError => 'Password must contain at least one lowercase letter';
+
+  @override
+  String get passwordNumberError => 'Password must contain at least one number';
+
+  @override
+  String get passwordSpecialCharError => 'Password must contain at least one special character (!@#\$%^&*)';
+
+  @override
+  String get authOAuthContinueInBrowser => 'Continue authentication in the browser';
+
+  @override
+  String get authErrorInvalidCredentials => 'Invalid email or password. Try again.';
+
+  @override
+  String get authErrorEmailExists => 'This email is already registered.';
+
+  @override
+  String get authErrorWeakPassword => 'The password is too weak.';
+
+  @override
+  String get authErrorEmailSignupsDisabled => 'Email sign-up is disabled.';
+
+  @override
+  String get authErrorEmailLoginsDisabled => 'Email login is disabled.';
+
+  @override
+  String get authErrorEmailNotConfirmed => 'Confirm your email before signing in.';
+
+  @override
+  String get authErrorOAuthNotEnabled => 'This social login is unavailable.';
+
+  @override
+  String get authErrorCreateAccount => 'Could not create the account.';
+
+  @override
+  String get authErrorSignup => 'Could not complete sign-up.';
+
+  @override
+  String get authErrorLogin => 'Could not sign in.';
+
+  @override
+  String get profileSignOutTitle => 'Sign out';
+
+  @override
+  String get profileSignOutContent => 'Do you really want to sign out?';
+
+  @override
+  String get profileSignOutConfirm => 'Sign out';
+
+  @override
+  String get profileSignOutButton => 'Sign out';
+
+  @override
+  String get profileGallery => 'Gallery';
+
+  @override
+  String get profileCamera => 'Camera';
+
+  @override
+  String get profileErrorUpdatePhoto => 'Could not update the profile picture.';
+
+  @override
+  String get profileDeleteTitle => 'Delete account';
+
+  @override
+  String get profileDeleteButton => 'Delete';
+
+  @override
+  String get profileErrorDeleteAccount => 'Could not delete the account.';
+
+  @override
+  String get translateNoSignFound => 'No sign found.';
+
+  @override
+  String get allFilter => 'All';
+
+  @override
+  String get dictionarySearchHint => 'Search signs';
+
+  @override
+  String get favoritesEmpty => 'You have not favorited any signs yet.';
+
+  @override
+  String get editorEditSign => 'Edit sign';
+
+  @override
+  String get editorNewSign => 'New sign';
+
+  @override
+  String get editorCategoryLabel => 'Category';
+
+  @override
+  String get editorTagsHint => 'Tags separated by commas';
+
+  @override
+  String get editorSaveSign => 'Save sign';
 
   @override
   String get homeWelcome => 'Welcome!';
@@ -483,127 +615,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get learningReturnToLesson => 'Back to lesson';
-
-  @override
-  String get verificationCodeLabel => 'Verification Code';
-
-  @override
-  String get verificationCodeHint => 'Enter the 6-digit code sent to your email';
-
-  @override
-  String get verificationCodeButton => 'Confirm code';
-
-  @override
-  String get verificationCodeEmptyError => 'Enter the verification code to continue.';
-
-  @override
-  String get verificationCodeSent => 'Verification code sent!';
-
-  @override
-  String get invalidEmailDomainError => 'Email domain not supported. Use Gmail, Outlook, Yahoo, etc.';
-
-  @override
-  String get passwordMinLengthError => 'Password must be at least 8 characters long';
-
-  @override
-  String get passwordUppercaseError => 'Password must contain at least one uppercase letter';
-
-  @override
-  String get passwordLowercaseError => 'Password must contain at least one lowercase letter';
-
-  @override
-  String get passwordNumberError => 'Password must contain at least one number';
-
-  @override
-  String get passwordSpecialCharError => 'Password must contain at least one special character (!@#\$%^&*)';
-
-  @override
-  String get authOAuthContinueInBrowser => 'Continuing authentication in browser...';
-
-  @override
-  String get authErrorInvalidCredentials => 'Invalid email or password. Try again.';
-
-  @override
-  String get authErrorEmailExists => 'This email is already registered. Sign in or use another email.';
-
-  @override
-  String get authErrorWeakPassword => 'Password is too weak. It must contain at least 8 characters.';
-
-  @override
-  String get authErrorEmailSignupsDisabled => 'Email signup is disabled at the moment.';
-
-  @override
-  String get authErrorEmailLoginsDisabled => 'Email login is disabled at the moment.';
-
-  @override
-  String get authErrorEmailNotConfirmed => 'Your email has not been confirmed yet. Open the confirmation link sent by email and try signing in again.';
-
-  @override
-  String get authErrorOAuthNotEnabled => 'Authentication with this social network is not enabled.';
-
-  @override
-  String get authErrorCreateAccount => 'Error creating account. Try again.';
-
-  @override
-  String get authErrorSignup => 'Signup error';
-
-  @override
-  String get authErrorLogin => 'Login error';
-
-  @override
-  String get profileSignOutTitle => 'Sign Out';
-
-  @override
-  String get profileSignOutContent => 'Are you sure you want to sign out?';
-
-  @override
-  String get profileSignOutButton => 'Sign Out';
-
-  @override
-  String get profileSignOutConfirm => 'Confirm Sign Out';
-
-  @override
-  String get profileGallery => 'Gallery';
-
-  @override
-  String get profileCamera => 'Camera';
-
-  @override
-  String get profileErrorUpdatePhoto => 'Error updating photo';
-
-  @override
-  String get profileDeleteTitle => 'Delete Account';
-
-  @override
-  String get profileDeleteButton => 'Delete';
-
-  @override
-  String get profileErrorDeleteAccount => 'Error deleting account';
-
-  @override
-  String get translateNoSignFound => 'This sign does not exist in the dictionary yet';
-
-  @override
-  String get allFilter => 'All';
-
-  @override
-  String get dictionarySearchHint => 'Search signs';
-
-  @override
-  String get favoritesEmpty => 'You have no favorite signs yet';
-
-  @override
-  String get editorEditSign => 'Edit Sign';
-
-  @override
-  String get editorNewSign => 'New Sign';
-
-  @override
-  String get editorCategoryLabel => 'Category';
-
-  @override
-  String get editorTagsHint => 'Tags (comma separated)';
-
-  @override
-  String get editorSaveSign => 'Save Sign';
 }

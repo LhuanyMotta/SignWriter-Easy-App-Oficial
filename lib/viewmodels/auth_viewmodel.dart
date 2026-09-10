@@ -20,6 +20,8 @@ enum AuthErrorType {
 class AuthViewModel extends ChangeNotifier {
   final SupabaseClient _supabase;
   static const String _oauthRedirectUrl = 'signwriterfacil://login-callback/';
+  static const String _passwordResetRedirectUrl =
+      'signwriterfacil://reset-password/';
 
   /// Na Web não existe esquema de URI customizado (signwriterfacil://) —
   /// o navegador precisa voltar pra uma URL http(s) real, que tem que estar
@@ -27,6 +29,9 @@ class AuthViewModel extends ChangeNotifier {
   /// > Redirect URLs. Em mobile, mantém o esquema customizado de sempre.
   String get _resolvedRedirectUrl =>
       kIsWeb ? Uri.base.origin : _oauthRedirectUrl;
+
+        String get _resolvedPasswordResetRedirectUrl =>
+          kIsWeb ? Uri.base.origin : _passwordResetRedirectUrl;
 
   bool _isLoading = false;
   bool _requiresEmailConfirmation = false;
@@ -44,6 +49,48 @@ class AuthViewModel extends ChangeNotifier {
   String? get pendingVerificationEmail => _pendingVerificationEmail;
   String? get error => _error;
   AuthErrorType? get errorType => _errorType;
+
+  Future<bool> sendPasswordResetEmail({required String email}) async {
+    _setLoading(true);
+
+    if (!EmailValidator.isValid(email)) {
+      _errorType = AuthErrorType.invalidEmail;
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+
+    try {
+      await _supabase.auth.resetPasswordForEmail(
+        email.trim(),
+        redirectTo: _resolvedPasswordResetRedirectUrl,
+      );
+      _setLoading(false);
+      return true;
+    } on AuthException catch (e) {
+      _setError(e.message);
+      return false;
+    } catch (e) {
+      _setError('$e');
+      return false;
+    }
+  }
+
+  Future<bool> updatePassword(String password) async {
+    _setLoading(true);
+    try {
+      await _supabase.auth.updateUser(UserAttributes(password: password));
+      _setLoading(false);
+      return true;
+    } on AuthException catch (e) {
+      _setError(e.message);
+      return false;
+    } catch (e) {
+      _setError('$e');
+      return false;
+    }
+  }
 
   void setEmailConfirmationState({
     required bool requiresEmailConfirmation,
@@ -144,6 +191,25 @@ class AuthViewModel extends ChangeNotifier {
       return false;
     } catch (e) {
       debugPrint('SIGNUP_UNKNOWN_EXCEPTION: $e');
+      _setError('$e');
+      return false;
+    }
+  }
+
+  Future<bool> resendSignupConfirmation({required String email}) async {
+    _setLoading(true);
+    try {
+      await _supabase.auth.resend(
+        type: OtpType.signup,
+        email: email.trim(),
+        emailRedirectTo: _resolvedRedirectUrl,
+      );
+      _setLoading(false);
+      return true;
+    } on AuthException catch (e) {
+      _setError(e.message);
+      return false;
+    } catch (e) {
       _setError('$e');
       return false;
     }

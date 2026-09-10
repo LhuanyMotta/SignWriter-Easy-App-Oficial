@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +11,7 @@ import 'package:signwriter_easy_app_oficial/viewmodels/dictionary_viewmodel.dart
 import 'package:signwriter_easy_app_oficial/viewmodels/learn_practice_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/viewmodels/translate_viewmodel.dart';
 import 'package:signwriter_easy_app_oficial/views/screens/home_screen.dart';
+import 'package:signwriter_easy_app_oficial/views/screens/reset_password_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:signwriter_easy_app_oficial/theme/app_theme.dart';
 import 'package:signwriter_easy_app_oficial/routes/app_routes.dart';
@@ -147,11 +150,52 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class AuthWrapper extends StatelessWidget {
+class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
 
   @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  late final StreamSubscription<AuthState> _authSubscription;
+  bool _isPasswordRecovery = _hasPasswordRecoveryMarker();
+
+  static bool _hasPasswordRecoveryMarker() {
+    if (Uri.base.path == '/reset-password') return true;
+    if (Uri.base.queryParameters['type'] == 'recovery') return true;
+
+    final fragment = Uri.base.fragment;
+    if (fragment.isEmpty) return false;
+
+    try {
+      return Uri.splitQueryString(fragment)['type'] == 'recovery';
+    } catch (_) {
+      return fragment.contains('type=recovery');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen(
+      (state) {
+        if (state.event == AuthChangeEvent.passwordRecovery && mounted) {
+          setState(() => _isPasswordRecovery = true);
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _authSubscription.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_isPasswordRecovery) return const ResetPasswordScreen();
     final session = Supabase.instance.client.auth.currentSession;
 
     if (session != null) {

@@ -9,6 +9,7 @@ import '../../viewmodels/auth_viewmodel.dart';
 import '../../utils/password_validator.dart';
 import '../../utils/email_validator.dart';
 import 'home_screen.dart';
+import 'reset_password_screen.dart';
 import '../widgets/app_logo.dart';
 import '../accessibility_settings_view.dart';
 import '../../theme/app_spacing.dart';
@@ -46,6 +47,14 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     _tabController = TabController(length: 2, vsync: this);
     _authStateSubscription = Supabase.instance.client.auth.onAuthStateChange.listen(
       (data) async {
+        if (data.event == AuthChangeEvent.passwordRecovery && mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => const ResetPasswordScreen(),
+            ),
+          );
+          return;
+        }
         if (data.event == AuthChangeEvent.signedIn && mounted) {
           if (!_hasNavigatedAfterAuth) {
             _hasNavigatedAfterAuth = true;
@@ -371,14 +380,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(context.l10n.passwordRecoverySoon),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
+                onPressed: () => _showPasswordRecoveryDialog(),
                 child: Text(
                   context.l10n.forgotPassword,
                   style: TextStyle(
@@ -442,6 +444,30 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             SizedBox(height: AppSpacing.value(context, 32)),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _showPasswordRecoveryDialog() async {
+    final sent = await showDialog<bool>(
+      context: context,
+      builder: (_) => _PasswordRecoveryDialog(
+        viewModel: _viewModel,
+        initialEmail: _loginEmailController.text.trim(),
+      ),
+    );
+
+    if (!mounted || sent == null) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          sent
+              ? context.l10n.passwordRecoverySent
+              : _viewModel.error ?? context.l10n.passwordRecoveryError,
+        ),
+        backgroundColor: sent
+            ? Colors.green
+            : Theme.of(context).colorScheme.error,
       ),
     );
   }
@@ -862,6 +888,28 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             content: Text('Um link de confirmação foi enviado para ${viewModel.pendingVerificationEmail}. Abra o e-mail e clique no link para concluir o cadastro.'),
             backgroundColor: Colors.blue,
             duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'REENVIAR',
+              onPressed: () async {
+                final email = viewModel.pendingVerificationEmail;
+                if (email == null) return;
+                final sent = await viewModel.resendSignupConfirmation(
+                  email: email,
+                );
+                if (!mounted) return;
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      sent
+                          ? 'Novo link enviado. Verifique sua caixa de entrada.'
+                          : viewModel.error ??
+                              'Não foi possível reenviar o link.',
+                    ),
+                    backgroundColor: sent ? Colors.green : Colors.red,
+                  ),
+                );
+              },
+            ),
           ),
         );
       } else {
@@ -927,6 +975,84 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       case null:
         return isSignup ? l.authErrorSignup : l.authErrorLogin;
     }
+  }
+}
+
+class _PasswordRecoveryDialog extends StatefulWidget {
+  final AuthViewModel viewModel;
+  final String initialEmail;
+
+  const _PasswordRecoveryDialog({
+    required this.viewModel,
+    required this.initialEmail,
+  });
+
+  @override
+  State<_PasswordRecoveryDialog> createState() =>
+      _PasswordRecoveryDialogState();
+}
+
+class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _emailController;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController(text: widget.initialEmail);
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(context.l10n.forgotPassword),
+      content: Form(
+        key: _formKey,
+        child: TextFormField(
+          controller: _emailController,
+          keyboardType: TextInputType.emailAddress,
+          autofocus: true,
+          decoration: InputDecoration(
+            labelText: context.l10n.emailLabel,
+            prefixIcon: const Icon(Icons.email_outlined),
+          ),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return context.l10n.enterEmailError;
+            }
+            if (!EmailValidator.isValid(value)) {
+              return context.l10n.invalidEmailDomainError;
+            }
+            return null;
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(context.l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: Text(context.l10n.sendButton),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    final success = await widget.viewModel.sendPasswordResetEmail(
+      email: _emailController.text,
+    );
+    if (!mounted) return;
+    Navigator.pop(context, success);
   }
 }
 

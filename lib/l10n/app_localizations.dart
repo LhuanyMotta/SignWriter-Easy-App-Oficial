@@ -191,6 +191,12 @@ abstract class AppLocalizations {
   /// **'Please enter a valid email'**
   String get invalidEmailError;
 
+  /// No description provided for @invalidEmailDomainError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email'**
+  String get invalidEmailDomainError;
+
   /// No description provided for @enterPasswordError.
   ///
   /// In en, this message translates to:
@@ -232,6 +238,264 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Password recovery will be available soon'**
   String get passwordRecoverySoon;
+
+  /// No description provided for @passwordRecoverySent.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a recovery link to your email.'**
+  String get passwordRecoverySent;
+
+  /// No description provided for @passwordRecoveryError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send the recovery link.'**
+  String get passwordRecoveryError;
+
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @resetPasswordSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a new password for your account.'**
+  String get resetPasswordSubtitle;
+
+  /// No description provided for @newPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get newPasswordLabel;
+
+  /// No description provided for @saveNewPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Save new password'**
+  String get saveNewPassword;
+
+  /// No description provided for @passwordUpdatedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated successfully!'**
+  String get passwordUpdatedSuccess;
+
+  /// No description provided for @sendButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get sendButton;
+
+  /// No description provided for @passwordMinLengthError.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters long'**
+  String get passwordMinLengthError;
+
+  /// No description provided for @passwordUppercaseError.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must contain at least one uppercase letter'**
+  String get passwordUppercaseError;
+
+  /// No description provided for @passwordLowercaseError.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must contain at least one lowercase letter'**
+  String get passwordLowercaseError;
+
+  /// No description provided for @passwordNumberError.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must contain at least one number'**
+  String get passwordNumberError;
+
+  /// No description provided for @passwordSpecialCharError.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must contain at least one special character (!@#\$%^&*)'**
+  String get passwordSpecialCharError;
+
+  /// No description provided for @authOAuthContinueInBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue authentication in the browser'**
+  String get authOAuthContinueInBrowser;
+
+  /// No description provided for @authErrorInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email or password. Try again.'**
+  String get authErrorInvalidCredentials;
+
+  /// No description provided for @authErrorEmailExists.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already registered.'**
+  String get authErrorEmailExists;
+
+  /// No description provided for @authErrorWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'The password is too weak.'**
+  String get authErrorWeakPassword;
+
+  /// No description provided for @authErrorEmailSignupsDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Email sign-up is disabled.'**
+  String get authErrorEmailSignupsDisabled;
+
+  /// No description provided for @authErrorEmailLoginsDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Email login is disabled.'**
+  String get authErrorEmailLoginsDisabled;
+
+  /// No description provided for @authErrorEmailNotConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your email before signing in.'**
+  String get authErrorEmailNotConfirmed;
+
+  /// No description provided for @authErrorOAuthNotEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'This social login is unavailable.'**
+  String get authErrorOAuthNotEnabled;
+
+  /// No description provided for @authErrorCreateAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create the account.'**
+  String get authErrorCreateAccount;
+
+  /// No description provided for @authErrorSignup.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not complete sign-up.'**
+  String get authErrorSignup;
+
+  /// No description provided for @authErrorLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not sign in.'**
+  String get authErrorLogin;
+
+  /// No description provided for @profileSignOutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get profileSignOutTitle;
+
+  /// No description provided for @profileSignOutContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you really want to sign out?'**
+  String get profileSignOutContent;
+
+  /// No description provided for @profileSignOutConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get profileSignOutConfirm;
+
+  /// No description provided for @profileSignOutButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get profileSignOutButton;
+
+  /// No description provided for @profileGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get profileGallery;
+
+  /// No description provided for @profileCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get profileCamera;
+
+  /// No description provided for @profileErrorUpdatePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update the profile picture.'**
+  String get profileErrorUpdatePhoto;
+
+  /// No description provided for @profileDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get profileDeleteTitle;
+
+  /// No description provided for @profileDeleteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get profileDeleteButton;
+
+  /// No description provided for @profileErrorDeleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete the account.'**
+  String get profileErrorDeleteAccount;
+
+  /// No description provided for @translateNoSignFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No sign found.'**
+  String get translateNoSignFound;
+
+  /// No description provided for @allFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get allFilter;
+
+  /// No description provided for @dictionarySearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search signs'**
+  String get dictionarySearchHint;
+
+  /// No description provided for @favoritesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not favorited any signs yet.'**
+  String get favoritesEmpty;
+
+  /// No description provided for @editorEditSign.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit sign'**
+  String get editorEditSign;
+
+  /// No description provided for @editorNewSign.
+  ///
+  /// In en, this message translates to:
+  /// **'New sign'**
+  String get editorNewSign;
+
+  /// No description provided for @editorCategoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get editorCategoryLabel;
+
+  /// No description provided for @editorTagsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags separated by commas'**
+  String get editorTagsHint;
+
+  /// No description provided for @editorSaveSign.
+  ///
+  /// In en, this message translates to:
+  /// **'Save sign'**
+  String get editorSaveSign;
 
   /// No description provided for @homeWelcome.
   ///
@@ -1030,252 +1294,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back to lesson'**
   String get learningReturnToLesson;
-
-  /// No description provided for @verificationCodeLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Verification Code'**
-  String get verificationCodeLabel;
-
-  /// No description provided for @verificationCodeHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter the code sent to your email'**
-  String get verificationCodeHint;
-
-  /// No description provided for @verificationCodeButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm code'**
-  String get verificationCodeButton;
-
-  /// No description provided for @verificationCodeEmptyError.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter the code sent to your email'**
-  String get verificationCodeEmptyError;
-
-  /// No description provided for @verificationCodeSent.
-  ///
-  /// In en, this message translates to:
-  /// **'Verification code sent!'**
-  String get verificationCodeSent;
-
-  /// No description provided for @invalidEmailDomainError.
-  ///
-  /// In en, this message translates to:
-  /// **'Email domain not supported. Use Gmail, Outlook, Yahoo, etc.'**
-  String get invalidEmailDomainError;
-
-  /// No description provided for @passwordMinLengthError.
-  ///
-  /// In en, this message translates to:
-  /// **'Password must be at least 8 characters long'**
-  String get passwordMinLengthError;
-
-  /// No description provided for @passwordUppercaseError.
-  ///
-  /// In en, this message translates to:
-  /// **'Password must contain at least one uppercase letter'**
-  String get passwordUppercaseError;
-
-  /// No description provided for @passwordLowercaseError.
-  ///
-  /// In en, this message translates to:
-  /// **'Password must contain at least one lowercase letter'**
-  String get passwordLowercaseError;
-
-  /// No description provided for @passwordNumberError.
-  ///
-  /// In en, this message translates to:
-  /// **'Password must contain at least one number'**
-  String get passwordNumberError;
-
-  /// No description provided for @passwordSpecialCharError.
-  ///
-  /// In en, this message translates to:
-  /// **'Password must contain at least one special character (!@#\$%^&*)'**
-  String get passwordSpecialCharError;
-
-  /// No description provided for @authOAuthContinueInBrowser.
-  ///
-  /// In en, this message translates to:
-  /// **'Continuing authentication in browser...'**
-  String get authOAuthContinueInBrowser;
-
-  /// No description provided for @authErrorInvalidCredentials.
-  ///
-  /// In en, this message translates to:
-  /// **'Invalid email or password. Try again.'**
-  String get authErrorInvalidCredentials;
-
-  /// No description provided for @authErrorEmailExists.
-  ///
-  /// In en, this message translates to:
-  /// **'This email is already registered. Sign in or use another email.'**
-  String get authErrorEmailExists;
-
-  /// No description provided for @authErrorWeakPassword.
-  ///
-  /// In en, this message translates to:
-  /// **'Password is too weak. It must contain at least 8 characters.'**
-  String get authErrorWeakPassword;
-
-  /// No description provided for @authErrorEmailSignupsDisabled.
-  ///
-  /// In en, this message translates to:
-  /// **'Email signup is disabled at the moment.'**
-  String get authErrorEmailSignupsDisabled;
-
-  /// No description provided for @authErrorEmailLoginsDisabled.
-  ///
-  /// In en, this message translates to:
-  /// **'Email login is disabled at the moment.'**
-  String get authErrorEmailLoginsDisabled;
-
-  /// No description provided for @authErrorEmailNotConfirmed.
-  ///
-  /// In en, this message translates to:
-  /// **'Invalid or expired verification code. Try again.'**
-  String get authErrorEmailNotConfirmed;
-
-  /// No description provided for @authErrorOAuthNotEnabled.
-  ///
-  /// In en, this message translates to:
-  /// **'Authentication with this social network is not enabled.'**
-  String get authErrorOAuthNotEnabled;
-
-  /// No description provided for @authErrorCreateAccount.
-  ///
-  /// In en, this message translates to:
-  /// **'Error creating account. Try again.'**
-  String get authErrorCreateAccount;
-
-  /// No description provided for @authErrorSignup.
-  ///
-  /// In en, this message translates to:
-  /// **'Signup error'**
-  String get authErrorSignup;
-
-  /// No description provided for @authErrorLogin.
-  ///
-  /// In en, this message translates to:
-  /// **'Login error'**
-  String get authErrorLogin;
-
-  /// No description provided for @profileSignOutTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign Out'**
-  String get profileSignOutTitle;
-
-  /// No description provided for @profileSignOutContent.
-  ///
-  /// In en, this message translates to:
-  /// **'Are you sure you want to sign out?'**
-  String get profileSignOutContent;
-
-  /// No description provided for @profileSignOutButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Sign Out'**
-  String get profileSignOutButton;
-
-  /// No description provided for @profileSignOutConfirm.
-  ///
-  /// In en, this message translates to:
-  /// **'Confirm Sign Out'**
-  String get profileSignOutConfirm;
-
-  /// No description provided for @profileGallery.
-  ///
-  /// In en, this message translates to:
-  /// **'Gallery'**
-  String get profileGallery;
-
-  /// No description provided for @profileCamera.
-  ///
-  /// In en, this message translates to:
-  /// **'Camera'**
-  String get profileCamera;
-
-  /// No description provided for @profileErrorUpdatePhoto.
-  ///
-  /// In en, this message translates to:
-  /// **'Error updating photo'**
-  String get profileErrorUpdatePhoto;
-
-  /// No description provided for @profileDeleteTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete Account'**
-  String get profileDeleteTitle;
-
-  /// No description provided for @profileDeleteButton.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete'**
-  String get profileDeleteButton;
-
-  /// No description provided for @profileErrorDeleteAccount.
-  ///
-  /// In en, this message translates to:
-  /// **'Error deleting account'**
-  String get profileErrorDeleteAccount;
-
-  /// No description provided for @translateNoSignFound.
-  ///
-  /// In en, this message translates to:
-  /// **'This sign does not exist in the dictionary yet'**
-  String get translateNoSignFound;
-
-  /// No description provided for @allFilter.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get allFilter;
-
-  /// No description provided for @dictionarySearchHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Search signs'**
-  String get dictionarySearchHint;
-
-  /// No description provided for @favoritesEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'You have no favorite signs yet'**
-  String get favoritesEmpty;
-
-  /// No description provided for @editorEditSign.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit Sign'**
-  String get editorEditSign;
-
-  /// No description provided for @editorNewSign.
-  ///
-  /// In en, this message translates to:
-  /// **'New Sign'**
-  String get editorNewSign;
-
-  /// No description provided for @editorCategoryLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Category'**
-  String get editorCategoryLabel;
-
-  /// No description provided for @editorTagsHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Tags (comma separated)'**
-  String get editorTagsHint;
-
-  /// No description provided for @editorSaveSign.
-  ///
-  /// In en, this message translates to:
-  /// **'Save Sign'**
-  String get editorSaveSign;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
