@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../l10n/l10n.dart';
 import '../../utils/password_validator.dart';
+import '../../utils/friendly_error.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import 'auth_screen.dart';
 
@@ -123,7 +124,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     if (!mounted) return;
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(vm.error ?? context.l10n.passwordRecoveryError)),
+        SnackBar(
+          content: Text(vm.error == null
+              ? context.l10n.passwordRecoveryError
+              : friendlyError(Exception(vm.error))),
+        ),
       );
       return;
     }

@@ -333,6 +333,36 @@ class AppLocalizationsPt extends AppLocalizations {
   String get accountDataTitle => 'Dados da Conta';
 
   @override
+  String get profileResetPasswordTitle => 'Redefinir senha';
+
+  @override
+  String get profileResetPasswordSubtitle => 'Receba um link para criar uma nova senha';
+
+  @override
+  String get profileResetPasswordSent => 'Enviamos um link de redefinição para seu e-mail.';
+
+  @override
+  String get profileResetPasswordError => 'Não foi possível enviar o link de redefinição.';
+
+  @override
+  String get profileChangeEmailTitle => 'Alterar e-mail';
+
+  @override
+  String get profileChangeEmailSubtitle => 'Atualize o e-mail usado na sua conta';
+
+  @override
+  String get profileNewEmailLabel => 'Novo e-mail';
+
+  @override
+  String get profileSameEmailError => 'Informe um e-mail diferente do atual';
+
+  @override
+  String get profileChangeEmailSent => 'Enviamos a confirmação para o novo e-mail.';
+
+  @override
+  String get profileChangeEmailError => 'Não foi possível alterar o e-mail.';
+
+  @override
   String get exportDataTitle => 'Exportar Meus Dados';
 
   @override

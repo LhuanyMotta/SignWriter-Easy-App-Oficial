@@ -30,10 +30,12 @@ class ProfileViewModel extends ChangeNotifier {
   String _language = 'Português';
 
   Map<String, dynamic>? _userData;
+  String? _pendingEmailChange;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   Map<String, dynamic>? get userData => _userData;
+  String? get pendingEmailChange => _pendingEmailChange;
 
  bool get notificationsEnabled => _notificationsEnabled;
 
@@ -92,46 +94,82 @@ Locale get locale {
 
   Future<void> _loadUserData() async {
   try {
-    final user = _supabase.auth.currentUser;
+    User? currentUser = _supabase.auth.currentUser;
 
-    if (user == null) {
+    if (currentUser == null) {
       _userData = null;
       _errorMessage = 'Sua sessão expirou. Entre novamente.';
       return;
     }
 
+    try {
+      final freshUser = await _supabase.auth.getUser();
+      if (freshUser.user != null) {
+        currentUser = freshUser.user;
+      }
+    } catch (_) {
+      currentUser = _supabase.auth.currentUser;
+    }
+
+    if (currentUser == null) {
+      _userData = null;
+      _errorMessage = 'Sua sessão expirou. Entre novamente.';
+      return;
+    }
+
+    final fallbackName = currentUser.userMetadata?['name'] as String? ??
+        currentUser.email?.split('@').first ??
+        'Usuário';
+
     final response = await _supabase
         .from('profiles')
         .select()
-        .eq('id', user.id)
+        .eq('id', currentUser.id)
         .maybeSingle();
 
     if (response == null) {
       final newProfile = {
-        'id': user.id,
-        'name': user.userMetadata?['name'] ??
-            user.email?.split('@').first ??
-            'Usuário',
-        'email': user.email ?? '',
+        'id': currentUser.id,
+        'name': fallbackName,
+        'email': currentUser.email ?? '',
         'bio': '',
-        'avatar_url': user.userMetadata?['avatar_url'],
+        'avatar_url': currentUser.userMetadata?['avatar_url'],
         'updated_at': DateTime.now().toIso8601String(),
       };
 
       await _supabase.from('profiles').insert(newProfile);
-
       _userData = newProfile;
     } else {
-      _userData = Map<String, dynamic>.from(response);
+      final profile = Map<String, dynamic>.from(response);
+      final email = currentUser.email ?? profile['email'] ?? '';
+
+      if (profile['email'] != email) {
+        await _supabase
+            .from('profiles')
+            .update({'email': email, 'updated_at': DateTime.now().toIso8601String()})
+            .eq('id', currentUser.id);
+      }
+
+      _userData = {
+        ...profile,
+        'email': email,
+        'name': currentUser.userMetadata?['name'] ?? profile['name'] ?? fallbackName,
+      };
     }
 
     _errorMessage = null;
   } catch (e) {
+    if (_isInvalidSessionError(e)) {
+      _userData = null;
+      await _supabase.auth.signOut(scope: SignOutScope.local);
+      _errorMessage = friendlyError(e);
+      return;
+    }
     final user = _supabase.auth.currentUser;
 
     _userData = {
       'id': user?.id ?? '',
-      'name': user?.userMetadata?['name'] ??
+      'name': user?.userMetadata?['name'] as String? ??
           user?.email?.split('@').first ??
           'Usuário',
       'email': user?.email ?? '',
@@ -142,6 +180,11 @@ Locale get locale {
     _errorMessage = friendlyError(e);
   }
 }
+
+  bool _isInvalidSessionError(Object error) {
+    final text = error.toString().toLowerCase();
+    return text.contains('jwt') || text.contains('user from sub claim');
+  }
 
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
@@ -160,6 +203,35 @@ Locale get locale {
     if (_language == 'Inglês') _language = 'English';
     if (_language == 'Espanhol') _language = 'Português';
 
+    final savedPendingEmail = prefs.getString('pending_email_change');
+    final currentEmail = _supabase.auth.currentUser?.email?.trim();
+
+    if (savedPendingEmail == null || savedPendingEmail.isEmpty) {
+      _pendingEmailChange = _pendingEmailChange;
+    } else if (currentEmail != null &&
+        savedPendingEmail.toLowerCase() == currentEmail.toLowerCase()) {
+      _pendingEmailChange = null;
+      await prefs.remove('pending_email_change');
+    } else {
+      _pendingEmailChange = savedPendingEmail;
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> setPendingEmailChange(String email) async {
+    final trimmed = email.trim();
+    if (trimmed.isEmpty) return;
+    _pendingEmailChange = trimmed;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('pending_email_change', trimmed);
+    notifyListeners();
+  }
+
+  Future<void> clearPendingEmailChange() async {
+    _pendingEmailChange = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('pending_email_change');
     notifyListeners();
   }
 
@@ -567,7 +639,7 @@ Locale get locale {
   }
   Future<bool> logout() async {
     try {
-      await _supabase.auth.signOut();
+      await _supabase.auth.signOut(scope: SignOutScope.local);
       _userData = null;
       notifyListeners();
       return true;

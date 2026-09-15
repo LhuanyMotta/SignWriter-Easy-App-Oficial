@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart'
     show ChangeNotifier, debugPrint, defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../utils/email_validator.dart';
 
@@ -22,6 +23,19 @@ class AuthViewModel extends ChangeNotifier {
   static const String _oauthRedirectUrl = 'signwriterfacil://login-callback/';
   static const String _passwordResetRedirectUrl =
       'signwriterfacil://reset-password/';
+
+  static bool shouldRefreshUserState(AuthChangeEvent event) {
+    switch (event) {
+      case AuthChangeEvent.signedIn:
+      case AuthChangeEvent.userUpdated:
+      case AuthChangeEvent.passwordRecovery:
+      case AuthChangeEvent.tokenRefreshed:
+      case AuthChangeEvent.signedOut:
+        return true;
+      default:
+        return false;
+    }
+  }
 
   /// Na Web não existe esquema de URI customizado (signwriterfacil://) —
   /// o navegador precisa voltar pra uma URL http(s) real, que tem que estar
@@ -62,6 +76,9 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     try {
+      debugPrint(
+        'PASSWORD_RESET_REQUEST: redirect=$_resolvedPasswordResetRedirectUrl',
+      );
       await _supabase.auth.resetPasswordForEmail(
         email.trim(),
         redirectTo: _resolvedPasswordResetRedirectUrl,
@@ -69,9 +86,11 @@ class AuthViewModel extends ChangeNotifier {
       _setLoading(false);
       return true;
     } on AuthException catch (e) {
+      await _clearInvalidSession(e);
       _setError(e.message);
       return false;
     } catch (e) {
+      await _clearInvalidSession(e);
       _setError('$e');
       return false;
     }
@@ -84,9 +103,45 @@ class AuthViewModel extends ChangeNotifier {
       _setLoading(false);
       return true;
     } on AuthException catch (e) {
+      await _clearInvalidSession(e);
       _setError(e.message);
       return false;
     } catch (e) {
+      await _clearInvalidSession(e);
+      _setError('$e');
+      return false;
+    }
+  }
+
+  Future<bool> updateEmail(String email) async {
+    _setLoading(true);
+
+    if (!EmailValidator.isValid(email)) {
+      _errorType = AuthErrorType.invalidEmail;
+      _error = null;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+
+    try {
+      debugPrint('EMAIL_CHANGE_REQUEST: email=${email.trim()}');
+      final refreshed = await _refreshAccountSession();
+      if (!refreshed) {
+        _setError('session expired');
+        return false;
+      }
+      await _supabase.auth.updateUser(UserAttributes(email: email.trim()));
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('pending_email_change', email.trim());
+      _setLoading(false);
+      return true;
+    } on AuthException catch (e) {
+      await _clearInvalidSession(e);
+      _setError(e.message);
+      return false;
+    } catch (e) {
+      await _clearInvalidSession(e);
       _setError('$e');
       return false;
     }
@@ -262,7 +317,7 @@ class AuthViewModel extends ChangeNotifier {
   // ---------- LOGOUT ----------
   Future<bool> signOut() async {
     try {
-      await _supabase.auth.signOut();
+      await _supabase.auth.signOut(scope: SignOutScope.local);
       return true;
     } catch (_) {
       return false;
@@ -339,11 +394,33 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _clearInvalidSession(Object error) async {
+    final text = error.toString().toLowerCase();
+    if (text.contains('jwt') ||
+        text.contains('user from sub claim') ||
+        text.contains('session')) {
+      await _supabase.auth.signOut(scope: SignOutScope.local);
+    }
+  }
+
+  Future<bool> _refreshAccountSession() async {
+    if (_supabase.auth.currentSession == null) return false;
+    try {
+      final response = await _supabase.auth.refreshSession();
+      return response.session != null;
+    } catch (_) {
+      await _supabase.auth.signOut(scope: SignOutScope.local);
+      return false;
+    }
+  }
+
   AuthErrorType _classifyError(String error) {
     final e = error.toLowerCase();
     if (e.contains('invalid login credentials') || e.contains('invalid email or password')) {
       return AuthErrorType.invalidCredentials;
-    } else if (e.contains('user already registered') || e.contains('already exists')) {
+    } else if (e.contains('already registered') ||
+      e.contains('already been registered') ||
+      e.contains('already exists')) {
       return AuthErrorType.emailExists;
     } else if (e.contains('password should be at least') || e.contains('weak password')) {
       return AuthErrorType.weakPassword;

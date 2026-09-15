@@ -333,6 +333,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountDataTitle => 'Account Data';
 
   @override
+  String get profileResetPasswordTitle => 'Reset password';
+
+  @override
+  String get profileResetPasswordSubtitle => 'Receive a link to create a new password';
+
+  @override
+  String get profileResetPasswordSent => 'We sent a reset link to your email.';
+
+  @override
+  String get profileResetPasswordError => 'Could not send the reset link.';
+
+  @override
+  String get profileChangeEmailTitle => 'Change email';
+
+  @override
+  String get profileChangeEmailSubtitle => 'Update the email used by your account';
+
+  @override
+  String get profileNewEmailLabel => 'New email';
+
+  @override
+  String get profileSameEmailError => 'Enter an email different from the current one';
+
+  @override
+  String get profileChangeEmailSent => 'We sent a confirmation to the new email.';
+
+  @override
+  String get profileChangeEmailError => 'Could not change the email.';
+
+  @override
   String get exportDataTitle => 'Export My Data';
 
   @override

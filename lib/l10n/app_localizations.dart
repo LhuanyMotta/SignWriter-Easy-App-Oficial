@@ -743,6 +743,66 @@ abstract class AppLocalizations {
   /// **'Account Data'**
   String get accountDataTitle;
 
+  /// No description provided for @profileResetPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get profileResetPasswordTitle;
+
+  /// No description provided for @profileResetPasswordSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive a link to create a new password'**
+  String get profileResetPasswordSubtitle;
+
+  /// No description provided for @profileResetPasswordSent.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a reset link to your email.'**
+  String get profileResetPasswordSent;
+
+  /// No description provided for @profileResetPasswordError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send the reset link.'**
+  String get profileResetPasswordError;
+
+  /// No description provided for @profileChangeEmailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change email'**
+  String get profileChangeEmailTitle;
+
+  /// No description provided for @profileChangeEmailSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update the email used by your account'**
+  String get profileChangeEmailSubtitle;
+
+  /// No description provided for @profileNewEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New email'**
+  String get profileNewEmailLabel;
+
+  /// No description provided for @profileSameEmailError.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an email different from the current one'**
+  String get profileSameEmailError;
+
+  /// No description provided for @profileChangeEmailSent.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a confirmation to the new email.'**
+  String get profileChangeEmailSent;
+
+  /// No description provided for @profileChangeEmailError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not change the email.'**
+  String get profileChangeEmailError;
+
   /// No description provided for @exportDataTitle.
   ///
   /// In en, this message translates to:

@@ -107,6 +107,32 @@ void main() {
     expect(viewModel.pendingVerificationEmail, isNull);
   });
 
+  testWidgets('ProfileViewModel mantém e-mail pendente visível para confirmação', (tester) async {
+    final vm = ProfileViewModel();
+    await vm.setPendingEmailChange('novo@email.com');
+
+    expect(vm.pendingEmailChange, 'novo@email.com');
+  });
+
+  test('AuthViewModel trata evento de confirmação de email como atualização de sessão', () {
+    expect(
+      AuthViewModel.shouldRefreshUserState(AuthChangeEvent.userUpdated),
+      isTrue,
+    );
+    expect(
+      AuthViewModel.shouldRefreshUserState(AuthChangeEvent.passwordRecovery),
+      isTrue,
+    );
+    expect(
+      AuthViewModel.shouldRefreshUserState(AuthChangeEvent.signedOut),
+      isTrue,
+    );
+    expect(
+      AuthViewModel.shouldRefreshUserState(AuthChangeEvent.signedIn),
+      isTrue,
+    );
+  });
+
   testWidgets('AuthScreen mantém cadastro por link quando o email precisa ser validado', (tester) async {
     final viewModel = AuthViewModel(Supabase.instance.client);
     viewModel.setEmailConfirmationState(
