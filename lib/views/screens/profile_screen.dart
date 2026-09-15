@@ -5,7 +5,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/export_data.dart';
 import '../../services/export_format.dart';
 import '../../viewmodels/profile_viewmodel.dart';
+import '../../viewmodels/auth_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
+import '../../utils/email_validator.dart';
+import '../../utils/friendly_error.dart';
 import '../accessibility_settings_view.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/adaptive_nav_scaffold.dart';
@@ -109,6 +112,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final data = vm.userData ?? {};
     final name = (data['name'] as String? ?? 'Usuário').trim();
     final email = data['email'] as String? ?? '';
+    final pendingEmail = vm.pendingEmailChange?.trim();
     final avatarUrl = data['avatar_url'] as String?;
     final hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty;
 
@@ -185,6 +189,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (pendingEmail != null && pendingEmail.isNotEmpty) ...[
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.info_outline, size: 14, color: Colors.white),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            'Confirmação pendente: $pendingEmail',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 Text(
                   name,
                   style: const TextStyle(
@@ -318,16 +350,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           _divider(),
-          SwitchListTile(
-            secondary: Icon(Icons.notifications_outlined, color: _primary),
-            title: Text(context.l10n.notificationsTitle,
-                style: TextStyle(color: _text, fontWeight: FontWeight.w600)),
-            subtitle: Text(context.l10n.notificationsSubtitle,
-                style: TextStyle(color: _sub)),
-            value: vm.notificationsEnabled,
-            activeThumbColor: _primary,
-            activeTrackColor: _primary.withValues(alpha: 0.3),
-            onChanged: vm.toggleNotifications,
+          Material(
+            color: Colors.transparent,
+            child: SwitchListTile(
+              secondary: Icon(Icons.notifications_outlined, color: _primary),
+              title: Text(context.l10n.notificationsTitle,
+                  style: TextStyle(color: _text, fontWeight: FontWeight.w600)),
+              subtitle: Text(context.l10n.notificationsSubtitle,
+                  style: TextStyle(color: _sub)),
+              value: vm.notificationsEnabled,
+              activeThumbColor: _primary,
+              activeTrackColor: _primary.withValues(alpha: 0.3),
+              onChanged: vm.toggleNotifications,
+            ),
           ),
         ],
       ),
@@ -346,6 +381,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Column(
         children: [
+          _tile(
+            icon: Icons.lock_reset_outlined,
+            title: context.l10n.profileResetPasswordTitle,
+            subtitle: context.l10n.profileResetPasswordSubtitle,
+            onTap: _requestPasswordReset,
+          ),
+          _divider(),
+          _tile(
+            icon: Icons.email_outlined,
+            title: context.l10n.profileChangeEmailTitle,
+            subtitle: context.l10n.profileChangeEmailSubtitle,
+            onTap: _showChangeEmailDialog,
+          ),
+          _divider(),
           _tile(
             icon: Icons.download_outlined,
             title: context.l10n.exportDataTitle,
@@ -564,6 +613,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
       content: Text(msg),
       backgroundColor: ok ? Colors.green : Colors.red,
     ));
+  }
+
+  Future<void> _requestPasswordReset() async {
+    final email = Supabase.instance.client.auth.currentUser?.email;
+    if (email == null || email.isEmpty) {
+      _snack(context.l10n.profileResetPasswordError, false);
+      return;
+    }
+
+    final auth = context.read<AuthViewModel>();
+    final success = await auth.sendPasswordResetEmail(email: email);
+    if (!mounted) return;
+    _snack(
+      success ? context.l10n.profileResetPasswordSent :
+          (auth.error == null
+              ? context.l10n.profileResetPasswordError
+              : friendlyError(Exception(auth.error))),
+      success,
+    );
+  }
+
+  Future<void> _showChangeEmailDialog() async {
+    final currentEmail = Supabase.instance.client.auth.currentUser?.email ?? '';
+    final profile = context.read<ProfileViewModel>();
+
+    final email = await showDialog<String>(
+      context: context,
+      builder: (_) => _ChangeEmailDialog(currentEmail: currentEmail),
+    );
+
+    if (email == null) {
+      await profile.clearPendingEmailChange();
+      return;
+    }
+    if (!mounted) return;
+    final auth = context.read<AuthViewModel>();
+    final success = await auth.updateEmail(email);
+    if (!mounted) return;
+    _snack(
+      success ? context.l10n.profileChangeEmailSent :
+          _emailChangeErrorMessage(auth),
+      success,
+    );
+  }
+
+  String _emailChangeErrorMessage(AuthViewModel auth) {
+    if (auth.errorType == AuthErrorType.emailExists) {
+      return context.l10n.authErrorEmailExists;
+    }
+    if (auth.error != null) {
+      return friendlyError(Exception(auth.error));
+    }
+    return context.l10n.profileChangeEmailError;
   }
 
   Future<void> _doExport(ProfileViewModel vm) async {
@@ -841,6 +943,78 @@ if (widget.mode != _ProfileEditMode.name) ...[
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ChangeEmailDialog extends StatefulWidget {
+  final String currentEmail;
+
+  const _ChangeEmailDialog({required this.currentEmail});
+
+  @override
+  State<_ChangeEmailDialog> createState() => _ChangeEmailDialogState();
+}
+
+class _ChangeEmailDialogState extends State<_ChangeEmailDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(context.l10n.profileChangeEmailTitle),
+      content: Form(
+        key: _formKey,
+        child: TextFormField(
+          controller: _controller,
+          autofocus: true,
+          keyboardType: TextInputType.emailAddress,
+          decoration: InputDecoration(
+            labelText: context.l10n.profileNewEmailLabel,
+            hintText: widget.currentEmail,
+            prefixIcon: const Icon(Icons.email_outlined),
+          ),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return context.l10n.enterEmailError;
+            }
+            if (!EmailValidator.isValid(value)) {
+              return context.l10n.invalidEmailDomainError;
+            }
+            if (value.trim().toLowerCase() == widget.currentEmail.toLowerCase()) {
+              return context.l10n.profileSameEmailError;
+            }
+            return null;
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(context.l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              Navigator.pop(context, _controller.text.trim());
+            }
+          },
+          child: Text(context.l10n.saveChanges),
+        ),
+      ],
     );
   }
 }

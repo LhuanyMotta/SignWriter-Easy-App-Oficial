@@ -62,7 +62,7 @@ void main() async {
             create: (_) => ProfileViewModel(),
           ),
           ChangeNotifierProvider(
-            create: (_) => DictionaryViewModel(),
+            create: (_) => DictionaryViewModel(autoLoad: false),
           ),
           ChangeNotifierProvider(
             create: (_) => LearnPracticeViewModel(),
@@ -160,6 +160,7 @@ class AuthWrapper extends StatefulWidget {
 class _AuthWrapperState extends State<AuthWrapper> {
   late final StreamSubscription<AuthState> _authSubscription;
   bool _isPasswordRecovery = _hasPasswordRecoveryMarker();
+  Session? _session;
 
   static bool _hasPasswordRecoveryMarker() {
     if (Uri.base.path == '/reset-password') return true;
@@ -178,11 +179,28 @@ class _AuthWrapperState extends State<AuthWrapper> {
   @override
   void initState() {
     super.initState();
+    _session = Supabase.instance.client.auth.currentSession;
     _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen(
-      (state) {
-        if (state.event == AuthChangeEvent.passwordRecovery && mounted) {
-          setState(() => _isPasswordRecovery = true);
+      (state) async {
+        if (!mounted) return;
+
+        if (state.event == AuthChangeEvent.userUpdated) {
+          try {
+            await Supabase.instance.client.auth.refreshSession();
+            await Supabase.instance.client.auth.getUser();
+          } catch (_) {
+            // Ignora falha de refresh em fluxo de confirmação de e-mail.
+          }
         }
+
+        setState(() {
+          _session = state.session ?? Supabase.instance.client.auth.currentSession;
+          if (state.event == AuthChangeEvent.passwordRecovery) {
+            _isPasswordRecovery = true;
+          } else if (state.event == AuthChangeEvent.signedOut) {
+            _isPasswordRecovery = false;
+          }
+        });
       },
     );
   }
@@ -196,9 +214,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
   @override
   Widget build(BuildContext context) {
     if (_isPasswordRecovery) return const ResetPasswordScreen();
-    final session = Supabase.instance.client.auth.currentSession;
 
-    if (session != null) {
+    if (_session != null) {
       return const HomeScreen();
     }
 

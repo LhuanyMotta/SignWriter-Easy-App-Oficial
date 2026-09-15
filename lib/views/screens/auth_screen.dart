@@ -9,7 +9,6 @@ import '../../viewmodels/auth_viewmodel.dart';
 import '../../utils/password_validator.dart';
 import '../../utils/email_validator.dart';
 import 'home_screen.dart';
-import 'reset_password_screen.dart';
 import '../widgets/app_logo.dart';
 import '../accessibility_settings_view.dart';
 import '../../theme/app_spacing.dart';
@@ -44,18 +43,9 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _viewModel = AuthViewModel(Supabase.instance.client);
     _tabController = TabController(length: 2, vsync: this);
     _authStateSubscription = Supabase.instance.client.auth.onAuthStateChange.listen(
       (data) async {
-        if (data.event == AuthChangeEvent.passwordRecovery && mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => const ResetPasswordScreen(),
-            ),
-          );
-          return;
-        }
         if (data.event == AuthChangeEvent.signedIn && mounted) {
           if (!_hasNavigatedAfterAuth) {
             _hasNavigatedAfterAuth = true;
@@ -64,6 +54,12 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         }
       },
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _viewModel = context.read<AuthViewModel>();
   }
 
   @override
@@ -85,12 +81,9 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     final isWide = Responsive.isWide(context);
     final scheme = Theme.of(context).colorScheme;
 
-    return ChangeNotifierProvider.value(
-      value: _viewModel,
-      child: Scaffold(
-        backgroundColor: scheme.surface,
-        body: isWide ? _buildWideLayout(context) : _buildFormBody(context),
-      ),
+    return Scaffold(
+      backgroundColor: scheme.surface,
+      body: isWide ? _buildWideLayout(context) : _buildFormBody(context),
     );
   }
 
@@ -510,6 +503,24 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 SizedBox(height: AppSpacing.value(context, 16)),
 
                 _buildTextField(
+                  controller: _signupEmailController,
+                  label: context.l10n.emailLabel,
+                  hintText: context.l10n.emailLabel,
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return context.l10n.enterEmailError;
+                    }
+                    if (!EmailValidator.isValid(value)) {
+                      return context.l10n.invalidEmailDomainError;
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: AppSpacing.value(context, 16)),
+
+                _buildTextField(
                   controller: _signupConfirmEmailController,
                   label: context.l10n.confirmEmailLabel,
                   hintText: context.l10n.confirmEmailLabel,
@@ -522,24 +533,6 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                     if (value.trim().toLowerCase() !=
                         _signupEmailController.text.trim().toLowerCase()) {
                       return context.l10n.emailMismatchError;
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: AppSpacing.value(context, 16)),
-
-                _buildTextField(
-                  controller: _signupEmailController,
-                  label: context.l10n.emailLabel,
-                  hintText: context.l10n.emailLabel,
-                  icon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return context.l10n.enterEmailError;
-                    }
-                    if (!EmailValidator.isValid(value)) {
-                      return context.l10n.invalidEmailDomainError;
                     }
                     return null;
                   },

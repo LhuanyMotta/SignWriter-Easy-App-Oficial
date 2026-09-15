@@ -40,6 +40,9 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _viewModel.setAllLabel(label);
+      if (!_viewModel.isLoading && _viewModel.signs.isEmpty) {
+        _viewModel.loadSigns();
+      }
     });
   }
 
