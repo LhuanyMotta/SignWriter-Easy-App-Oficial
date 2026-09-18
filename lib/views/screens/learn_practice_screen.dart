@@ -6,8 +6,9 @@ import '../../models/lesson_model.dart';
 import '../../services/authorization_service.dart';
 import '../../services/learning_authoring_service.dart';
 import '../../viewmodels/learn_practice_viewmodel.dart';
-import '../../theme/responsive_content.dart';
 import '../../theme/app_radius.dart';
+import '../../theme/adaptive_nav_scaffold.dart';
+import '../../routes/app_routes.dart';
 import '../widgets/states/app_empty_state.dart';
 import '../widgets/states/app_error_state.dart';
 import '../widgets/states/app_loading_state.dart';
@@ -82,12 +83,22 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AdaptiveNavScaffold(
+      currentRoute: AppRoutes.learnPractice,
+      currentIndex: 0,
+      homeLabel: 'Início',
+      profileLabel: 'Perfil',
+      onTabSelected: (index) {
+        Navigator.pushReplacementNamed(
+          context,
+          index == 0 ? AppRoutes.home : AppRoutes.profile,
+        );
+      },
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: const Text('Aprender e Praticar'),
       ),
-      body: ResponsiveContent(child: Consumer<LearnPracticeViewModel>(
+      body: Consumer<LearnPracticeViewModel>(
         builder: (context, vm, _) {
           if (vm.isLoading) {
             return const AppLoadingState(message: 'Carregando lições...');
@@ -142,7 +153,7 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen>
             ],
           );
         },
-      )),
+      ),
     );
   }
 }

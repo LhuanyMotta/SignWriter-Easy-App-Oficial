@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/responsive.dart';
-import '../../theme/responsive_content.dart';
 import '../../theme/adaptive_nav_scaffold.dart';
 import '../../theme/hover_lift.dart';
 import '../../theme/app_radius.dart';
@@ -58,7 +57,24 @@ class _HomeScreenState extends State<HomeScreen> {
         }
         _viewModel.onBottomNavTapped(index, context);
       },
-      body: ResponsiveContent(child: _buildHomeTab()),
+      body: _buildWebScrollableHome(),
+    );
+  }
+
+  Widget _buildWebScrollableHome() {
+    if (!Responsive.isWide(context)) {
+      return _buildHomeTab();
+    }
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.zero,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: Responsive.maxContentWidth),
+          child: _buildHomeContent(),
+        ),
+      ),
     );
   }
 
@@ -66,6 +82,17 @@ class _HomeScreenState extends State<HomeScreen> {
   // CONTEÚDO PRINCIPAL
   // ═══════════════════════════════════════════════════════════════
   Widget _buildHomeTab() {
+    if (Responsive.isWide(context)) {
+      return _buildHomeContent();
+    }
+
+    return SingleChildScrollView(
+      padding: AppSpacing.all(context, 18),
+      child: _buildHomeContent(),
+    );
+  }
+
+  Widget _buildHomeContent() {
     final List<_FeatureData> features = [
       _FeatureData(
         title: context.l10n.featureLearnPractice,
@@ -93,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     ];
 
-    return SingleChildScrollView(
+    return Padding(
       padding: AppSpacing.all(context, 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

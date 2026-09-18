@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../viewmodels/profile_viewmodel.dart';
 import 'screens/home_screen.dart';
 import '../theme/app_spacing.dart';
-import '../theme/responsive_content.dart';
+import '../theme/responsive.dart';
 import '../l10n/l10n.dart';
 
 class AccessibilitySettingsView extends StatelessWidget {
@@ -50,10 +50,19 @@ class AccessibilitySettingsView extends StatelessWidget {
           appBar: AppBar(
             title: Text(l10n.accessibilityTitle),
           ),
-          body: ResponsiveContent(
-            maxWidth: 640,
-            child: ListView(
-              padding: EdgeInsets.all(16 * viewModel.spacing),
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final horizontalInset = Responsive.isWide(context)
+                  ? ((constraints.maxWidth - 640) / 2).clamp(16.0, double.infinity)
+                  : 16.0;
+
+              return ListView(
+              padding: EdgeInsets.fromLTRB(
+                horizontalInset,
+                16 * viewModel.spacing,
+                horizontalInset,
+                24 * viewModel.spacing,
+              ),
               children: [
                 Text(
                   l10n.accessibilityTitle,
@@ -256,7 +265,8 @@ class AccessibilitySettingsView extends StatelessWidget {
                   SizedBox(height: AppSpacing.value(context, 24)),
                 ],
               ],
-            ),
+            );
+            },
           ),
         );
       },

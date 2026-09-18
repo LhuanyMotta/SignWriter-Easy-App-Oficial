@@ -12,6 +12,7 @@ import '../../utils/friendly_error.dart';
 import '../accessibility_settings_view.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/adaptive_nav_scaffold.dart';
+import '../../theme/responsive.dart';
 import '../../theme/responsive_content.dart';
 import '../../l10n/l10n.dart';
 import '../../routes/app_routes.dart';
@@ -51,58 +52,83 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return AdaptiveNavScaffold(
+      currentRoute: AppRoutes.profile,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(title: Text(context.l10n.bottomProfile)),
-      body: ResponsiveContent(
-        maxWidth: 720,
-        child: Consumer<ProfileViewModel>(
-          builder: (context, vm, _) {
-            if (vm.isLoading && vm.userData == null) {
-              return const AppLoadingState(message: 'Carregando perfil...');
-            }
-            if (vm.userData == null) {
-              return AppErrorState(
-                message: vm.errorMessage ??
-                    'Não foi possível carregar o perfil.',
-                onRetry: vm.loadInitialData,
-              );
-            }
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
-              children: [
-                if (vm.errorMessage != null) ...[
-                  AppStatusBanner(
-                    key: const ValueKey('error_banner'),
-                    title: vm.errorMessage ?? 'Não foi possível carregar o perfil.',
-                    tone: AppStatusBannerTone.warning,
-                    icon: Icons.warning_amber_rounded,
-                    onAction: vm.loadInitialData,
-                    actionTooltip: 'Tentar novamente',
-                  ),
-                  const SizedBox(key: ValueKey('error_spacer'), height: 12),
-                ],
-                _heroCard(vm),
-                const SizedBox(height: 20),
-                _bioCard(vm),
-                const SizedBox(height: 20),
-                _label(context.l10n.settingsTitle),
-                const SizedBox(height: 10),
-                _settingsCard(vm),
-                const SizedBox(height: 20),
-                _label(context.l10n.accountDataTitle),
-                const SizedBox(height: 10),
-                _accountCard(vm),
-                const SizedBox(height: 24),
-                _logoutBtn(vm),
-              ],
-            );
-          },
-        ),
-      ),
+      body: _buildProfileBody(),
       currentIndex: 1,
       homeLabel: context.l10n.bottomHome,
       profileLabel: context.l10n.bottomProfile,
       onTabSelected: (i) => _homeViewModel.onBottomNavTapped(i, context),
+    );
+  }
+
+  Widget _buildProfileBody() {
+    final content = Consumer<ProfileViewModel>(
+      builder: (context, vm, _) {
+        if (vm.isLoading && vm.userData == null) {
+          return const AppLoadingState(message: 'Carregando perfil...');
+        }
+        if (vm.userData == null) {
+          return AppErrorState(
+            message: vm.errorMessage ?? 'Não foi possível carregar o perfil.',
+            onRetry: vm.loadInitialData,
+          );
+        }
+
+        final children = [
+          if (vm.errorMessage != null) ...[
+            AppStatusBanner(
+              key: const ValueKey('error_banner'),
+              title: vm.errorMessage ?? 'Não foi possível carregar o perfil.',
+              tone: AppStatusBannerTone.warning,
+              icon: Icons.warning_amber_rounded,
+              onAction: vm.loadInitialData,
+              actionTooltip: 'Tentar novamente',
+            ),
+            const SizedBox(key: ValueKey('error_spacer'), height: 12),
+          ],
+          _heroCard(vm),
+          const SizedBox(height: 20),
+          _bioCard(vm),
+          const SizedBox(height: 20),
+          _label(context.l10n.settingsTitle),
+          const SizedBox(height: 10),
+          _settingsCard(vm),
+          const SizedBox(height: 20),
+          _label(context.l10n.accountDataTitle),
+          const SizedBox(height: 10),
+          _accountCard(vm),
+          const SizedBox(height: 24),
+          _logoutBtn(vm),
+        ];
+
+        if (Responsive.isWide(context)) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+            child: Column(children: children),
+          );
+        }
+
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+          children: children,
+        );
+      },
+    );
+
+    if (!Responsive.isWide(context)) {
+      return ResponsiveContent(maxWidth: 720, child: content);
+    }
+
+    return SingleChildScrollView(
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: content,
+        ),
+      ),
     );
   }
 

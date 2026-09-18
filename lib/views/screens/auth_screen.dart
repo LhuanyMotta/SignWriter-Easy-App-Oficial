@@ -142,8 +142,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const AppLogo(size: 64, colored: false, showText: false),
-                          const SizedBox(height: 32),
+                          const AppLogo(size: 110, colored: false, showText: false),
+                          const SizedBox(height: 24),
                           Text(
                             context.l10n.appTitle,
                             style: const TextStyle(

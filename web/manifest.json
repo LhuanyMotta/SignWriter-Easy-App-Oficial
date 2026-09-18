@@ -1,10 +1,10 @@
 {
     "name": "SignWriter Fácil",
-    "short_name": "SignWriter Fácil",
+    "short_name": "SignWriter",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#hexcode",
-    "theme_color": "#hexcode",
+    "background_color": "#071F36",
+    "theme_color": "#2D78BB",
     "description": "Aplicativo para facilitar a comunicação entre surdos e ouvintes através do SignWriting e da Libras.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,

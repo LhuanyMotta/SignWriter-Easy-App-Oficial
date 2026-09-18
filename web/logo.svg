@@ -1,0 +1,23 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="64" y1="40" x2="448" y2="480" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F5DA8"/>
+      <stop offset="1" stop-color="#2D78BB"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="170" y1="110" x2="390" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#EAF5FF" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="32" y="32" width="448" height="448" rx="110" fill="url(#bg)"/>
+  <circle cx="257" cy="256" r="145" fill="white" fill-opacity="0.08"/>
+
+  <path d="M332 126C279.1 93.4 218.2 95.8 174 126.3C134.5 153.8 111.1 199.2 117.7 244.3C122.8 280 141.9 310.2 170.7 333.8C194.7 353.4 222.3 365.4 249.8 369.7C279.9 374.6 310.1 370.7 336.3 354.9C365.3 337.8 386.8 309.6 392.8 274.8C400.4 231.5 382.7 188 347.2 164.7C319.3 145.7 286 141.7 257 151.4" stroke="url(#shine)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M214 302.5C237.9 318.6 265.9 323.5 293.2 316.4C318 309.7 336.2 291.7 343.7 267.8C348.5 252.5 346.8 235.3 338.7 220.9C331.7 208 319 198.7 304.1 194.1C287.8 188.8 270.2 189.9 254.8 196.5C239.4 203.2 226.4 214.6 217.5 228.9C207.7 245 202.4 264.4 203.6 282.6C204.6 296.9 210 310.4 218.3 321.7" stroke="url(#shine)" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <circle cx="180" cy="163" r="9" fill="#D9F2FF"/>
+  <circle cx="347" cy="180" r="9" fill="#D9F2FF"/>
+  <circle cx="364" cy="320" r="9" fill="#D9F2FF"/>
+  <circle cx="182" cy="343" r="9" fill="#D9F2FF"/>
+</svg>

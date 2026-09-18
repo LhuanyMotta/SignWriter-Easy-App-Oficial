@@ -6,6 +6,7 @@ import '../../models/sign_model.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/responsive.dart';
 import '../../theme/adaptive_nav_scaffold.dart';
+import '../../routes/app_routes.dart';
 import '../../theme/hover_lift.dart';
 import '../../l10n/l10n.dart';
 import '../widgets/states/app_empty_state.dart';
@@ -66,6 +67,7 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
     return ChangeNotifierProvider.value(
       value: _viewModel,
       child: AdaptiveNavScaffold(
+        currentRoute: AppRoutes.dictionary,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: Text(
@@ -85,8 +87,10 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
               );
             }
 
-            return Column(
-              children: [
+            return SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
                 Container(
                   padding: AppSpacing.all(context, 16),
                   color: cardColor,
@@ -208,37 +212,39 @@ class _DictionaryScreenState extends State<DictionaryScreen> {
                     ],
                   ),
                 ),
-                Expanded(
-                  child: viewModel.signs.isEmpty
-                      ? _buildEmptyState(context)
-                      : Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              maxWidth: Responsive.maxContentWidth,
-                            ),
-                            child: GridView.builder(
-                              padding: AppSpacing.all(context, 16),
-                              itemCount: viewModel.signs.length,
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount:
-                                    Responsive.isWide(context) ? 5 : 2,
-                                childAspectRatio: 0.72,
-                                crossAxisSpacing: 16,
-                                mainAxisSpacing: 16,
-                              ),
-                              itemBuilder: (context, index) {
-                                return _buildSignCard(
-                                  context,
-                                  viewModel.signs[index],
-                                  viewModel,
-                                );
-                              },
-                            ),
-                          ),
+                if (viewModel.signs.isEmpty)
+                  _buildEmptyState(context)
+                else
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: Responsive.maxContentWidth,
+                      ),
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: AppSpacing.all(context, 16),
+                        itemCount: viewModel.signs.length,
+                        gridDelegate:
+                            SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: Responsive.isWide(context) ? 5 : 2,
+                          childAspectRatio: 0.72,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
                         ),
-                ),
-              ],
+                        itemBuilder: (context, index) {
+                          return _buildSignCard(
+                            context,
+                            viewModel.signs[index],
+                            viewModel,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             );
           },
         ),
