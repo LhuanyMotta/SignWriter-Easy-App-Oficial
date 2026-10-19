@@ -198,59 +198,69 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
   // ABA TEXTO → LIBRAS
   // ═══════════════════════════════════════════════════════════════
   Widget _buildTextToLibrasTab(TranslateViewModel viewModel) {
-    return Padding(
-      padding: AppSpacing.all(context, 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            context.l10n.typeText,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final resultHeight =
+            (constraints.maxHeight * 0.38).clamp(180.0, 320.0).toDouble();
+
+        return SingleChildScrollView(
+          padding: AppSpacing.all(context, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                context.l10n.typeText,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: AppSpacing.value(context, 8)),
+              _buildTextInputBox(),
+              if (viewModel.isListening) ...[
+                SizedBox(height: AppSpacing.value(context, 8)),
+                _buildListeningIndicator(),
+              ],
+              SizedBox(height: AppSpacing.value(context, 16)),
+              _buildTranslateButton(viewModel),
+              if (viewModel.errorMessage != null) ...[
+                SizedBox(height: AppSpacing.value(context, 12)),
+                _buildErrorBanner(viewModel.errorMessage!),
+              ],
+              SizedBox(height: AppSpacing.value(context, 24)),
+              Text(
+                context.l10n.resultTitle,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: AppSpacing.value(context, 8)),
+              SizedBox(
+                height: resultHeight,
+                child: _buildResultBox(viewModel),
+              ),
+              if (viewModel.isLoadingHistory) ...[
+                SizedBox(height: AppSpacing.value(context, 12)),
+                const LinearProgressIndicator(minHeight: 2),
+              ] else if (viewModel.historyError != null) ...[
+                SizedBox(height: AppSpacing.value(context, 12)),
+                AppStatusBanner(
+                  title: 'Não foi possível carregar o histórico',
+                  subtitle: viewModel.historyError,
+                  tone: AppStatusBannerTone.error,
+                  onAction: viewModel.loadRecentTranslations,
+                ),
+              ] else if (viewModel.recentTranslations.isNotEmpty) ...[
+                SizedBox(height: AppSpacing.value(context, 12)),
+                _buildRecentTranslations(viewModel),
+              ],
+            ],
           ),
-          SizedBox(height: AppSpacing.value(context, 8)),
-          _buildTextInputBox(),
-          if (viewModel.isListening) ...[
-            SizedBox(height: AppSpacing.value(context, 8)),
-            _buildListeningIndicator(),
-          ],
-          SizedBox(height: AppSpacing.value(context, 16)),
-          _buildTranslateButton(viewModel),
-          if (viewModel.errorMessage != null) ...[
-            SizedBox(height: AppSpacing.value(context, 12)),
-            _buildErrorBanner(viewModel.errorMessage!),
-          ],
-          SizedBox(height: AppSpacing.value(context, 24)),
-          Text(
-            context.l10n.resultTitle,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: AppSpacing.value(context, 8)),
-          Expanded(child: _buildResultBox(viewModel)),
-          if (viewModel.isLoadingHistory) ...[
-            SizedBox(height: AppSpacing.value(context, 12)),
-            const LinearProgressIndicator(minHeight: 2),
-          ] else if (viewModel.historyError != null) ...[
-            SizedBox(height: AppSpacing.value(context, 12)),
-            AppStatusBanner(
-              title: 'Não foi possível carregar o histórico',
-              subtitle: viewModel.historyError,
-              tone: AppStatusBannerTone.error,
-              onAction: viewModel.loadRecentTranslations,
-            ),
-          ] else if (viewModel.recentTranslations.isNotEmpty) ...[
-            SizedBox(height: AppSpacing.value(context, 12)),
-            _buildRecentTranslations(viewModel),
-          ],
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -923,4 +933,4 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
       ),
     );
   }
-}                                                                                                                                                                                                                                                                                 
+}
