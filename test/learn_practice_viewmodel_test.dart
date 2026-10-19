@@ -12,12 +12,14 @@ class _FakeLearningRepository implements LearningRepository {
   _FakeLearningRepository(this._categories);
 
   final List<LessonCategoryModel> _categories;
+  bool fail = false;
 
   @override
   LearningCourseSnapshot? get lastSnapshot => null;
 
   @override
   Future<List<LessonCategoryModel>> loadCategories(Locale locale) async {
+    if (fail) throw Exception("sem conexão");
     return _categories;
   }
 }
@@ -62,6 +64,22 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+  });
+
+  test('falha de recarga preserva o conteúdo já carregado', () async {
+    final repository = _FakeLearningRepository([
+      _category(id: 'cat-1', lessons: [_simpleLesson(id: 'p1')]),
+    ]);
+    final vm = LearnPracticeViewModel(
+      repository: repository,
+      progressRepository: LearningProgressRepository(localOnly: true),
+    );
+    await vm.initialize(const Locale('pt'));
+    repository.fail = true;
+    await vm.reload();
+    expect(vm.categories.single.id, 'cat-1');
+    expect(vm.errorMessage, isNotEmpty);
+    expect(vm.isLoading, isFalse);
   });
 
   group('nextLessonTarget', () {

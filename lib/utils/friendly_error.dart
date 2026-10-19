@@ -20,6 +20,16 @@ String friendlyError(Object error) {
     return 'A operação demorou mais que o esperado. Tente novamente.';
   }
 
+  if (text.contains('rate limit') || text.contains('too many requests')) {
+    return 'Muitas tentativas de envio. Aguarde alguns minutos e tente novamente.';
+  }
+
+  if (text.contains('smtp') ||
+      text.contains('email service') ||
+      text.contains('sending email')) {
+    return 'O serviço de e-mail não está disponível. Verifique o SMTP do Supabase.';
+  }
+
   if (text.contains('unauthorized') ||
       text.contains('jwt') ||
       text.contains('session') ||

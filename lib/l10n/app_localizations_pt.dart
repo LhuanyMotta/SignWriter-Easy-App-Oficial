@@ -30,6 +30,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String get fullNameLabel => 'Nome completo';
 
   @override
+  String get fullNameRequiredError => 'Informe nome e sobrenome';
+
+  @override
+  String get confirmEmailLabel => 'Confirmar e-mail';
+
+  @override
+  String get emailMismatchError => 'Os e-mails não coincidem';
+
+  @override
   String get confirmPasswordLabel => 'Confirmar senha';
 
   @override
@@ -57,6 +66,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get invalidEmailError => 'Por favor, insira um email válido';
 
   @override
+  String get invalidEmailDomainError => 'Por favor, insira um email válido';
+
+  @override
   String get enterPasswordError => 'Por favor, insira sua senha';
 
   @override
@@ -76,6 +88,135 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get passwordRecoverySoon => 'Recuperação de senha será implementada em breve';
+
+  @override
+  String get passwordRecoverySent => 'Enviamos um link de recuperação para seu email.';
+
+  @override
+  String get passwordRecoveryError => 'Não foi possível enviar o link de recuperação.';
+
+  @override
+  String get resetPasswordTitle => 'Redefinir senha';
+
+  @override
+  String get resetPasswordSubtitle => 'Escolha uma nova senha para sua conta.';
+
+  @override
+  String get newPasswordLabel => 'Nova senha';
+
+  @override
+  String get saveNewPassword => 'Salvar nova senha';
+
+  @override
+  String get passwordUpdatedSuccess => 'Senha atualizada com sucesso!';
+
+  @override
+  String get sendButton => 'Enviar';
+
+  @override
+  String get passwordMinLengthError => 'A senha deve ter pelo menos 8 caracteres';
+
+  @override
+  String get passwordUppercaseError => 'A senha deve conter pelo menos uma letra maiúscula';
+
+  @override
+  String get passwordLowercaseError => 'A senha deve conter pelo menos uma letra minúscula';
+
+  @override
+  String get passwordNumberError => 'A senha deve conter pelo menos um número';
+
+  @override
+  String get passwordSpecialCharError => 'A senha deve conter pelo menos um caractere especial (!@#\$%^&*)';
+
+  @override
+  String get authOAuthContinueInBrowser => 'Continue a autenticação no navegador';
+
+  @override
+  String get authErrorInvalidCredentials => 'Email ou senha inválidos. Tente novamente.';
+
+  @override
+  String get authErrorEmailExists => 'Este email já está cadastrado.';
+
+  @override
+  String get authErrorWeakPassword => 'A senha é fraca.';
+
+  @override
+  String get authErrorEmailSignupsDisabled => 'O cadastro por email está desativado.';
+
+  @override
+  String get authErrorEmailLoginsDisabled => 'O login por email está desativado.';
+
+  @override
+  String get authErrorEmailNotConfirmed => 'Confirme seu email antes de entrar.';
+
+  @override
+  String get authErrorOAuthNotEnabled => 'Este login social não está disponível.';
+
+  @override
+  String get authErrorCreateAccount => 'Não foi possível criar a conta.';
+
+  @override
+  String get authErrorSignup => 'Não foi possível concluir o cadastro.';
+
+  @override
+  String get authErrorLogin => 'Não foi possível entrar.';
+
+  @override
+  String get profileSignOutTitle => 'Sair da conta';
+
+  @override
+  String get profileSignOutContent => 'Deseja realmente sair da sua conta?';
+
+  @override
+  String get profileSignOutConfirm => 'Sair';
+
+  @override
+  String get profileSignOutButton => 'Sair';
+
+  @override
+  String get profileGallery => 'Galeria';
+
+  @override
+  String get profileCamera => 'Câmera';
+
+  @override
+  String get profileErrorUpdatePhoto => 'Não foi possível atualizar a foto.';
+
+  @override
+  String get profileDeleteTitle => 'Excluir conta';
+
+  @override
+  String get profileDeleteButton => 'Excluir';
+
+  @override
+  String get profileErrorDeleteAccount => 'Não foi possível excluir a conta.';
+
+  @override
+  String get translateNoSignFound => 'Nenhum sinal encontrado.';
+
+  @override
+  String get allFilter => 'Todos';
+
+  @override
+  String get dictionarySearchHint => 'Buscar sinais';
+
+  @override
+  String get favoritesEmpty => 'Você ainda não favoritou nenhum sinal.';
+
+  @override
+  String get editorEditSign => 'Editar sinal';
+
+  @override
+  String get editorNewSign => 'Novo sinal';
+
+  @override
+  String get editorCategoryLabel => 'Categoria';
+
+  @override
+  String get editorTagsHint => 'Tags separadas por vírgula';
+
+  @override
+  String get editorSaveSign => 'Salvar sinal';
 
   @override
   String get homeWelcome => 'Bem-vindo!';
@@ -179,7 +320,6 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get themeSystem => 'Sistema';
 
-
   @override
   String get languageTitle => 'Idioma';
 
@@ -191,6 +331,36 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get accountDataTitle => 'Dados da Conta';
+
+  @override
+  String get profileResetPasswordTitle => 'Redefinir senha';
+
+  @override
+  String get profileResetPasswordSubtitle => 'Receba um link para criar uma nova senha';
+
+  @override
+  String get profileResetPasswordSent => 'Enviamos um link de redefinição para seu e-mail.';
+
+  @override
+  String get profileResetPasswordError => 'Não foi possível enviar o link de redefinição.';
+
+  @override
+  String get profileChangeEmailTitle => 'Alterar e-mail';
+
+  @override
+  String get profileChangeEmailSubtitle => 'Atualize o e-mail usado na sua conta';
+
+  @override
+  String get profileNewEmailLabel => 'Novo e-mail';
+
+  @override
+  String get profileSameEmailError => 'Informe um e-mail diferente do atual';
+
+  @override
+  String get profileChangeEmailSent => 'Enviamos a confirmação para o novo e-mail.';
+
+  @override
+  String get profileChangeEmailError => 'Não foi possível alterar o e-mail.';
 
   @override
   String get exportDataTitle => 'Exportar Meus Dados';
@@ -484,154 +654,4 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get learningReturnToLesson => 'Voltar para a lição';
-
-  @override
-  String get authErrorInvalidCredentials => 'Email ou senha incorretos';
-
-  @override
-  String get authErrorEmailExists => 'Email já cadastrado';
-
-  @override
-  String get authErrorWeakPassword => 'A senha deve ter pelo menos 6 caracteres';
-
-  @override
-  String get authErrorEmailSignupsDisabled => 'Cadastro por email desabilitado';
-
-  @override
-  String get authErrorEmailLoginsDisabled => 'Login por email desabilitado';
-
-  @override
-  String get authErrorEmailNotConfirmed => 'Email não confirmado. Verifique sua caixa de entrada.';
-
-  @override
-  String get authErrorOAuthNotEnabled => 'Provedor social não habilitado. Contate o suporte.';
-
-  @override
-  String get authOAuthContinueInBrowser => 'Continue o login no navegador e retorne ao app quando finalizar.';
-
-  @override
-  String get authErrorLogin => 'Erro ao entrar. Tente novamente.';
-
-  @override
-  String get authErrorSignup => 'Erro ao cadastrar. Tente novamente.';
-
-  @override
-  String get authErrorCreateAccount => 'Erro ao criar conta. Tente novamente.';
-
-  @override
-  String get editorNewSign => 'Novo sinal';
-  @override
-  String get editorEditSign => 'Editar sinal';
-  @override
-  String get editorSaveSign => 'Salvar sinal';
-  @override
-  String get editorAddSymbolFirst => 'Adicione pelo menos um símbolo antes de salvar.';
-  @override
-  String get editorRotateMinus => 'Girar -';
-  @override
-  String get editorRotatePlus => 'Girar +';
-  @override
-  String get editorMirror => 'Espelhar';
-  @override
-  String get editorDuplicate => 'Duplicar';
-  @override
-  String get editorCenter => 'Centralizar';
-  @override
-  String get editorDelete => 'Excluir';
-  @override
-  String get editorClearAll => 'Limpar tudo';
-  @override
-  String get editorTagsHint => 'Ex: saudação, escola, básico';
-  @override
-  String get editorOpenHand => 'Mão aberta';
-  @override
-  String get editorPoint => 'Apontar';
-  @override
-  String get editorFist => 'Punho';
-  @override
-  String get editorMoveUp => 'Mover cima';
-  @override
-  String get editorMoveDown => 'Mover baixo';
-  @override
-  String get editorRepeat => 'Repetir';
-  @override
-  String get editorFaceNeutral => 'Rosto neutro';
-  @override
-  String get editorFaceHappy => 'Rosto feliz';
-  @override
-  String get editorLook => 'Olhar';
-  @override
-  String get editorBody => 'Corpo';
-  @override
-  String get editorTilt => 'Inclinar';
-  @override
-  String get editorHead => 'Cabeça';
-  @override
-  String get editorContact => 'Contato';
-  @override
-  String get editorLine => 'Linha';
-  @override
-  String get editorCross => 'Cruz';
-  @override
-  String get editorSymbol => 'Símbolo';
-
-  @override
-  String get profileSignOutTitle => 'Sair da conta';
-  @override
-  String get profileSignOutContent => 'Tem certeza que deseja sair?';
-  @override
-  String get profileSignOutConfirm => 'Sair da Conta';
-  @override
-  String get profileSignOutButton => 'Sair';
-  @override
-  String get profileDeleteTitle => 'Excluir Conta';
-  @override
-  String get profileDeleteContent => 'Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.';
-  @override
-  String get profileDeleteConfirm => 'Excluir minha conta';
-  @override
-  String get profileDeleteButton => 'Excluir';
-  @override
-  String get profileGallery => 'Galeria';
-  @override
-  String get profileCamera => 'Câmera';
-  @override
-  String get profileExportError => 'Erro ao exportar dados';
-
-
-  @override String get favoritesEmpty => 'Nenhum favorito encontrado';
-  @override String get translateNoSignFound => 'Nenhum sinal encontrado para esse texto.';
-  @override String get translateNotFound => 'Não encontrados';
-  @override String get editorCategoryLabel => 'Categoria';
-
-
-  @override String get clear => 'Limpar';
-  @override String get allFilter => 'Todos';
-  @override String get dictionarySearchHint => 'Buscar sinais...';
-  @override String get dictionaryNoSignFound => 'Nenhum sinal encontrado';
-  @override String get writeSignsNew => 'Novo sinal';
-  @override String get writeSignsSearchHint => 'Buscar por nome, categoria ou tag';
-  @override String get writeSignsAll => 'Todos';
-  @override String get writeSignsEmpty => 'Nenhum sinal encontrado.';
-  @override String get writeSignsEmptyHint => 'Use o botão "Novo sinal" para criar seu primeiro sinal.';
-  @override String get writeSignsCategory => 'Categoria';
-  @override String get writeSignsSymbols => 'Símbolos';
-  @override String get translateNotFoundPrefix => 'Não encontrados';
-  @override String get translateErrorMsg => 'Erro ao traduzir';
-  @override String get quizNoSigns => 'Nenhum sinal disponível.';
-  @override String get profileErrorUpdatePhoto => 'Erro ao atualizar foto';
-  @override String get profileErrorExportData => 'Erro ao exportar dados';
-  @override String get profileErrorDeleteAccount => 'Erro ao excluir conta';
-
-  @override String get remove => 'Remover';
-
-@override String get homeDictionaryDesc => 'Consulte sinais cadastrados no banco de dados.';
-  @override String get homeTranslateDesc => 'Digite uma palavra ou frase para buscar sinais correspondentes.';
-
-@override String get translateAudioSoon => 'Reconhecimento por áudio será implementado em breve.';
-  @override String get translateCameraSoon => 'Captura pela câmera será implementada em breve.';
-  @override String get accessibilitySkip => 'Pular configuração';
-  @override String get quizExerciseDone => 'Exercício concluído';
-  @override String get quizNext => 'Próxima';
-  @override String get quizScoreMsg => 'Você acertou {score} de {total} sinais.';
 }

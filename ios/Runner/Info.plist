@@ -24,6 +24,12 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>O SignWriter Fácil usa a câmera para capturar sinais para tradução.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>O SignWriter Fácil usa o microfone para reconhecer comandos e fala.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>O SignWriter Fácil acessa suas fotos para selecionar imagens de sinais.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

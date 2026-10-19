@@ -21,12 +21,15 @@ dependencies:
   supabase_flutter: 2.12.0
   gotrue: 2.18.0
   flutter_dotenv: ^5.1.0
-  share_plus: ^7.2.0
+  share_plus: ^13.3.0
   path_provider: ^2.1.0
   image_picker: ^1.1.2
-  speech_to_text: ^7.0.0
+  speech_to_text: ^7.4.0
   webview_flutter: ^4.10.0
   webview_flutter_android: ^4.3.0
+  csv: ^6.0.0
+  http: ^1.1.0
+  pdf: ^3.11.1
 
 dev_dependencies:
   flutter_test:
@@ -51,6 +54,8 @@ flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
   image_path: "assets/images/signwriter_logo.png"
+  adaptive_icon_background: "#2D78BB"
+  adaptive_icon_foreground: "assets/images/signwriter_logo.png"
   remove_alpha_ios: true
   min_sdk_android: 21
   web:
@@ -58,10 +63,6 @@ flutter_launcher_icons:
     image_path: "assets/images/signwriter_logo.png"
     background_color: "#hexcode"
     theme_color: "#hexcode"
-  windows:
-    generate: true
-    image_path: "assets/images/signwriter_logo.png"
-    icon_size: 48
   macos:
     generate: true
     image_path: "assets/images/signwriter_logo.png"

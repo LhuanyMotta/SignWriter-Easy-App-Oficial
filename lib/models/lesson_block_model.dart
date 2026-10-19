@@ -100,7 +100,11 @@ class LessonBlockModel {
       swu: map['swu']?.toString(),
       payload: _asMap(map['payload']),
       orderIndex: _asInt(map['order_index'] ?? map['orderIndex']) ?? 0,
-      media: media,
+      media: media ??
+          (map['media'] is Map
+              ? MediaAssetModel.fromMap(
+                  Map<String, dynamic>.from(map['media'] as Map), lang: lang)
+              : null),
     );
   }
 

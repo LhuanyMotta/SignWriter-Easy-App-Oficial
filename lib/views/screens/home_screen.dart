@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../viewmodels/home_viewmodel.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/responsive.dart';
-import '../../theme/responsive_content.dart';
 import '../../theme/adaptive_nav_scaffold.dart';
 import '../../theme/hover_lift.dart';
 import '../../theme/app_radius.dart';
@@ -58,7 +57,24 @@ class _HomeScreenState extends State<HomeScreen> {
         }
         _viewModel.onBottomNavTapped(index, context);
       },
-      body: ResponsiveContent(child: _buildHomeTab()),
+      body: _buildWebScrollableHome(),
+    );
+  }
+
+  Widget _buildWebScrollableHome() {
+    if (!Responsive.isWide(context)) {
+      return _buildHomeTab();
+    }
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.zero,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: Responsive.maxContentWidth),
+          child: _buildHomeContent(),
+        ),
+      ),
     );
   }
 
@@ -66,6 +82,17 @@ class _HomeScreenState extends State<HomeScreen> {
   // CONTEÚDO PRINCIPAL
   // ═══════════════════════════════════════════════════════════════
   Widget _buildHomeTab() {
+    if (Responsive.isWide(context)) {
+      return _buildHomeContent();
+    }
+
+    return SingleChildScrollView(
+      padding: AppSpacing.all(context, 18),
+      child: _buildHomeContent(),
+    );
+  }
+
+  Widget _buildHomeContent() {
     final List<_FeatureData> features = [
       _FeatureData(
         title: context.l10n.featureLearnPractice,
@@ -93,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     ];
 
-    return SingleChildScrollView(
+    return Padding(
       padding: AppSpacing.all(context, 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,8 +145,18 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context, constraints) {
               final spacing = AppSpacing.value(context, 16);
               final columns = Responsive.isWide(context) ? 4 : 2;
-              final cardWidth =
-                  (constraints.maxWidth - spacing * (columns - 1)) / columns;
+              final rawWidth =
+                  (constraints.maxWidth - spacing * (columns - 1)) /
+                      columns;
+              // No primeiro frame a largura disponível ainda pode ser 0
+              // (ou o cálculo pode resultar em número negativo). Sem
+              // esse clamp, o SizedBox recebe largura negativa e quebra
+              // a árvore de renderização inteira logo no início do app,
+              // o que gerava efeito cascata em telas completamente
+              // diferentes (inclusive o crash ao salvar o perfil).
+              final cardWidth = rawWidth.isFinite && rawWidth > 0
+                  ? rawWidth
+                  : 0.0;
 
               return Wrap(
                 spacing: spacing,
@@ -416,15 +453,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
         SizedBox(height: AppSpacing.value(context, 14)),
 
-        // Equipe — Lhuany e Bruno em destaque
+        // ─── Desenvolvedores em destaque — Lhuany e Bruno ─────────
+        // Mesmo padrão de cor/gradiente para os dois, com selo de destaque.
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: _buildDevCard(
                 initials: 'LT',
                 name: 'Lhuany Thainara',
-                role: 'Aluna Voluntária',
-                color: _primary,
+                role: 'Desenvolvedora',
+                featured: true,
               ),
             ),
             SizedBox(width: AppSpacing.value(context, 10)),
@@ -432,63 +471,51 @@ class _HomeScreenState extends State<HomeScreen> {
               child: _buildDevCard(
                 initials: 'BS',
                 name: 'Bruno Santos',
-                role: 'Aluno Voluntário',
-                color: const Color(0xFF1A5A9A),
+                role: 'Desenvolvedor',
+                featured: true,
               ),
             ),
           ],
         ),
 
-        SizedBox(height: AppSpacing.value(context, 10)),
+        SizedBox(height: AppSpacing.value(context, 14)),
 
-        // Orientadora
+        // ─── Demais colaboradores — estilo padronizado (linha) ────
+        _buildSectionLabel('COLABORADORES'),
+        SizedBox(height: AppSpacing.value(context, 10)),
         Container(
-          width: double.infinity,
-          padding: AppSpacing.symmetric(context, horizontal: 18, vertical: 14),
           decoration: BoxDecoration(
             color: cardColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: borderColor),
           ),
-          child: Row(
+          child: Column(
             children: [
-              Container(
-                width: AppSpacing.value(context, 42),
-                height: AppSpacing.value(context, 42),
-                decoration: BoxDecoration(
-                  color: _primary.withValues(alpha: 0.10),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    'IL',
-                    style: TextStyle(
-                      color: _primary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
+
+              _buildTeamRow(
+                initials: 'KA',
+                name: 'Kauan Ambrosio',
+                role: 'Estudante Bolsista',
               ),
-              SizedBox(width: AppSpacing.value(context, 14)),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Dra. Ilma Rodrigues de Souza Fausto',
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      'Orientadora do Projeto',
-                      style: TextStyle(color: subtitleColor, fontSize: 12),
-                    ),
-                  ],
-                ),
+
+              _buildTeamDivider(),
+              _buildTeamRow(
+                initials: 'DM',
+                name: 'Daniele Morais',
+                role: 'Estudante Bolsista',
+              ),
+
+              _buildTeamDivider(),
+              _buildTeamRow(
+                initials: 'AM',
+                name: 'Prof.ª Me. Andreia Mendonça',
+                role: 'Coorientadora',
+              ),
+              _buildTeamDivider(),
+              _buildTeamRow(
+                initials: 'IR',
+                name: 'Prof.ª Dra. Ilma Rodrigues de Souza Fausto',
+                role: 'Orientadora do Projeto',
               ),
             ],
           ),
@@ -497,24 +524,83 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildTeamDivider() {
+    return Divider(height: 1, thickness: 1, color: borderColor);
+  }
+
+  // Linha padronizada usada para todos os colaboradores (mesmo estilo/cor)
+  Widget _buildTeamRow({
+    required String initials,
+    required String name,
+    required String role,
+  }) {
+    return Padding(
+      padding: AppSpacing.symmetric(context, horizontal: 18, vertical: 14),
+      child: Row(
+        children: [
+          Container(
+            width: AppSpacing.value(context, 42),
+            height: AppSpacing.value(context, 42),
+            decoration: BoxDecoration(
+              color: _primary.withValues(alpha: 0.10),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                initials,
+                style: TextStyle(
+                  color: _primary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: AppSpacing.value(context, 14)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  role,
+                  style: TextStyle(color: subtitleColor, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Card em destaque — usado apenas para Lhuany e Bruno.
+  // Ambos compartilham o mesmo gradiente para manter o padrão visual entre si.
   Widget _buildDevCard({
     required String initials,
     required String name,
     required String role,
-    required Color color,
+    bool featured = false,
   }) {
     return Container(
       padding: AppSpacing.all(context, 16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [color, color.withValues(alpha: 0.75)],
+          colors: [_primary, Color(0xFF1A5A9A)],
         ),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.3),
+            color: _primary.withValues(alpha: 0.30),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -523,23 +609,41 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: AppSpacing.value(context, 44),
-            height: AppSpacing.value(context, 44),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                initials,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: AppSpacing.value(context, 16),
-                  fontWeight: FontWeight.w800,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                width: AppSpacing.value(context, 44),
+                height: AppSpacing.value(context, 44),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    initials,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: AppSpacing.value(context, 16),
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
                 ),
               ),
-            ),
+              if (featured)
+                Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.star_rounded,
+                    color: Colors.white,
+                    size: 14,
+                  ),
+                ),
+            ],
           ),
           SizedBox(height: AppSpacing.value(context, 12)),
           Text(

@@ -6,8 +6,9 @@ import '../../models/lesson_model.dart';
 import '../../services/authorization_service.dart';
 import '../../services/learning_authoring_service.dart';
 import '../../viewmodels/learn_practice_viewmodel.dart';
-import '../../theme/responsive_content.dart';
 import '../../theme/app_radius.dart';
+import '../../theme/adaptive_nav_scaffold.dart';
+import '../../routes/app_routes.dart';
 import '../widgets/states/app_empty_state.dart';
 import '../widgets/states/app_error_state.dart';
 import '../widgets/states/app_loading_state.dart';
@@ -16,14 +17,18 @@ import '../widgets/learning/learning_lesson_tile.dart';
 import 'lesson_screen.dart';
 
 class LearnPracticeScreen extends StatefulWidget {
-  const LearnPracticeScreen({super.key});
+  const LearnPracticeScreen({super.key, this.authorization});
+
+  final AuthorizationService? authorization;
 
   @override
   State<LearnPracticeScreen> createState() => _LearnPracticeScreenState();
 }
 
 class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
-  final AuthorizationService _authorization = AuthorizationService();
+  late final AuthorizationService _authorization =
+      widget.authorization ?? AuthorizationService();
+  bool _initializing = true;
   String _languageCode = '';
   bool _canManageLessons = false;
 
@@ -34,17 +39,29 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
   }
 
   Future<void> _bootstrap() async {
-    await _authorization.clearLocalAuthorUiOverride();
-    final canManage = await _authorization.hasEditorialRole();
+    var canManage = false;
+    try {
+      await _authorization.clearLocalAuthorUiOverride();
+      canManage = await _authorization.hasEditorialRole().timeout(
+        const Duration(seconds: 8),
+      );
+    } catch (error) {
+      // Falha de rede nunca concede edição nem impede ler conteúdo em cache.
+      debugPrint('Permissão editorial indisponível: $error');
+    }
     if (!mounted) return;
     setState(() => _canManageLessons = canManage);
 
     final locale = Localizations.localeOf(context);
     _languageCode = locale.languageCode;
-    await context.read<LearnPracticeViewModel>().initialize(
-          locale,
-          includeDrafts: canManage,
-        );
+    try {
+      await context.read<LearnPracticeViewModel>().initialize(
+            locale,
+            includeDrafts: canManage,
+          );
+    } finally {
+      if (mounted) setState(() => _initializing = false);
+    }
   }
 
   @override
@@ -70,14 +87,24 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AdaptiveNavScaffold(
+      currentRoute: AppRoutes.learnPractice,
+      currentIndex: 0,
+      homeLabel: 'Início',
+      profileLabel: 'Perfil',
+      onTabSelected: (index) {
+        Navigator.pushReplacementNamed(
+          context,
+          index == 0 ? AppRoutes.home : AppRoutes.profile,
+        );
+      },
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: const Text('Aprender e Praticar'),
       ),
-      body: ResponsiveContent(child: Consumer<LearnPracticeViewModel>(
+      body: Consumer<LearnPracticeViewModel>(
         builder: (context, vm, _) {
-          if (vm.isLoading) {
+          if (_initializing || vm.isLoading) {
             return const AppLoadingState(message: 'Carregando lições...');
           }
           if (vm.errorMessage.isNotEmpty && vm.categories.isEmpty) {
@@ -130,7 +157,7 @@ class _LearnPracticeScreenState extends State<LearnPracticeScreen> {
             ],
           );
         },
-      )),
+      ),
     );
   }
 }

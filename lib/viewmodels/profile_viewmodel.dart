@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../services/learning_progress_service.dart';
 import '../utils/friendly_error.dart';
 
 enum AppThemeMode {
@@ -29,10 +30,12 @@ class ProfileViewModel extends ChangeNotifier {
   String _language = 'Português';
 
   Map<String, dynamic>? _userData;
+  String? _pendingEmailChange;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   Map<String, dynamic>? get userData => _userData;
+  String? get pendingEmailChange => _pendingEmailChange;
 
  bool get notificationsEnabled => _notificationsEnabled;
 
@@ -91,46 +94,82 @@ Locale get locale {
 
   Future<void> _loadUserData() async {
   try {
-    final user = _supabase.auth.currentUser;
+    User? currentUser = _supabase.auth.currentUser;
 
-    if (user == null) {
+    if (currentUser == null) {
       _userData = null;
       _errorMessage = 'Sua sessão expirou. Entre novamente.';
       return;
     }
 
+    try {
+      final freshUser = await _supabase.auth.getUser();
+      if (freshUser.user != null) {
+        currentUser = freshUser.user;
+      }
+    } catch (_) {
+      currentUser = _supabase.auth.currentUser;
+    }
+
+    if (currentUser == null) {
+      _userData = null;
+      _errorMessage = 'Sua sessão expirou. Entre novamente.';
+      return;
+    }
+
+    final fallbackName = currentUser.userMetadata?['name'] as String? ??
+        currentUser.email?.split('@').first ??
+        'Usuário';
+
     final response = await _supabase
         .from('profiles')
         .select()
-        .eq('id', user.id)
+        .eq('id', currentUser.id)
         .maybeSingle();
 
     if (response == null) {
       final newProfile = {
-        'id': user.id,
-        'name': user.userMetadata?['name'] ??
-            user.email?.split('@').first ??
-            'Usuário',
-        'email': user.email ?? '',
+        'id': currentUser.id,
+        'name': fallbackName,
+        'email': currentUser.email ?? '',
         'bio': '',
-        'avatar_url': user.userMetadata?['avatar_url'],
+        'avatar_url': currentUser.userMetadata?['avatar_url'],
         'updated_at': DateTime.now().toIso8601String(),
       };
 
       await _supabase.from('profiles').insert(newProfile);
-
       _userData = newProfile;
     } else {
-      _userData = Map<String, dynamic>.from(response);
+      final profile = Map<String, dynamic>.from(response);
+      final email = currentUser.email ?? profile['email'] ?? '';
+
+      if (profile['email'] != email) {
+        await _supabase
+            .from('profiles')
+            .update({'email': email, 'updated_at': DateTime.now().toIso8601String()})
+            .eq('id', currentUser.id);
+      }
+
+      _userData = {
+        ...profile,
+        'email': email,
+        'name': currentUser.userMetadata?['name'] ?? profile['name'] ?? fallbackName,
+      };
     }
 
     _errorMessage = null;
   } catch (e) {
+    if (_isInvalidSessionError(e)) {
+      _userData = null;
+      await _supabase.auth.signOut(scope: SignOutScope.local);
+      _errorMessage = friendlyError(e);
+      return;
+    }
     final user = _supabase.auth.currentUser;
 
     _userData = {
       'id': user?.id ?? '',
-      'name': user?.userMetadata?['name'] ??
+      'name': user?.userMetadata?['name'] as String? ??
           user?.email?.split('@').first ??
           'Usuário',
       'email': user?.email ?? '',
@@ -141,6 +180,11 @@ Locale get locale {
     _errorMessage = friendlyError(e);
   }
 }
+
+  bool _isInvalidSessionError(Object error) {
+    final text = error.toString().toLowerCase();
+    return text.contains('jwt') || text.contains('user from sub claim');
+  }
 
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
@@ -159,6 +203,35 @@ Locale get locale {
     if (_language == 'Inglês') _language = 'English';
     if (_language == 'Espanhol') _language = 'Português';
 
+    final savedPendingEmail = prefs.getString('pending_email_change');
+    final currentEmail = _supabase.auth.currentUser?.email?.trim();
+
+    if (savedPendingEmail == null || savedPendingEmail.isEmpty) {
+      _pendingEmailChange = _pendingEmailChange;
+    } else if (currentEmail != null &&
+        savedPendingEmail.toLowerCase() == currentEmail.toLowerCase()) {
+      _pendingEmailChange = null;
+      await prefs.remove('pending_email_change');
+    } else {
+      _pendingEmailChange = savedPendingEmail;
+    }
+
+    notifyListeners();
+  }
+
+  Future<void> setPendingEmailChange(String email) async {
+    final trimmed = email.trim();
+    if (trimmed.isEmpty) return;
+    _pendingEmailChange = trimmed;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('pending_email_change', trimmed);
+    notifyListeners();
+  }
+
+  Future<void> clearPendingEmailChange() async {
+    _pendingEmailChange = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('pending_email_change');
     notifyListeners();
   }
 
@@ -250,20 +323,104 @@ Locale get locale {
         return false;
       }
 
-      await _supabase.from('profiles').update({
-        'name': name,
-        'email': email,
-        'bio': bio ?? '',
-        'updated_at': DateTime.now().toIso8601String(),
-      }).eq('id', user.id);
+      // Tenta upsert e pede o registro retornado para confirmar a escrita.
+      dynamic saved;
+      try {
+        saved = await _supabase
+            .from('profiles')
+            .upsert({
+              'id': user.id,
+              'name': name,
+              'email': email,
+              'bio': bio ?? '',
+              'updated_at': DateTime.now().toIso8601String(),
+            }, onConflict: 'id')
+            .select()
+            .maybeSingle();
+      } catch (e) {
+        debugPrint('upsert error: $e');
+        _errorMessage = '$e';
 
-      // Atualiza cache local — não recarrega do banco pra evitar que
-      // _loadUserData sobrescreva os dados novos com os dados antigos do auth.
-      if (_userData != null) {
+        // Se a exceção indicar coluna ausente no schema (ex: "Could not find the 'bio' column"),
+        // tenta reenviar o upsert sem esse campo para manter a sincronização local.
+        try {
+          final err = e.toString();
+          final match = RegExp(r"Could not find the '([a-zA-Z0-9_]+)' column").firstMatch(err);
+          if (match != null) {
+            final missingCol = match.group(1);
+            debugPrint('Detected missing column: $missingCol — retrying without it');
+
+            final payload = {
+              'id': user.id,
+              'name': name,
+              'email': email,
+              'updated_at': DateTime.now().toIso8601String(),
+            };
+
+            // só adiciona bio se não for a coluna faltante
+            if (missingCol != null && missingCol != 'bio') {
+              payload['bio'] = bio ?? '';
+            }
+
+            try {
+              saved = await _supabase
+                  .from('profiles')
+                  .upsert(payload, onConflict: 'id')
+                  .select()
+                  .maybeSingle();
+              if (saved != null) {
+                _errorMessage = null;
+              }
+            } catch (e2) {
+              debugPrint('upsert retry error: $e2');
+              _errorMessage = '$e2';
+            }
+          }
+        } catch (_) {}
+
+        // deixamos saved null para tentar fallback abaixo (update)
+      }
+
+      // Se upsert não retornou o registro, tenta um update como fallback.
+      if (saved == null) {
+        try {
+          final updated = await _supabase
+              .from('profiles')
+              .update({
+                'name': name,
+                'email': email,
+                'bio': bio ?? '',
+                'updated_at': DateTime.now().toIso8601String(),
+              })
+              .eq('id', user.id)
+              .select()
+              .maybeSingle();
+          if (updated != null) saved = updated;
+        } catch (e) {
+          debugPrint('update fallback error: $e');
+          _errorMessage = '$e';
+        }
+      }
+
+      // Atualiza cache local a partir do registro confirmado pelo servidor.
+      if (saved != null) {
+        // Recarrega do servidor para garantir sincronização com Supabase.
+        try {
+          await _loadUserData();
+        } catch (e) {
+          debugPrint('reload after save error: $e');
+        }
+      } else if (_userData != null) {
+        // fallback em memória caso servidor não retorne o registro
         _userData = Map<String, dynamic>.from(_userData!);
         _userData!['name'] = name;
         _userData!['email'] = email;
         _userData!['bio'] = bio ?? '';
+      } else {
+        _errorMessage = 'Não foi possível confirmar a atualização no servidor.';
+        _isLoading = false;
+        notifyListeners();
+        return false;
       }
 
       _isLoading = false;
@@ -482,7 +639,7 @@ Locale get locale {
   }
   Future<bool> logout() async {
     try {
-      await _supabase.auth.signOut();
+      await _supabase.auth.signOut(scope: SignOutScope.local);
       _userData = null;
       notifyListeners();
       return true;
@@ -507,6 +664,29 @@ Locale get locale {
           .eq('id', user.id)
           .single();
 
+        final learningProgress = await LearningProgressService()
+          .loadProgress();
+        final remoteProgress = await _supabase
+          .from('user_lesson_progress')
+          .select()
+          .eq('user_id', user.id);
+        final writtenSigns = await _supabase
+          .from('written_signs')
+          .select()
+          .eq('user_id', user.id)
+          .order('updated_at', ascending: false);
+          final favoriteSigns = await _supabase
+            .from('favorite_signs')
+            .select('sign_id')
+            .eq('user_id', user.id);
+
+        final sanitizedSigns = writtenSigns.map((raw) {
+        final sign = Map<String, dynamic>.from(raw as Map);
+        sign.remove('preview_png_base64');
+        sign.remove('preview_svg');
+        return sign;
+        }).toList();
+
       final dataToExport = {
         'profile': profileData,
         'settings': {
@@ -517,6 +697,14 @@ Locale get locale {
           'spacing': _spacing,
           'language': _language,
         },
+        'learning_progress': learningProgress.toMap(),
+        'synced_learning_progress': remoteProgress
+            .map((row) => Map<String, dynamic>.from(row as Map))
+            .toList(),
+        'written_signs': sanitizedSigns,
+        'favorite_signs': favoriteSigns
+          .map((row) => Map<String, dynamic>.from(row as Map))
+          .toList(),
         'exported_at': DateTime.now().toIso8601String(),
         'app_version': '1.0.0',
       };

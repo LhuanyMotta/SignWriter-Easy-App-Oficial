@@ -28,7 +28,11 @@ void main() {
               'estimatedMinutes': 5,
               'difficulty': 'Iniciante',
               'blocks': [
-                {'id': 'b1', 'type': 'text', 'body': 'Oi', 'order_index': 0},
+                {
+                  'id': 'b1', 'type': 'image', 'order_index': 0,
+                  'media': {'id': 'media-1', 'kind': 'image',
+                    'external_url': 'https://example.com/lesson.png'},
+                },
               ],
             },
           ],
@@ -46,6 +50,8 @@ void main() {
       expect(loaded!.categories.first.id, 'cat-1');
       expect(loaded.contentVersion, '1-1-1');
       expect(loaded.localeCode, 'pt');
+      expect(loaded.categories.first.lessons.first.blocks.first.media?.externalUrl,
+          'https://example.com/lesson.png');
     });
 
     test('recusa substituir por cache incompleto', () async {

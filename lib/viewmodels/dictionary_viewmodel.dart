@@ -35,8 +35,8 @@ class DictionaryViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  DictionaryViewModel() {
-    loadSigns();
+  DictionaryViewModel({bool autoLoad = true}) {
+    if (autoLoad) loadSigns();
   }
 
   Future<void> loadSigns() async {

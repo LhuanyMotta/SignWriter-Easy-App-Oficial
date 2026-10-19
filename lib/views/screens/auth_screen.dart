@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../viewmodels/auth_viewmodel.dart';
+import '../../utils/password_validator.dart';
+import '../../utils/email_validator.dart';
 import 'home_screen.dart';
 import '../widgets/app_logo.dart';
 import '../accessibility_settings_view.dart';
@@ -33,13 +36,13 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   
   final TextEditingController _signupNameController = TextEditingController();
   final TextEditingController _signupEmailController = TextEditingController();
+  final TextEditingController _signupConfirmEmailController = TextEditingController();
   final TextEditingController _signupPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _viewModel = AuthViewModel(Supabase.instance.client);
     _tabController = TabController(length: 2, vsync: this);
     _authStateSubscription = Supabase.instance.client.auth.onAuthStateChange.listen(
       (data) async {
@@ -54,6 +57,12 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _viewModel = context.read<AuthViewModel>();
+  }
+
+  @override
   void dispose() {
     _authStateSubscription.cancel();
     _tabController.dispose();
@@ -61,6 +70,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     _loginPasswordController.dispose();
     _signupNameController.dispose();
     _signupEmailController.dispose();
+    _signupConfirmEmailController.dispose();
     _signupPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -71,12 +81,9 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     final isWide = Responsive.isWide(context);
     final scheme = Theme.of(context).colorScheme;
 
-    return ChangeNotifierProvider.value(
-      value: _viewModel,
-      child: Scaffold(
-        backgroundColor: scheme.surface,
-        body: isWide ? _buildWideLayout(context) : _buildFormBody(context),
-      ),
+    return Scaffold(
+      backgroundColor: scheme.surface,
+      body: isWide ? _buildWideLayout(context) : _buildFormBody(context),
     );
   }
 
@@ -135,8 +142,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const AppLogo(size: 64, colored: false, showText: false),
-                          const SizedBox(height: 32),
+                          const AppLogo(size: 110, colored: false, showText: false),
+                          const SizedBox(height: 24),
                           Text(
                             context.l10n.appTitle,
                             style: const TextStyle(
@@ -216,49 +223,55 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     final tokens = _tokens(context);
 
     return SafeArea(
-      child: Column(
-        children: [
-          Padding(
-            padding: AppSpacing.symmetric(context, horizontal: 24.0, vertical: 16.0),
-            child: Column(
-              children: [
-                SizedBox(height: AppSpacing.value(context, 40)),
-                const AppLogo(
-                  size: 80,
-                  colored: true,
-                  showText: false,
-                ),
-                SizedBox(height: AppSpacing.value(context, 20)),
-                Text(
-                  context.l10n.appTitle,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: scheme.primary,
-                      ),
-                ),
-                SizedBox(height: AppSpacing.value(context, 8)),
-                Text(
-                  context.l10n.authSubtitle,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: tokens.onSurfaceMuted,
-                      ),
-                ),
-                SizedBox(height: AppSpacing.value(context, 32)),
-                _buildTabBarChrome(context),
-                SizedBox(height: AppSpacing.value(context, 24)),
-              ],
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 32),
+        child: Column(
+          children: [
+            Padding(
+              padding: AppSpacing.symmetric(
+                context,
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
+              child: Column(
+                children: [
+                  SizedBox(height: AppSpacing.value(context, 40)),
+                  const AppLogo(
+                    size: 80,
+                    colored: true,
+                    showText: false,
+                  ),
+                  SizedBox(height: AppSpacing.value(context, 20)),
+                  Text(
+                    context.l10n.appTitle,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: scheme.primary,
+                        ),
+                  ),
+                  SizedBox(height: AppSpacing.value(context, 8)),
+                  Text(
+                    context.l10n.authSubtitle,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: tokens.onSurfaceMuted,
+                        ),
+                  ),
+                  SizedBox(height: AppSpacing.value(context, 32)),
+                  _buildTabBarChrome(context),
+                  SizedBox(height: AppSpacing.value(context, 24)),
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildLoginTab(),
-                _buildSignupTab(),
-              ],
+            AnimatedBuilder(
+              animation: _tabController,
+              builder: (context, _) {
+                return _tabController.index == 0
+                    ? _buildLoginTab(scrollable: false)
+                    : _buildSignupTab(scrollable: false);
+              },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -325,8 +338,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildLoginTab() {
-    return SingleChildScrollView(
+  Widget _buildLoginTab({bool scrollable = true}) {
+    final content = Padding(
       padding: AppSpacing.symmetric(context, horizontal: 24.0),
       child: Form(
         key: _loginFormKey,
@@ -342,8 +355,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 if (value == null || value.isEmpty) {
                   return context.l10n.enterEmailError;
                 }
-                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                  return context.l10n.invalidEmailError;
+                if (!EmailValidator.isValid(value)) {
+                  return context.l10n.invalidEmailDomainError;
                 }
                 return null;
               },
@@ -368,14 +381,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(context.l10n.passwordRecoverySoon),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
+                onPressed: () => _showPasswordRecoveryDialog(),
                 child: Text(
                   context.l10n.forgotPassword,
                   style: TextStyle(
@@ -441,97 +447,154 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         ),
       ),
     );
+    return scrollable ? SingleChildScrollView(child: content) : content;
   }
 
-  Widget _buildSignupTab() {
-    return SingleChildScrollView(
-      padding: AppSpacing.symmetric(context, horizontal: 24.0),
-      child: Form(
-        key: _signupFormKey,
-        child: Column(
-          children: [
-            _buildTextField(
-              controller: _signupNameController,
-              label: context.l10n.fullNameLabel,
-              hintText: context.l10n.fullNameLabel,
-              icon: Icons.person_outlined,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return context.l10n.enterNameError;
-                }
-                if (value.length < 2) {
-                  return context.l10n.nameLengthError;
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: AppSpacing.value(context, 16)),
-            
-            _buildTextField(
-              controller: _signupEmailController,
-              label: context.l10n.emailLabel,
-              hintText: context.l10n.emailLabel,
-              icon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return context.l10n.enterEmailError;
-                }
-                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                  return context.l10n.invalidEmailError;
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: AppSpacing.value(context, 16)),
-            
-            _buildTextField(
-              controller: _signupPasswordController,
-              label: context.l10n.passwordLabel,
-              hintText: context.l10n.passwordLabel,
-              icon: Icons.lock_outlined,
-              isPassword: true,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return context.l10n.enterPasswordError;
-                }
-                if (value.length < 6) {
-                  return context.l10n.passwordLengthError;
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: AppSpacing.value(context, 16)),
-            
-            _buildTextField(
-              controller: _confirmPasswordController,
-              label: context.l10n.confirmPasswordLabel,
-              hintText: context.l10n.confirmPasswordLabel,
-              icon: Icons.lock_outlined,
-              isPassword: true,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return context.l10n.confirmPasswordError;
-                }
-                if (value != _signupPasswordController.text) {
-                  return context.l10n.passwordMismatchError;
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: AppSpacing.value(context, 32)),
-            
-            Consumer<AuthViewModel>(
-              builder: (context, viewModel, child) {
-                final scheme = Theme.of(context).colorScheme;
-                return SizedBox(
+  Future<void> _showPasswordRecoveryDialog() async {
+    final sent = await showDialog<bool>(
+      context: context,
+      builder: (_) => _PasswordRecoveryDialog(
+        viewModel: _viewModel,
+        initialEmail: _loginEmailController.text.trim(),
+      ),
+    );
+
+    if (!mounted || sent == null) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          sent
+              ? context.l10n.passwordRecoverySent
+              : _viewModel.error ?? context.l10n.passwordRecoveryError,
+        ),
+        backgroundColor: sent
+            ? Colors.green
+            : Theme.of(context).colorScheme.error,
+      ),
+    );
+  }
+
+  Widget _buildSignupTab({bool scrollable = true}) {
+    return Consumer<AuthViewModel>(
+      builder: (context, viewModel, child) {
+        final content = Padding(
+          padding: AppSpacing.symmetric(context, horizontal: 24.0),
+          child: Form(
+            key: _signupFormKey,
+            child: Column(
+              children: [
+                _buildTextField(
+                  controller: _signupNameController,
+                  label: context.l10n.fullNameLabel,
+                  hintText: context.l10n.fullNameLabel,
+                  icon: Icons.person_outlined,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return context.l10n.enterNameError;
+                    }
+                    final nameParts = value.trim().split(RegExp(r'\s+'));
+                    if (nameParts.length < 2 ||
+                        nameParts.any((part) => part.length < 2)) {
+                      return context.l10n.fullNameRequiredError;
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: AppSpacing.value(context, 16)),
+
+                _buildTextField(
+                  controller: _signupEmailController,
+                  label: context.l10n.emailLabel,
+                  hintText: context.l10n.emailLabel,
+                  icon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return context.l10n.enterEmailError;
+                    }
+                    if (!EmailValidator.isValid(value)) {
+                      return context.l10n.invalidEmailDomainError;
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: AppSpacing.value(context, 16)),
+
+                _buildTextField(
+                  controller: _signupConfirmEmailController,
+                  label: context.l10n.confirmEmailLabel,
+                  hintText: context.l10n.confirmEmailLabel,
+                  icon: Icons.mark_email_read_outlined,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return context.l10n.enterEmailError;
+                    }
+                    if (value.trim().toLowerCase() !=
+                        _signupEmailController.text.trim().toLowerCase()) {
+                      return context.l10n.emailMismatchError;
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: AppSpacing.value(context, 16)),
+
+                _buildTextField(
+                  controller: _signupPasswordController,
+                  label: context.l10n.passwordLabel,
+                  hintText: context.l10n.passwordLabel,
+                  icon: Icons.lock_outlined,
+                  isPassword: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return context.l10n.enterPasswordError;
+                    }
+                    if (!PasswordValidator.hasMinimumLength(value)) {
+                      return context.l10n.passwordMinLengthError;
+                    }
+                    if (!PasswordValidator.hasUppercase(value)) {
+                      return context.l10n.passwordUppercaseError;
+                    }
+                    if (!PasswordValidator.hasLowercase(value)) {
+                      return context.l10n.passwordLowercaseError;
+                    }
+                    if (!PasswordValidator.hasNumber(value)) {
+                      return context.l10n.passwordNumberError;
+                    }
+                    if (!PasswordValidator.hasSpecialCharacter(value)) {
+                      return context.l10n.passwordSpecialCharError;
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: AppSpacing.value(context, 16)),
+
+                _buildTextField(
+                  controller: _confirmPasswordController,
+                  label: context.l10n.confirmPasswordLabel,
+                  hintText: context.l10n.confirmPasswordLabel,
+                  icon: Icons.lock_outlined,
+                  isPassword: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return context.l10n.confirmPasswordError;
+                    }
+                    if (value != _signupPasswordController.text) {
+                      return context.l10n.passwordMismatchError;
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: AppSpacing.value(context, 32)),
+
+                SizedBox(
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton(
                     onPressed: viewModel.isLoading ? null : () => _handleSignup(viewModel, context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: scheme.primary,
-                      foregroundColor: scheme.onPrimary,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -543,7 +606,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                             width: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(scheme.onPrimary),
+                              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.onPrimary),
                             ),
                           )
                         : Row(
@@ -561,19 +624,22 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                             ],
                           ),
                   ),
-                );
-              },
+                ),
+                SizedBox(height: AppSpacing.value(context, 20)),
+
+                _buildDivider(),
+                SizedBox(height: AppSpacing.value(context, 20)),
+
+                _buildSocialLoginButtons(),
+                SizedBox(height: AppSpacing.value(context, 32)),
+              ],
             ),
-            SizedBox(height: AppSpacing.value(context, 20)),
-            
-            _buildDivider(),
-            SizedBox(height: AppSpacing.value(context, 20)),
-            
-            _buildSocialLoginButtons(),
-            SizedBox(height: AppSpacing.value(context, 32)),
-          ],
-        ),
-      ),
+          ),
+        );
+        return scrollable
+            ? SingleChildScrollView(child: content)
+            : content;
+      },
     );
   }
 
@@ -584,6 +650,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     required IconData icon,
     bool isPassword = false,
     TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
   }) {
     final scheme = Theme.of(context).colorScheme;
@@ -605,6 +672,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
           controller: controller,
           obscureText: isPassword,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
           validator: validator,
           style: TextStyle(color: scheme.onSurface),
           cursorColor: scheme.primary,
@@ -811,10 +879,10 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       );
       
       if (success) {
-        if (!mounted) return;
+        if (!context.mounted) return;
         await _navigateAfterAuth();
       } else {
-        if (!mounted) return;
+        if (!context.mounted) return;
         final msg = _localizedAuthError(viewModel.errorType, context);
         messenger.showSnackBar(
           SnackBar(
@@ -837,16 +905,48 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       );
       
       if (success) {
-        if (!mounted) return;
+        if (!context.mounted) return;
         await _navigateAfterAuth();
-      } else {
-        if (!mounted) return;
-        final msg = _localizedAuthError(viewModel.errorType, context, isSignup: true);
+      } else if (viewModel.requiresEmailConfirmation) {
+        if (!context.mounted) return;
         messenger.showSnackBar(
           SnackBar(
-            content: Text(msg),
+            content: Text('Um link de confirmação foi enviado para ${viewModel.pendingVerificationEmail}. Abra o e-mail e clique no link para concluir o cadastro.'),
+            backgroundColor: Colors.blue,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: 'REENVIAR',
+              onPressed: () async {
+                final email = viewModel.pendingVerificationEmail;
+                if (email == null) return;
+                final sent = await viewModel.resendSignupConfirmation(
+                  email: email,
+                );
+                if (!mounted) return;
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      sent
+                          ? 'Novo link enviado. Verifique sua caixa de entrada.'
+                          : viewModel.error ??
+                              'Não foi possível reenviar o link.',
+                    ),
+                    backgroundColor: sent ? Colors.green : Colors.red,
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      } else {
+        if (!context.mounted) return;
+        final msg = viewModel.error ??
+            _localizedAuthError(viewModel.errorType, context, isSignup: true);
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Erro no cadastro: $msg'),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
+            duration: const Duration(seconds: 8),
           ),
         );
       }
@@ -883,6 +983,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         return l.authErrorInvalidCredentials;
       case AuthErrorType.emailExists:
         return l.authErrorEmailExists;
+      case AuthErrorType.invalidEmail:
+        return l.invalidEmailDomainError;
       case AuthErrorType.weakPassword:
         return l.authErrorWeakPassword;
       case AuthErrorType.emailSignupsDisabled:
@@ -899,6 +1001,84 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       case null:
         return isSignup ? l.authErrorSignup : l.authErrorLogin;
     }
+  }
+}
+
+class _PasswordRecoveryDialog extends StatefulWidget {
+  final AuthViewModel viewModel;
+  final String initialEmail;
+
+  const _PasswordRecoveryDialog({
+    required this.viewModel,
+    required this.initialEmail,
+  });
+
+  @override
+  State<_PasswordRecoveryDialog> createState() =>
+      _PasswordRecoveryDialogState();
+}
+
+class _PasswordRecoveryDialogState extends State<_PasswordRecoveryDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _emailController;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController(text: widget.initialEmail);
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(context.l10n.forgotPassword),
+      content: Form(
+        key: _formKey,
+        child: TextFormField(
+          controller: _emailController,
+          keyboardType: TextInputType.emailAddress,
+          autofocus: true,
+          decoration: InputDecoration(
+            labelText: context.l10n.emailLabel,
+            prefixIcon: const Icon(Icons.email_outlined),
+          ),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return context.l10n.enterEmailError;
+            }
+            if (!EmailValidator.isValid(value)) {
+              return context.l10n.invalidEmailDomainError;
+            }
+            return null;
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(context.l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: Text(context.l10n.sendButton),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    final success = await widget.viewModel.sendPasswordResetEmail(
+      email: _emailController.text,
+    );
+    if (!mounted) return;
+    Navigator.pop(context, success);
   }
 }
 

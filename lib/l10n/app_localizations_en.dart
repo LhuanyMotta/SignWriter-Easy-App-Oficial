@@ -30,6 +30,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fullNameLabel => 'Full name';
 
   @override
+  String get fullNameRequiredError => 'Enter your first and last name';
+
+  @override
+  String get confirmEmailLabel => 'Confirm email';
+
+  @override
+  String get emailMismatchError => 'The emails do not match';
+
+  @override
   String get confirmPasswordLabel => 'Confirm password';
 
   @override
@@ -57,6 +66,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invalidEmailError => 'Please enter a valid email';
 
   @override
+  String get invalidEmailDomainError => 'Please enter a valid email';
+
+  @override
   String get enterPasswordError => 'Please enter your password';
 
   @override
@@ -76,6 +88,135 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get passwordRecoverySoon => 'Password recovery will be available soon';
+
+  @override
+  String get passwordRecoverySent => 'We sent a recovery link to your email.';
+
+  @override
+  String get passwordRecoveryError => 'Could not send the recovery link.';
+
+  @override
+  String get resetPasswordTitle => 'Reset password';
+
+  @override
+  String get resetPasswordSubtitle => 'Choose a new password for your account.';
+
+  @override
+  String get newPasswordLabel => 'New password';
+
+  @override
+  String get saveNewPassword => 'Save new password';
+
+  @override
+  String get passwordUpdatedSuccess => 'Password updated successfully!';
+
+  @override
+  String get sendButton => 'Send';
+
+  @override
+  String get passwordMinLengthError => 'Password must be at least 8 characters long';
+
+  @override
+  String get passwordUppercaseError => 'Password must contain at least one uppercase letter';
+
+  @override
+  String get passwordLowercaseError => 'Password must contain at least one lowercase letter';
+
+  @override
+  String get passwordNumberError => 'Password must contain at least one number';
+
+  @override
+  String get passwordSpecialCharError => 'Password must contain at least one special character (!@#\$%^&*)';
+
+  @override
+  String get authOAuthContinueInBrowser => 'Continue authentication in the browser';
+
+  @override
+  String get authErrorInvalidCredentials => 'Invalid email or password. Try again.';
+
+  @override
+  String get authErrorEmailExists => 'This email is already registered.';
+
+  @override
+  String get authErrorWeakPassword => 'The password is too weak.';
+
+  @override
+  String get authErrorEmailSignupsDisabled => 'Email sign-up is disabled.';
+
+  @override
+  String get authErrorEmailLoginsDisabled => 'Email login is disabled.';
+
+  @override
+  String get authErrorEmailNotConfirmed => 'Confirm your email before signing in.';
+
+  @override
+  String get authErrorOAuthNotEnabled => 'This social login is unavailable.';
+
+  @override
+  String get authErrorCreateAccount => 'Could not create the account.';
+
+  @override
+  String get authErrorSignup => 'Could not complete sign-up.';
+
+  @override
+  String get authErrorLogin => 'Could not sign in.';
+
+  @override
+  String get profileSignOutTitle => 'Sign out';
+
+  @override
+  String get profileSignOutContent => 'Do you really want to sign out?';
+
+  @override
+  String get profileSignOutConfirm => 'Sign out';
+
+  @override
+  String get profileSignOutButton => 'Sign out';
+
+  @override
+  String get profileGallery => 'Gallery';
+
+  @override
+  String get profileCamera => 'Camera';
+
+  @override
+  String get profileErrorUpdatePhoto => 'Could not update the profile picture.';
+
+  @override
+  String get profileDeleteTitle => 'Delete account';
+
+  @override
+  String get profileDeleteButton => 'Delete';
+
+  @override
+  String get profileErrorDeleteAccount => 'Could not delete the account.';
+
+  @override
+  String get translateNoSignFound => 'No sign found.';
+
+  @override
+  String get allFilter => 'All';
+
+  @override
+  String get dictionarySearchHint => 'Search signs';
+
+  @override
+  String get favoritesEmpty => 'You have not favorited any signs yet.';
+
+  @override
+  String get editorEditSign => 'Edit sign';
+
+  @override
+  String get editorNewSign => 'New sign';
+
+  @override
+  String get editorCategoryLabel => 'Category';
+
+  @override
+  String get editorTagsHint => 'Tags separated by commas';
+
+  @override
+  String get editorSaveSign => 'Save sign';
 
   @override
   String get homeWelcome => 'Welcome!';
@@ -179,7 +320,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get themeSystem => 'System';
 
-
   @override
   String get languageTitle => 'Language';
 
@@ -191,6 +331,36 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountDataTitle => 'Account Data';
+
+  @override
+  String get profileResetPasswordTitle => 'Reset password';
+
+  @override
+  String get profileResetPasswordSubtitle => 'Receive a link to create a new password';
+
+  @override
+  String get profileResetPasswordSent => 'We sent a reset link to your email.';
+
+  @override
+  String get profileResetPasswordError => 'Could not send the reset link.';
+
+  @override
+  String get profileChangeEmailTitle => 'Change email';
+
+  @override
+  String get profileChangeEmailSubtitle => 'Update the email used by your account';
+
+  @override
+  String get profileNewEmailLabel => 'New email';
+
+  @override
+  String get profileSameEmailError => 'Enter an email different from the current one';
+
+  @override
+  String get profileChangeEmailSent => 'We sent a confirmation to the new email.';
+
+  @override
+  String get profileChangeEmailError => 'Could not change the email.';
 
   @override
   String get exportDataTitle => 'Export My Data';
@@ -484,154 +654,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get learningReturnToLesson => 'Back to lesson';
-
-  @override
-  String get authErrorInvalidCredentials => 'Invalid email or password';
-
-  @override
-  String get authErrorEmailExists => 'Email already registered';
-
-  @override
-  String get authErrorWeakPassword => 'Password must be at least 6 characters';
-
-  @override
-  String get authErrorEmailSignupsDisabled => 'Email sign-ups are disabled';
-
-  @override
-  String get authErrorEmailLoginsDisabled => 'Email login is disabled';
-
-  @override
-  String get authErrorEmailNotConfirmed => 'Email not confirmed. Check your inbox.';
-
-  @override
-  String get authErrorOAuthNotEnabled => 'Social provider not enabled. Contact support.';
-
-  @override
-  String get authOAuthContinueInBrowser => 'Continue the login in your browser and return to the app when done.';
-
-  @override
-  String get authErrorLogin => 'Sign in failed. Please try again.';
-
-  @override
-  String get authErrorSignup => 'Sign up failed. Please try again.';
-
-  @override
-  String get authErrorCreateAccount => 'Failed to create account. Please try again.';
-
-  @override
-  String get editorNewSign => 'New sign';
-  @override
-  String get editorEditSign => 'Edit sign';
-  @override
-  String get editorSaveSign => 'Save sign';
-  @override
-  String get editorAddSymbolFirst => 'Add at least one symbol before saving.';
-  @override
-  String get editorRotateMinus => 'Rotate -';
-  @override
-  String get editorRotatePlus => 'Rotate +';
-  @override
-  String get editorMirror => 'Mirror';
-  @override
-  String get editorDuplicate => 'Duplicate';
-  @override
-  String get editorCenter => 'Center';
-  @override
-  String get editorDelete => 'Delete';
-  @override
-  String get editorClearAll => 'Clear all';
-  @override
-  String get editorTagsHint => 'Ex: greeting, school, basic';
-  @override
-  String get editorOpenHand => 'Open hand';
-  @override
-  String get editorPoint => 'Point';
-  @override
-  String get editorFist => 'Fist';
-  @override
-  String get editorMoveUp => 'Move up';
-  @override
-  String get editorMoveDown => 'Move down';
-  @override
-  String get editorRepeat => 'Repeat';
-  @override
-  String get editorFaceNeutral => 'Neutral face';
-  @override
-  String get editorFaceHappy => 'Happy face';
-  @override
-  String get editorLook => 'Look';
-  @override
-  String get editorBody => 'Body';
-  @override
-  String get editorTilt => 'Tilt';
-  @override
-  String get editorHead => 'Head';
-  @override
-  String get editorContact => 'Contact';
-  @override
-  String get editorLine => 'Line';
-  @override
-  String get editorCross => 'Cross';
-  @override
-  String get editorSymbol => 'Symbol';
-
-  @override
-  String get profileSignOutTitle => 'Sign out';
-  @override
-  String get profileSignOutContent => 'Are you sure you want to sign out?';
-  @override
-  String get profileSignOutConfirm => 'Sign Out';
-  @override
-  String get profileSignOutButton => 'Sign out';
-  @override
-  String get profileDeleteTitle => 'Delete Account';
-  @override
-  String get profileDeleteContent => 'Are you sure you want to delete your account? This action cannot be undone.';
-  @override
-  String get profileDeleteConfirm => 'Delete my account';
-  @override
-  String get profileDeleteButton => 'Delete';
-  @override
-  String get profileGallery => 'Gallery';
-  @override
-  String get profileCamera => 'Camera';
-  @override
-  String get profileExportError => 'Error exporting data';
-
-
-  @override String get favoritesEmpty => 'No favorites found';
-  @override String get translateNoSignFound => 'No sign found for this text.';
-  @override String get translateNotFound => 'Not found';
-  @override String get editorCategoryLabel => 'Category';
-
-
-  @override String get clear => 'Clear';
-  @override String get allFilter => 'All';
-  @override String get dictionarySearchHint => 'Search signs...';
-  @override String get dictionaryNoSignFound => 'No sign found';
-  @override String get writeSignsNew => 'New sign';
-  @override String get writeSignsSearchHint => 'Search by name, category or tag';
-  @override String get writeSignsAll => 'All';
-  @override String get writeSignsEmpty => 'No sign found.';
-  @override String get writeSignsEmptyHint => 'Use the "New sign" button to create your first sign.';
-  @override String get writeSignsCategory => 'Category';
-  @override String get writeSignsSymbols => 'Symbols';
-  @override String get translateNotFoundPrefix => 'Not found';
-  @override String get translateErrorMsg => 'Translation error';
-  @override String get quizNoSigns => 'No signs available.';
-  @override String get profileErrorUpdatePhoto => 'Error updating photo';
-  @override String get profileErrorExportData => 'Error exporting data';
-  @override String get profileErrorDeleteAccount => 'Error deleting account';
-
-  @override String get remove => 'Remove';
-
-@override String get homeDictionaryDesc => 'Browse signs registered in the database.';
-  @override String get homeTranslateDesc => 'Type a word or phrase to search for corresponding signs.';
-
-@override String get translateAudioSoon => 'Audio recognition will be available soon.';
-  @override String get translateCameraSoon => 'Camera capture will be available soon.';
-  @override String get accessibilitySkip => 'Skip setup';
-  @override String get quizExerciseDone => 'Exercise completed';
-  @override String get quizNext => 'Next';
-  @override String get quizScoreMsg => 'You got {score} out of {total} signs correct.';
 }

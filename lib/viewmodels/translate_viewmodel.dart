@@ -91,16 +91,18 @@ class TranslateViewModel extends ChangeNotifier {
     notifyListeners();
 
     await _speech.listen(
-      localeId: localeId,
+      listenOptions: stt.SpeechListenOptions(
+        localeId: localeId,
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 4),
+        partialResults: true,
+        cancelOnError: true,
+      ),
       onResult: (result) {
         _partialSpeechText = result.recognizedWords;
         onResult(_partialSpeechText);
         notifyListeners();
       },
-      listenFor: const Duration(seconds: 30),
-      pauseFor: const Duration(seconds: 4),
-      partialResults: true,
-      cancelOnError: true,
     );
   }
 
@@ -379,16 +381,6 @@ class TranslateViewModel extends ChangeNotifier {
         .toList();
   }
 
-  String _normalize(String input) {
-    const withDiacritics = 'áàâãäéèêëíìîïóòôõöúùûüçñÁÀÂÃÄÉÈÊËÍÌÎÏÓÒÔÕÖÚÙÛÜÇÑ';
-    const withoutDiacritics = 'aaaaaeeeeiiiiooooouuuucnAAAAAEEEEIIIIOOOOOUUUUCN';
-
-    var result = input.toLowerCase();
-    for (var i = 0; i < withDiacritics.length; i++) {
-      result = result.replaceAll(withDiacritics[i], withoutDiacritics[i].toLowerCase());
-    }
-    return result;
-  }
 
   void clear() {
     _signs = [];

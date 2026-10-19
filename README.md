@@ -226,6 +226,24 @@ SUPABASE_KEY=SUA_CHAVE
 flutter run
 ```
 
+## Gerar versão Android para publicação
+
+Para publicar na Google Play, crie uma keystore própria e o arquivo
+`android/key.properties` localmente. Esses arquivos não devem ser versionados:
+
+```properties
+storePassword=SUA_SENHA
+keyPassword=SUA_SENHA
+keyAlias=signwriter
+storeFile=C:/caminho/signwriter-upload.jks
+```
+
+Gere o pacote da loja com:
+
+```bash
+flutter build appbundle --release
+```
+
 ---
 
 # 🌍 Roadmap

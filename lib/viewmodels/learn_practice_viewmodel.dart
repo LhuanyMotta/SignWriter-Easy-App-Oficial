@@ -48,6 +48,10 @@ class LearnPracticeViewModel extends ChangeNotifier {
       return;
     }
 
+    if (_includeDrafts && !includeDrafts) {
+      // Não reutiliza rascunhos depois de perder a permissão editorial.
+      _categories = [];
+    }
     _includeDrafts = includeDrafts;
     _loadedLanguageCode = languageCode;
     await _loadData(Locale(languageCode));
@@ -85,7 +89,7 @@ class LearnPracticeViewModel extends ChangeNotifier {
       _progress = await _progressRepository.loadProgress();
     } catch (e) {
       _errorMessage = friendlyError(e);
-      _categories = [];
+      // Preserva o último conteúdo carregado se a atualização falhar.
     } finally {
       _isLoading = false;
       notifyListeners();

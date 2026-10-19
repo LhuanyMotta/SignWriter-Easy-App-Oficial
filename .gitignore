@@ -7,6 +7,9 @@
 *.p12
 *.key
 credentials.json
+android/key.properties
+android/*.jks
+android/*.keystore
 **/service_account*.json
 google-services.json
 GoogleService-Info.plist

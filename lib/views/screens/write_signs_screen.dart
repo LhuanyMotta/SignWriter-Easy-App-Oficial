@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/written_sign_model.dart';
 import '../../routes/app_routes.dart';
-import '../../theme/responsive_content.dart';
+import '../../theme/adaptive_nav_scaffold.dart';
 import '../../viewmodels/write_signs_viewmodel.dart';
 import '../widgets/states/app_empty_state.dart';
 import '../widgets/states/app_error_state.dart';
@@ -45,7 +45,17 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
       value: _viewModel,
       child: Consumer<WriteSignsViewModel>(
         builder: (context, viewModel, child) {
-          return Scaffold(
+          return AdaptiveNavScaffold(
+            currentRoute: AppRoutes.writeSigns,
+            currentIndex: 0,
+            homeLabel: 'Início',
+            profileLabel: 'Perfil',
+            onTabSelected: (index) {
+              Navigator.pushReplacementNamed(
+                context,
+                index == 0 ? AppRoutes.home : AppRoutes.profile,
+              );
+            },
             appBar: AppBar(
               title: const Text('Escrever Sinais'),
               actions: [
@@ -59,8 +69,12 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
                 ),
               ],
             ),
-            body: ResponsiveContent(
-              child: SafeArea(
+                  floatingActionButton: FloatingActionButton.extended(
+                    onPressed: () => _openEditor(),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Novo sinal'),
+                  ),
+            body: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                   child: Column(
@@ -93,12 +107,6 @@ class _WriteSignsScreenState extends State<WriteSignsScreen> {
                   ),
                 ),
               ),
-            ),
-            floatingActionButton: FloatingActionButton.extended(
-              onPressed: () => _openEditor(),
-              icon: const Icon(Icons.add),
-              label: const Text('Novo sinal'),
-            ),
           );
         },
       ),

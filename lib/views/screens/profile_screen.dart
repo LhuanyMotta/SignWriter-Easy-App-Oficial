@@ -3,11 +3,16 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/export_data.dart';
+import '../../services/export_format.dart';
 import '../../viewmodels/profile_viewmodel.dart';
+import '../../viewmodels/auth_viewmodel.dart';
 import '../../viewmodels/home_viewmodel.dart';
+import '../../utils/email_validator.dart';
+import '../../utils/friendly_error.dart';
 import '../accessibility_settings_view.dart';
 import '../../theme/app_radius.dart';
 import '../../theme/adaptive_nav_scaffold.dart';
+import '../../theme/responsive.dart';
 import '../../theme/responsive_content.dart';
 import '../../l10n/l10n.dart';
 import '../../routes/app_routes.dart';
@@ -21,6 +26,8 @@ class ProfileScreen extends StatefulWidget {
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
+
+enum _ProfileEditMode { name, bio, both }
 
 class _ProfileScreenState extends State<ProfileScreen> {
   late ProfileViewModel _viewModel;
@@ -44,60 +51,83 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _viewModel,
-      child: AdaptiveNavScaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(title: Text(context.l10n.bottomProfile)),
-        body: ResponsiveContent(
-          maxWidth: 720,
-          child: Consumer<ProfileViewModel>(
-            builder: (context, vm, _) {
-              if (vm.isLoading && vm.userData == null) {
-                return const AppLoadingState(message: 'Carregando perfil...');
-              }
-              if (vm.userData == null) {
-                return AppErrorState(
-                  message: vm.errorMessage ??
-                      'Não foi possível carregar o perfil.',
-                  onRetry: vm.loadInitialData,
-                );
-              }
-              return ListView(
-                padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
-                children: [
-                  if (vm.errorMessage != null) ...[
-                    AppStatusBanner(
-                      title: vm.errorMessage!,
-                      tone: AppStatusBannerTone.warning,
-                      icon: Icons.warning_amber_rounded,
-                      onAction: vm.loadInitialData,
-                      actionTooltip: 'Tentar novamente',
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                  _heroCard(vm),
-                  const SizedBox(height: 20),
-                  _bioCard(vm),
-                  const SizedBox(height: 20),
-                  _label(context.l10n.settingsTitle),
-                  const SizedBox(height: 10),
-                  _settingsCard(vm),
-                  const SizedBox(height: 20),
-                  _label(context.l10n.accountDataTitle),
-                  const SizedBox(height: 10),
-                  _accountCard(vm),
-                  const SizedBox(height: 24),
-                  _logoutBtn(vm),
-                ],
-              );
-            },
-          ),
+    return AdaptiveNavScaffold(
+      currentRoute: AppRoutes.profile,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(title: Text(context.l10n.bottomProfile)),
+      body: _buildProfileBody(),
+      currentIndex: 1,
+      homeLabel: context.l10n.bottomHome,
+      profileLabel: context.l10n.bottomProfile,
+      onTabSelected: (i) => _homeViewModel.onBottomNavTapped(i, context),
+    );
+  }
+
+  Widget _buildProfileBody() {
+    final content = Consumer<ProfileViewModel>(
+      builder: (context, vm, _) {
+        if (vm.isLoading && vm.userData == null) {
+          return const AppLoadingState(message: 'Carregando perfil...');
+        }
+        if (vm.userData == null) {
+          return AppErrorState(
+            message: vm.errorMessage ?? 'Não foi possível carregar o perfil.',
+            onRetry: vm.loadInitialData,
+          );
+        }
+
+        final children = [
+          if (vm.errorMessage != null) ...[
+            AppStatusBanner(
+              key: const ValueKey('error_banner'),
+              title: vm.errorMessage ?? 'Não foi possível carregar o perfil.',
+              tone: AppStatusBannerTone.warning,
+              icon: Icons.warning_amber_rounded,
+              onAction: vm.loadInitialData,
+              actionTooltip: 'Tentar novamente',
+            ),
+            const SizedBox(key: ValueKey('error_spacer'), height: 12),
+          ],
+          _heroCard(vm),
+          const SizedBox(height: 20),
+          _bioCard(vm),
+          const SizedBox(height: 20),
+          _label(context.l10n.settingsTitle),
+          const SizedBox(height: 10),
+          _settingsCard(vm),
+          const SizedBox(height: 20),
+          _label(context.l10n.accountDataTitle),
+          const SizedBox(height: 10),
+          _accountCard(vm),
+          const SizedBox(height: 24),
+          _logoutBtn(vm),
+        ];
+
+        if (Responsive.isWide(context)) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+            child: Column(children: children),
+          );
+        }
+
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+          children: children,
+        );
+      },
+    );
+
+    if (!Responsive.isWide(context)) {
+      return ResponsiveContent(maxWidth: 720, child: content);
+    }
+
+    return SingleChildScrollView(
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: content,
         ),
-        currentIndex: 1,
-        homeLabel: context.l10n.bottomHome,
-        profileLabel: context.l10n.bottomProfile,
-        onTabSelected: (i) => _homeViewModel.onBottomNavTapped(i, context),
       ),
     );
   }
@@ -108,6 +138,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final data = vm.userData ?? {};
     final name = (data['name'] as String? ?? 'Usuário').trim();
     final email = data['email'] as String? ?? '';
+    final pendingEmail = vm.pendingEmailChange?.trim();
     final avatarUrl = data['avatar_url'] as String?;
     final hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty;
 
@@ -145,7 +176,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     radius: 44,
                     backgroundColor: Colors.white.withValues(alpha: 0.2),
                     backgroundImage:
-                        hasAvatar ? NetworkImage(avatarUrl!) : null,
+                        hasAvatar ? NetworkImage(avatarUrl) : null,
                     child: !hasAvatar
                         ? Text(
                             name.isNotEmpty ? name[0].toUpperCase() : 'U',
@@ -184,6 +215,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (pendingEmail != null && pendingEmail.isNotEmpty) ...[
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.info_outline, size: 14, color: Colors.white),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            'Confirmação pendente: $pendingEmail',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 Text(
                   name,
                   style: const TextStyle(
@@ -202,9 +261,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const SizedBox(height: 14),
                 OutlinedButton.icon(
-                  onPressed: () => _showEditSheet(vm),
+                  onPressed: () => _showEditSheet(vm, mode: _ProfileEditMode.name),
                   icon: const Icon(Icons.edit_outlined, size: 14, color: Colors.white),
-                  label: const Text('Editar perfil',
+                  label: const Text('Editar nome',
                       style: TextStyle(color: Colors.white, fontSize: 13)),
                   style: OutlinedButton.styleFrom(
                     padding:
@@ -247,7 +306,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     style: TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 14, color: _text)),
                 TextButton.icon(
-                  onPressed: () => _showEditSheet(vm),
+                  onPressed: () => _showEditSheet(vm, mode: _ProfileEditMode.bio),
                   icon: Icon(Icons.edit_outlined, size: 14, color: _primary),
                   label: Text('Editar',
                       style: TextStyle(color: _primary, fontSize: 13)),
@@ -265,7 +324,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: bio.isNotEmpty
                 ? Text(bio, style: TextStyle(color: _sub, height: 1.5))
                 : GestureDetector(
-                    onTap: () => _showEditSheet(vm),
+                  onTap: () => _showEditSheet(vm, mode: _ProfileEditMode.bio),
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
@@ -317,15 +376,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           _divider(),
-          SwitchListTile(
-            secondary: Icon(Icons.notifications_outlined, color: _primary),
-            title: Text(context.l10n.notificationsTitle,
-                style: TextStyle(color: _text, fontWeight: FontWeight.w600)),
-            subtitle: Text(context.l10n.notificationsSubtitle,
-                style: TextStyle(color: _sub)),
-            value: vm.notificationsEnabled,
-            activeColor: _primary,
-            onChanged: vm.toggleNotifications,
+          Material(
+            color: Colors.transparent,
+            child: SwitchListTile(
+              secondary: Icon(Icons.notifications_outlined, color: _primary),
+              title: Text(context.l10n.notificationsTitle,
+                  style: TextStyle(color: _text, fontWeight: FontWeight.w600)),
+              subtitle: Text(context.l10n.notificationsSubtitle,
+                  style: TextStyle(color: _sub)),
+              value: vm.notificationsEnabled,
+              activeThumbColor: _primary,
+              activeTrackColor: _primary.withValues(alpha: 0.3),
+              onChanged: vm.toggleNotifications,
+            ),
           ),
         ],
       ),
@@ -344,6 +407,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Column(
         children: [
+          _tile(
+            icon: Icons.lock_reset_outlined,
+            title: context.l10n.profileResetPasswordTitle,
+            subtitle: context.l10n.profileResetPasswordSubtitle,
+            onTap: _requestPasswordReset,
+          ),
+          _divider(),
+          _tile(
+            icon: Icons.email_outlined,
+            title: context.l10n.profileChangeEmailTitle,
+            subtitle: context.l10n.profileChangeEmailSubtitle,
+            onTap: _showChangeEmailDialog,
+          ),
+          _divider(),
           _tile(
             icon: Icons.download_outlined,
             title: context.l10n.exportDataTitle,
@@ -371,15 +448,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Color? color,
   }) {
     final c = color ?? _primary;
-    return ListTile(
-      leading: Icon(icon, color: c),
-      title: Text(title,
-          style: TextStyle(
-              color: color == Colors.red ? Colors.red : _text,
-              fontWeight: FontWeight.w600)),
-      subtitle: Text(subtitle, style: TextStyle(color: _sub)),
-      trailing: Icon(Icons.chevron_right, color: _sub),
-      onTap: onTap,
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        leading: Icon(icon, color: c),
+        title: Text(title,
+            style: TextStyle(
+                color: color == Colors.red ? Colors.red : _text,
+                fontWeight: FontWeight.w600)),
+        subtitle: Text(subtitle, style: TextStyle(color: _sub)),
+        trailing: Icon(Icons.chevron_right, color: _sub),
+        onTap: onTap,
+      ),
     );
   }
 
@@ -475,34 +555,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fontWeight: FontWeight.bold,
                       color: _text)),
               const SizedBox(height: 12),
-              ListTile(
-                leading: CircleAvatar(
-                    backgroundColor: _primary,
-                    child: const Icon(Icons.photo_library, color: Colors.white)),
-                title: Text(context.l10n.profileGallery,
-                    style: TextStyle(
-                        color: _text, fontWeight: FontWeight.w600)),
-                onTap: () => Navigator.pop(context, 'gallery'),
+              Material(
+                color: Colors.transparent,
+                child: ListTile(
+                  leading: CircleAvatar(
+                      backgroundColor: _primary,
+                      child: const Icon(Icons.photo_library, color: Colors.white)),
+                  title: Text(context.l10n.profileGallery,
+                      style: TextStyle(
+                          color: _text, fontWeight: FontWeight.w600)),
+                  onTap: () => Navigator.pop(context, 'gallery'),
+                ),
               ),
-              ListTile(
-                leading: CircleAvatar(
-                    backgroundColor: _primary.withValues(alpha: 0.7),
-                    child: const Icon(Icons.camera_alt, color: Colors.white)),
-                title: Text(context.l10n.profileCamera,
-                    style: TextStyle(
-                        color: _text, fontWeight: FontWeight.w600)),
-                onTap: () => Navigator.pop(context, 'camera'),
+              Material(
+                color: Colors.transparent,
+                child: ListTile(
+                  leading: CircleAvatar(
+                      backgroundColor: _primary.withValues(alpha: 0.7),
+                      child: const Icon(Icons.camera_alt, color: Colors.white)),
+                  title: Text(context.l10n.profileCamera,
+                      style: TextStyle(
+                          color: _text, fontWeight: FontWeight.w600)),
+                  onTap: () => Navigator.pop(context, 'camera'),
+                ),
               ),
               if (hasAvatar) ...[
                 Divider(color: _isDark ? Colors.white12 : Colors.grey.shade200),
-                ListTile(
-                  leading: const CircleAvatar(
-                      backgroundColor: Colors.red,
-                      child: Icon(Icons.delete_outline, color: Colors.white)),
-                  title: const Text('Remover foto',
-                      style: TextStyle(
-                          color: Colors.red, fontWeight: FontWeight.w600)),
-                  onTap: () => Navigator.pop(context, 'remove'),
+                Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    leading: const CircleAvatar(
+                        backgroundColor: Colors.red,
+                        child: Icon(Icons.delete_outline, color: Colors.white)),
+                    title: const Text('Remover foto',
+                        style: TextStyle(
+                            color: Colors.red, fontWeight: FontWeight.w600)),
+                    onTap: () => Navigator.pop(context, 'remove'),
+                  ),
                 ),
               ],
               const SizedBox(height: 8),
@@ -528,93 +617,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _snack(ok ? 'Foto atualizada!' : vm.errorMessage ?? context.l10n.profileErrorUpdatePhoto, ok);
   }
 
-  Future<void> _showEditSheet(ProfileViewModel vm) async {
-    final data = vm.userData ?? {};
-    final nameCtrl = TextEditingController(text: data['name'] as String? ?? '');
-    final bioCtrl = TextEditingController(text: data['bio'] as String? ?? '');
-
-    await showModalBottomSheet(
+  Future<void> _showEditSheet(ProfileViewModel vm, { _ProfileEditMode mode = _ProfileEditMode.both }) async {
+    final ok = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: _card,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (sheetCtx) => Padding(
-        padding: EdgeInsets.fromLTRB(
-            20, 12, 20, MediaQuery.of(sheetCtx).viewInsets.bottom + 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40, height: 4,
-                margin: const EdgeInsets.only(bottom: 18),
-                decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(100),
-                ),
-              ),
-            ),
-            Text('Editar Perfil',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: _text)),
-            const SizedBox(height: 20),
-            TextField(
-              controller: nameCtrl,
-              decoration: InputDecoration(
-                labelText: 'Nome',
-                prefixIcon: Icon(Icons.person_outline, color: _primary),
-              ),
-              textCapitalization: TextCapitalization.words,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: bioCtrl,
-              decoration: InputDecoration(
-                labelText: 'Bio',
-                hintText: 'Fale um pouco sobre você...',
-                prefixIcon: Icon(Icons.edit_note, color: _primary),
-                alignLabelWithHint: true,
-              ),
-              maxLines: 3,
-              maxLength: 160,
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  // Pega o email direto do auth — fonte confiável e imutável
-                  final authEmail =
-                      Supabase.instance.client.auth.currentUser?.email ?? '';
-                  final ok = await vm.updateProfile(
-                    name: nameCtrl.text.trim(),
-                    email: authEmail,
-                    bio: bioCtrl.text.trim(),
-                  );
-                  if (!mounted) return;
-                  Navigator.pop(sheetCtx);
-                  _snack(
-                    ok
-                        ? 'Perfil atualizado!'
-                        : (vm.errorMessage ??
-                            'Não foi possível salvar. Tente novamente.'),
-                    ok,
-                  );
-                },
-                child: const Text('Salvar alterações'),
-              ),
-            ),
-          ],
-        ),
-      ),
+      builder: (_) => _ProfileEditSheet(vm: vm, mode: mode),
     );
 
-    nameCtrl.dispose();
-    bioCtrl.dispose();
+    if (ok == true && mounted) {
+      _snack('Perfil atualizado!', true);
+    }
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────
@@ -626,16 +641,136 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ));
   }
 
+  Future<void> _requestPasswordReset() async {
+    final email = Supabase.instance.client.auth.currentUser?.email;
+    if (email == null || email.isEmpty) {
+      _snack(context.l10n.profileResetPasswordError, false);
+      return;
+    }
+
+    final auth = context.read<AuthViewModel>();
+    final success = await auth.sendPasswordResetEmail(email: email);
+    if (!mounted) return;
+    _snack(
+      success ? context.l10n.profileResetPasswordSent :
+          (auth.error == null
+              ? context.l10n.profileResetPasswordError
+              : friendlyError(Exception(auth.error))),
+      success,
+    );
+  }
+
+  Future<void> _showChangeEmailDialog() async {
+    final currentEmail = Supabase.instance.client.auth.currentUser?.email ?? '';
+    final profile = context.read<ProfileViewModel>();
+
+    final email = await showDialog<String>(
+      context: context,
+      builder: (_) => _ChangeEmailDialog(currentEmail: currentEmail),
+    );
+
+    if (email == null) {
+      await profile.clearPendingEmailChange();
+      return;
+    }
+    if (!mounted) return;
+    final auth = context.read<AuthViewModel>();
+    final success = await auth.updateEmail(email);
+    if (!mounted) return;
+    _snack(
+      success ? context.l10n.profileChangeEmailSent :
+          _emailChangeErrorMessage(auth),
+      success,
+    );
+  }
+
+  String _emailChangeErrorMessage(AuthViewModel auth) {
+    if (auth.errorType == AuthErrorType.emailExists) {
+      return context.l10n.authErrorEmailExists;
+    }
+    if (auth.error != null) {
+      return friendlyError(Exception(auth.error));
+    }
+    return context.l10n.profileChangeEmailError;
+  }
+
   Future<void> _doExport(ProfileViewModel vm) async {
+    final format = await showModalBottomSheet<ExportFormat>(
+      context: context,
+      backgroundColor: _card,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const ListTile(
+                title: Text('Escolha o formato'),
+                subtitle: Text('Selecione como deseja salvar seus dados.'),
+              ),
+              _exportOption(
+                context,
+                format: ExportFormat.pdf,
+                icon: Icons.picture_as_pdf_outlined,
+                title: 'PDF',
+                subtitle: 'Relatório pronto para ler ou imprimir',
+              ),
+              _exportOption(
+                context,
+                format: ExportFormat.csv,
+                icon: Icons.table_chart_outlined,
+                title: 'CSV',
+                subtitle: 'Ideal para abrir em planilhas',
+              ),
+              _exportOption(
+                context,
+                format: ExportFormat.txt,
+                icon: Icons.notes_outlined,
+                title: 'TXT',
+                subtitle: 'Texto simples e compatível',
+              ),
+              _exportOption(
+                context,
+                format: ExportFormat.json,
+                icon: Icons.data_object_outlined,
+                title: 'JSON',
+                subtitle: 'Backup completo para uso no aplicativo',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (format == null || !mounted) return;
+
     try {
       final data = await vm.exportUserData();
       await shareExportedUserData(data,
+          format: format,
           shareText: 'Meus dados do SignWriter Fácil',
           shareSubject: 'Exportação - SignWriter Fácil');
     } catch (e) {
       if (!mounted) return;
       _snack('Erro ao exportar: $e', false);
     }
+  }
+
+  Widget _exportOption(
+    BuildContext context, {
+    required ExportFormat format,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: _primary),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => Navigator.pop(context, format),
+    );
   }
 
   void _confirmDelete(ProfileViewModel vm) {
@@ -666,6 +801,246 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ProfileEditSheet extends StatefulWidget {
+  final ProfileViewModel vm;
+  final _ProfileEditMode mode;
+
+  const _ProfileEditSheet({required this.vm, this.mode = _ProfileEditMode.both});
+
+  @override
+  State<_ProfileEditSheet> createState() => _ProfileEditSheetState();
+}
+
+class _ProfileEditSheetState extends State<_ProfileEditSheet> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _bioController;
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final data = widget.vm.userData ?? {};
+    _nameController = TextEditingController(text: data['name'] as String? ?? '');
+    _bioController = TextEditingController(text: data['bio'] as String? ?? '');
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _bioController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSave() async {
+    if (_isSaving) return;
+
+    final newName = _nameController.text.trim();
+    if (widget.mode != _ProfileEditMode.bio && newName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Informe um nome para continuar.'),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+    setState(() => _isSaving = true);
+
+    final authEmail = Supabase.instance.client.auth.currentUser?.email ?? '';
+    // Para edição somente de nome, usa bio atual do server; para somente bio, usa nome atual.
+    final currentData = widget.vm.userData ?? {};
+    final payloadName = widget.mode == _ProfileEditMode.bio
+        ? (currentData['name'] as String? ?? newName)
+        : newName;
+    final payloadBio = widget.mode == _ProfileEditMode.name
+        ? (currentData['bio'] as String? ?? '')
+        : _bioController.text.trim();
+
+    final ok = await widget.vm.updateProfile(
+      name: payloadName,
+      email: authEmail,
+      bio: payloadBio,
+    );
+
+    if (!mounted) return;
+
+    if (ok) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+
+    setState(() => _isSaving = false);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(widget.vm.errorMessage ?? 'Não foi possível salvar. Tente novamente.'),
+      backgroundColor: Colors.red,
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textColor = theme.brightness == Brightness.dark
+        ? Colors.white
+        : const Color(0xFF1E1E1E);
+    final primary = theme.colorScheme.primary;
+
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          12,
+          20,
+          MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 18),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+            ),
+            Text(
+    widget.mode == _ProfileEditMode.name
+        ? 'Editar Nome'
+        : widget.mode == _ProfileEditMode.bio
+            ? 'Editar Bio'
+            : 'Editar Perfil',
+                style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: textColor)),
+                  const SizedBox(height: 20),
+                   if (widget.mode != _ProfileEditMode.bio) ...[
+                  TextField(
+                    controller: _nameController,
+                    enabled: !_isSaving,
+                    decoration: InputDecoration(
+                  labelText: 'Nome',
+                  prefixIcon: Icon(Icons.person_outline, color: primary),
+                ),
+        textCapitalization: TextCapitalization.words,
+  ),
+  const SizedBox(height: 16),
+],
+if (widget.mode != _ProfileEditMode.name) ...[
+  TextField(
+    controller: _bioController,
+    enabled: !_isSaving,
+    decoration: InputDecoration(
+      labelText: 'Bio',
+      hintText: 'Fale um pouco sobre você...',
+      prefixIcon: Icon(Icons.edit_note, color: primary),
+      alignLabelWithHint: true,
+    ),
+    maxLines: 3,
+    maxLength: 160,
+  ),
+  const SizedBox(height: 16),
+],
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                onPressed: _isSaving ? null : _handleSave,
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text('Salvar alterações'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChangeEmailDialog extends StatefulWidget {
+  final String currentEmail;
+
+  const _ChangeEmailDialog({required this.currentEmail});
+
+  @override
+  State<_ChangeEmailDialog> createState() => _ChangeEmailDialogState();
+}
+
+class _ChangeEmailDialogState extends State<_ChangeEmailDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(context.l10n.profileChangeEmailTitle),
+      content: Form(
+        key: _formKey,
+        child: TextFormField(
+          controller: _controller,
+          autofocus: true,
+          keyboardType: TextInputType.emailAddress,
+          decoration: InputDecoration(
+            labelText: context.l10n.profileNewEmailLabel,
+            hintText: widget.currentEmail,
+            prefixIcon: const Icon(Icons.email_outlined),
+          ),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return context.l10n.enterEmailError;
+            }
+            if (!EmailValidator.isValid(value)) {
+              return context.l10n.invalidEmailDomainError;
+            }
+            if (value.trim().toLowerCase() == widget.currentEmail.toLowerCase()) {
+              return context.l10n.profileSameEmailError;
+            }
+            return null;
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(context.l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              Navigator.pop(context, _controller.text.trim());
+            }
+          },
+          child: Text(context.l10n.saveChanges),
+        ),
+      ],
     );
   }
 }

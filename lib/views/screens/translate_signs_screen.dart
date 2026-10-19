@@ -8,7 +8,8 @@ import '../../models/translation_model.dart';
 import '../../viewmodels/translate_viewmodel.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/responsive.dart';
-import '../../theme/responsive_content.dart';
+import '../../theme/adaptive_nav_scaffold.dart';
+import '../../routes/app_routes.dart';
 import '../widgets/states/app_status_banner.dart';
 
 class TranslateSignsScreen extends StatefulWidget {
@@ -105,12 +106,22 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _viewModel,
-      child: Scaffold(
+      child: AdaptiveNavScaffold(
+        currentRoute: AppRoutes.translateSigns,
+        currentIndex: 0,
+        homeLabel: context.l10n.bottomHome,
+        profileLabel: context.l10n.bottomProfile,
+        onTabSelected: (index) {
+          Navigator.pushReplacementNamed(
+            context,
+            index == 0 ? AppRoutes.home : AppRoutes.profile,
+          );
+        },
         backgroundColor: backgroundColor,
         appBar: AppBar(
           title: const Text('Traduzir Sinais'),
         ),
-        body: ResponsiveContent(child: Consumer<TranslateViewModel>(
+        body: Consumer<TranslateViewModel>(
           builder: (context, viewModel, child) {
             return Column(
               children: [
@@ -131,7 +142,7 @@ class _TranslateSignsScreenState extends State<TranslateSignsScreen>
               ],
             );
           },
-        )),
+        ),
       ),
     );
   }
